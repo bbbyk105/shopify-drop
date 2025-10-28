@@ -1,3 +1,4 @@
+// app/products/[slug]/page.tsx
 "use client";
 
 import { useParams } from "next/navigation";
@@ -56,7 +57,7 @@ export default function ProductPage() {
 
       {/* Product Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20">
-        {/* Images */}
+        {/* Images - Left Side */}
         <div className="space-y-4">
           {/* Main Image */}
           <div className="relative aspect-square overflow-hidden rounded-lg bg-secondary">
@@ -94,79 +95,81 @@ export default function ProductPage() {
           )}
         </div>
 
-        {/* Product Info */}
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              {product.details
-                ? `The ${product.name} is a statement piece, designed to elevate any room with its sophisticated presence. Crafted with meticulous attention to detail, this lamp features a sleek, modern silhouette that seamlessly blends with both contemporary and classic interiors. Its soft, ambient light creates a warm and inviting atmosphere, perfect for reading, relaxing, or entertaining.`
-                : product.description}
-            </p>
-          </div>
+        {/* Product Info - Right Side (Sticky on desktop) */}
+        <div className="lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                {product.details
+                  ? `The ${product.name} is a statement piece, designed to elevate any room with its sophisticated presence. Crafted with meticulous attention to detail, this lamp features a sleek, modern silhouette that seamlessly blends with both contemporary and classic interiors. Its soft, ambient light creates a warm and inviting atmosphere, perfect for reading, relaxing, or entertaining.`
+                  : product.description}
+              </p>
+            </div>
 
-          {/* Product Details */}
-          {product.details && (
-            <div className="border-t border-b border-border py-6">
-              <h2 className="text-xl font-semibold mb-4">Product Details</h2>
-              <div className="space-y-3">
-                {product.details.material && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Material</span>
-                    <span className="font-medium">
-                      {product.details.material}
-                    </span>
-                  </div>
-                )}
-                {product.details.dimensions && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Dimensions</span>
-                    <span className="font-medium">
-                      {product.details.dimensions}
-                    </span>
-                  </div>
-                )}
-                {product.details.designer && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Designer</span>
-                    <span className="font-medium">
-                      {product.details.designer}
-                    </span>
-                  </div>
-                )}
-                {product.details.bulbType && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Bulb Type</span>
-                    <span className="font-medium">
-                      {product.details.bulbType}
-                    </span>
-                  </div>
-                )}
-                {product.details.wattage && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Wattage</span>
-                    <span className="font-medium">
-                      {product.details.wattage}
-                    </span>
-                  </div>
-                )}
+            {/* Product Details */}
+            {product.details && (
+              <div className="border-t border-b border-border py-6">
+                <h2 className="text-xl font-semibold mb-4">Product Details</h2>
+                <div className="space-y-3">
+                  {product.details.material && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Material</span>
+                      <span className="font-medium">
+                        {product.details.material}
+                      </span>
+                    </div>
+                  )}
+                  {product.details.dimensions && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Dimensions</span>
+                      <span className="font-medium">
+                        {product.details.dimensions}
+                      </span>
+                    </div>
+                  )}
+                  {product.details.designer && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Designer</span>
+                      <span className="font-medium">
+                        {product.details.designer}
+                      </span>
+                    </div>
+                  )}
+                  {product.details.bulbType && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Bulb Type</span>
+                      <span className="font-medium">
+                        {product.details.bulbType}
+                      </span>
+                    </div>
+                  )}
+                  {product.details.wattage && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Wattage</span>
+                      <span className="font-medium">
+                        {product.details.wattage}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Price and Add to Cart */}
-          <div className="space-y-4">
-            <div className="text-3xl font-bold">
-              {formatPrice(product.price)}
-            </div>
+            {/* Price and Add to Cart */}
+            <div className="space-y-4">
+              <div className="text-3xl font-bold">
+                {formatPrice(product.price)}
+              </div>
 
-            <Button
-              onClick={handleAddToCart}
-              size="lg"
-              className="w-full text-base h-12"
-            >
-              Add to Cart
-            </Button>
+              <Button
+                onClick={handleAddToCart}
+                size="lg"
+                className="w-full text-base h-12"
+              >
+                Add to Cart
+              </Button>
+            </div>
           </div>
         </div>
       </div>
