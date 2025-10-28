@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Search, Heart, ShoppingCart, Sparkles } from "lucide-react";
+import { Search, Heart, ShoppingCart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import Image from "next/image";
 
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -20,8 +21,12 @@ export default function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <Sparkles className="h-5 w-5" />
-            <span className="text-xl font-semibold">Lumina Luxe</span>
+            <Image
+              src={"/logos/transparent.png"}
+              alt="logo"
+              width={120}
+              height={120}
+            />
           </Link>
 
           {/* Desktop Navigation */}
