@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Instagram, Facebook, Twitter } from "lucide-react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faInstagram, faFacebook } from "@fortawesome/free-brands-svg-icons";
 
 export default function Footer() {
   return (
@@ -31,34 +32,27 @@ export default function Footer() {
           {/* Social Icons */}
           <div className="flex gap-6">
             <Link
-              href="https://instagram.com"
+              href="https://instagram.com/evimeria__official"
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Instagram className="h-5 w-5" />
+              <FontAwesomeIcon icon={faInstagram} className="h-5 w-5" />
             </Link>
+
             <Link
               href="https://facebook.com"
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Facebook className="h-5 w-5" />
-            </Link>
-            <Link
-              href="https://twitter.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Twitter className="h-5 w-5" />
+              <FontAwesomeIcon icon={faFacebook} className="h-5 w-5" />
             </Link>
           </div>
 
           {/* Copyright */}
           <p className="text-sm text-muted-foreground text-center">
-            © 2024 Lumina Luxe. All rights reserved.
+            © 2025 Evimería. All rights reserved.
           </p>
         </div>
       </div>
