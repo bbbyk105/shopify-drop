@@ -48,9 +48,12 @@ export default function TrackingPage() {
           <p className="inline-flex items-center gap-2 rounded-full bg-gray-900/80 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white shadow-sm">
             Order Tracking
           </p>
-          <h1 className="text-3xl font-semibold tracking-tight">Track your order</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Track your order
+          </h1>
           <p className="text-sm text-gray-600">
-            Enter your order number (e.g. #1001 or 1001) and the email used at checkout.
+            Enter your order number (e.g. #1001 or 1001) and the email used at
+            checkout.
           </p>
         </div>
 
@@ -103,20 +106,26 @@ export default function TrackingPage() {
 
         {result && !result.found && (
           <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800">
-            We couldn't find an order matching those details. Please double-check and try again.
+            We couldn't find an order matching those details. Please
+            double-check and try again.
           </div>
         )}
 
         {result && result.found && (
           <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-lg shadow-gray-200/50">
             <div className="mb-4 space-y-1">
-              <h2 className="text-lg font-semibold text-gray-900">Order details</h2>
-              <p className="text-sm text-gray-700">Order: {result.order.name}</p>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Order details
+              </h2>
+              <p className="text-sm text-gray-700">
+                Order: {result.order.name}
+              </p>
               <p className="text-sm text-gray-700">
                 Status: {result.order.fulfillmentStatus}
               </p>
               <p className="text-sm text-gray-700">
-                Placed at: {new Date(result.order.processedAt).toLocaleString("en-US")}
+                Placed at:{" "}
+                {new Date(result.order.processedAt).toLocaleString("en-US")}
               </p>
             </div>
 
@@ -147,9 +156,13 @@ export default function TrackingPage() {
                           key={tracking.number}
                           className="flex flex-col gap-1 rounded border border-gray-200 bg-white p-3 text-sm text-gray-900"
                         >
-                          <span className="font-medium">Number: {tracking.number}</span>
+                          <span className="font-medium">
+                            Number: {tracking.number}
+                          </span>
                           {tracking.company && (
-                            <span className="text-gray-700">Carrier: {tracking.company}</span>
+                            <span className="text-gray-700">
+                              Carrier: {tracking.company}
+                            </span>
                           )}
                           {tracking.url && (
                             <a
@@ -174,4 +187,3 @@ export default function TrackingPage() {
     </div>
   );
 }
-

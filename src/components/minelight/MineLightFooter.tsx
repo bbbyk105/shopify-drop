@@ -32,10 +32,10 @@ export default function MineLightFooter() {
               </li>
               <li>
                 <Link
-                  href="/minelight"
+                  href="/minelight/tracking"
                   className="text-gray-300 hover:text-yellow-400 transition-colors font-bold"
                 >
-                  → Mine Light Collection
+                  → Track your order
                 </Link>
               </li>
               <li>

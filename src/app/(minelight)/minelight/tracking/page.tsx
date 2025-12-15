@@ -143,7 +143,7 @@ export default function MineLightTrackingPage() {
                   className="bg-[#3A3A3A] border-4 border-black p-4 shadow-[6px_6px_0px_rgba(0,0,0,1)]"
                 >
                   <p className="text-sm font-bold text-white">
-                    フルフィルメント: {fulfillment.status}
+                    Fulfillments: {fulfillment.status}
                   </p>
 
                   {fulfillment.tracking.length === 0 ? (
