@@ -1,18 +1,18 @@
 import { getProductsByTag } from "@/lib/shopify/queries/products";
-import MinecraftProductCard from "@/components/minecraft/MinecraftProductCard";
+import MineLightProductCard from "@/components/minelight/MineLightProductCard";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Pickaxe, Flame } from "lucide-react";
 
 export const metadata = {
-  title: "Minecraft Collection | Pixelated Lighting",
+  title: "Mine Light Collection | Pixelated Lighting",
   description:
-    "Level up your room with Minecraft-inspired lighting. Pixelated Lantern and Torch Lamp available now!",
+    "Level up your room with Mine Light-inspired lighting. Pixelated Lantern and Torch Lamp available now!",
 };
 
-export default async function MinecraftPage() {
-  // マインクラフトタグの商品を取得
-  const products = await getProductsByTag("minecraft");
+export default async function MineLightPage() {
+  // Mine Lightタグの商品を取得
+  const products = await getProductsByTag("minelight");
 
   return (
     <div className="relative">
@@ -53,21 +53,21 @@ export default async function MinecraftPage() {
           </h1>
 
           <p className="text-xl md:text-2xl text-white mb-8 drop-shadow-[2px_2px_0px_rgba(0,0,0,0.8)]">
-            Illuminate your space with iconic Minecraft-inspired lighting
+            Illuminate your space with iconic Mine Light-inspired lighting
           </p>
 
-          {/* Trust Badges - Minecraft Style */}
+          {/* Trust Badges - Mine Light Style */}
           <div className="flex flex-wrap justify-center gap-4 mb-12">
-            <MinecraftBadge
+            <MineLightBadge
               icon={<Flame className="h-5 w-5" />}
               text="LED Powered"
             />
-            <MinecraftBadge
+            <MineLightBadge
               icon={<Pickaxe className="h-5 w-5" />}
               text="Durable Design"
             />
-            <MinecraftBadge text="USB Rechargeable" />
-            <MinecraftBadge text="7-16 Colors" />
+            <MineLightBadge text="USB Rechargeable" />
+            <MineLightBadge text="7-16 Colors" />
           </div>
         </div>
       </section>
@@ -76,7 +76,7 @@ export default async function MinecraftPage() {
         <div className="container mx-auto max-w-6xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {products.map((product) => (
-              <MinecraftProductCard key={product.id} product={product} />
+              <MineLightProductCard key={product.id} product={product} />
             ))}
           </div>
 
@@ -99,7 +99,7 @@ export default async function MinecraftPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <FeatureCard
               title="PERFECT GIFT"
-              description="Ideal for Minecraft fans and gamers of all ages"
+              description="Ideal for Mine Light fans and gamers of all ages"
             />
             <FeatureCard
               title="MULTI-USE"
@@ -134,7 +134,7 @@ export default async function MinecraftPage() {
   );
 }
 
-function MinecraftBadge({
+function MineLightBadge({
   icon,
   text,
 }: {

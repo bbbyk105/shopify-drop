@@ -3,13 +3,13 @@ import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
 import type { Product } from "@/lib/shopify/types";
 
-interface MinecraftProductCardProps {
+interface MineLightProductCardProps {
   product: Product;
 }
 
-export default function MinecraftProductCard({
+export default function MineLightProductCard({
   product,
-}: MinecraftProductCardProps) {
+}: MineLightProductCardProps) {
   const firstVariant = product.variants.edges[0]?.node;
   const price = parseFloat(firstVariant?.price.amount || "0").toFixed(2);
   const compareAtPrice = firstVariant?.compareAtPrice
@@ -21,7 +21,7 @@ export default function MinecraftProductCard({
 
   return (
     <Link
-      href={`/minecraft/products/${product.handle}`}
+      href={`/minelight/products/${product.handle}`}
       className="group block bg-[#4A4A4A] border-8 border-black shadow-[8px_8px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 transition-all"
     >
       {/* Image Container */}

@@ -6,7 +6,7 @@ import { ShoppingCart, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import type { Product } from "@/lib/shopify/types";
 
-interface MinecraftProductClientProps {
+interface MineLightProductClientProps {
   product: Product;
   images: Array<{ url: string; altText?: string | null }>;
   firstVariant: {
@@ -19,12 +19,12 @@ interface MinecraftProductClientProps {
   inventory: Record<string, number>;
 }
 
-export default function MinecraftProductClient({
+export default function MineLightProductClient({
   product,
   images,
   firstVariant,
   inventory,
-}: MinecraftProductClientProps) {
+}: MineLightProductClientProps) {
   const [selectedVariant, setSelectedVariant] = useState(firstVariant);
   const [quantity, setQuantity] = useState(1);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -61,7 +61,7 @@ export default function MinecraftProductClient({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-      {/* 画像ギャラリー - Minecraft Style */}
+      {/* 画像ギャラリー - Mine Light Style */}
       <div className="space-y-4">
         <div className="relative aspect-square bg-[#4A4A4A] border-8 border-black shadow-[8px_8px_0px_rgba(0,0,0,1)]">
           <Image
@@ -76,14 +76,14 @@ export default function MinecraftProductClient({
             <>
               <button
                 onClick={prevImage}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-[#5CB85C] hover:bg-[#4A9B4A] text-white p-3 border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-[#5CB85C] hover:bg-[#4A9B4A] text-white font-bold border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
                 aria-label="Previous image"
               >
                 <ChevronLeft className="h-6 w-6" />
               </button>
               <button
                 onClick={nextImage}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-[#5CB85C] hover:bg-[#4A9B4A] text-white p-3 border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-[#5CB85C] hover:bg-[#4A9B4A] text-white font-bold border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
                 aria-label="Next image"
               >
                 <ChevronRight className="h-6 w-6" />
@@ -111,7 +111,7 @@ export default function MinecraftProductClient({
         </div>
       </div>
 
-      {/* 商品情報 - Minecraft Style */}
+      {/* 商品情報 - Mine Light Style */}
       <div className="space-y-6">
         <div>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow-[3px_3px_0px_rgba(0,0,0,1)] font-minecraft">
@@ -148,7 +148,7 @@ export default function MinecraftProductClient({
               </div>
             ) : (
               <div className="inline-flex items-center gap-2 bg-red-600 border-4 border-black px-4 py-2 text-white font-bold shadow-[3px_3px_0px_rgba(0,0,0,1)]">
-                <span>OUT OF STOCK</span>
+                <span>SOLD OUT</span>
               </div>
             )}
           </div>
@@ -230,7 +230,7 @@ export default function MinecraftProductClient({
           ) : isAdding ? (
             "ADDING..."
           ) : !isAvailable ? (
-            "OUT OF STOCK"
+            "SOLD OUT"
           ) : (
             <>
               <ShoppingCart className="mr-2 h-6 w-6" />

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ShoppingCart, Home } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 
-export default function MinecraftHeader() {
+export default function MineLightHeader() {
   const { cart } = useCart();
 
   const itemCount =
@@ -17,10 +17,10 @@ export default function MinecraftHeader() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link
-            href="/minecraft"
+            href="/minelight"
             className="text-2xl font-bold text-white drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] font-minecraft hover:text-yellow-400 transition-colors"
           >
-            MINECRAFT SHOP
+            MINE LIGHT SHOP
           </Link>
 
           {/* Navigation */}
@@ -34,7 +34,7 @@ export default function MinecraftHeader() {
             </Link>
 
             <Link
-              href="/cart"
+              href="/minelight/cart"
               className="relative flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 font-bold border-4 border-black shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
             >
               <ShoppingCart className="h-5 w-5" />

@@ -3,7 +3,7 @@ import { getProductInventory } from "@/lib/shopify/queries/inventory";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
-import MinecraftProductClient from "./MinecraftProductClient";
+import MineLightProductClient from "./MineLightProductClient";
 
 interface ProductPageProps {
   params: Promise<{
@@ -32,11 +32,11 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${product.title} | Minecraft Collection`,
+    title: `${product.title} | Mine Light Collection`,
     description:
       product.description ||
       product.seo?.description ||
-      "Level up your room with Minecraft-inspired lighting",
+      "Level up your room with Mine Light-inspired lighting",
     openGraph: {
       title: product.seo?.title || product.title,
       description: product.seo?.description || product.description || "",
@@ -45,7 +45,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function MinecraftProductPage({
+export default async function MineLightProductPage({
   params,
 }: ProductPageProps) {
   const resolvedParams = await params;
@@ -61,8 +61,8 @@ export default async function MinecraftProductPage({
     notFound();
   }
 
-  // マインクラフトタグがない商品は404
-  if (!product.tags.includes("minecraft")) {
+  // Mine Lightタグがない商品は404
+  if (!product.tags.includes("minelight")) {
     notFound();
   }
 
@@ -91,7 +91,7 @@ export default async function MinecraftProductPage({
       </div>
 
       <div className="container mx-auto px-4 py-8 relative">
-        {/* Breadcrumb - Minecraft Style */}
+        {/* Breadcrumb - Mine Light Style */}
         <nav className="mb-8">
           <ol className="flex items-center space-x-2 text-sm font-bold">
             <li>
@@ -105,10 +105,10 @@ export default async function MinecraftProductPage({
             <li className="text-white">&gt;</li>
             <li>
               <Link
-                href="/minecraft"
+                href="/minelight"
                 className="text-white hover:text-yellow-300 transition-colors drop-shadow-[1px_1px_0px_rgba(0,0,0,1)]"
               >
-                MINECRAFT
+                MINE LIGHT
               </Link>
             </li>
             <li className="text-white">&gt;</li>
@@ -118,7 +118,7 @@ export default async function MinecraftProductPage({
           </ol>
         </nav>
 
-        <MinecraftProductClient
+        <MineLightProductClient
           product={product}
           images={images}
           firstVariant={firstVariant}

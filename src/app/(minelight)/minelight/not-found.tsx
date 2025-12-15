@@ -1,7 +1,7 @@
 import Link from "next/link";
-import MinecraftButton from "@/components/minecraft/MinecraftButton";
+import MineLightButton from "@/components/minelight/MineLightButton";
 
-export default function MinecraftNotFound() {
+export default function MineLightNotFound() {
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="text-center">
@@ -14,10 +14,10 @@ export default function MinecraftNotFound() {
         <p className="text-xl text-gray-300 mb-8">
           Looks like this block doesn&apos;t exist in our world...
         </p>
-        <Link href="/minecraft">
-          <MinecraftButton variant="primary" size="lg">
+        <Link href="/minelight">
+          <MineLightButton variant="primary" size="lg">
             RETURN TO BASE
-          </MinecraftButton>
+          </MineLightButton>
         </Link>
       </div>
     </div>

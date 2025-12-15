@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function MinecraftFooter() {
+export default function MineLightFooter() {
   return (
     <footer className="bg-[#3A3A3A] border-t-8 border-black py-12">
       <div className="container mx-auto px-4">
@@ -11,7 +11,7 @@ export default function MinecraftFooter() {
               ABOUT US
             </h3>
             <p className="text-gray-300 leading-relaxed">
-              We bring the blocky world of Minecraft into your home with
+              We bring the blocky world of Mine Light into your home with
               officially inspired lighting products.
             </p>
           </div>
@@ -32,18 +32,18 @@ export default function MinecraftFooter() {
               </li>
               <li>
                 <Link
-                  href="/minecraft"
+                  href="/minelight"
                   className="text-gray-300 hover:text-yellow-400 transition-colors font-bold"
                 >
-                  → Minecraft Collection
+                  → Mine Light Collection
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/cart"
+                  href="/minelight/cart"
                   className="text-gray-300 hover:text-yellow-400 transition-colors font-bold"
                 >
-                  → Shopping Cart
+                  → Mine Light Cart
                 </Link>
               </li>
             </ul>
@@ -58,7 +58,6 @@ export default function MinecraftFooter() {
               <li className="text-gray-300 font-bold">✓ Free Shipping</li>
               <li className="text-gray-300 font-bold">✓ 30-Day Returns</li>
               <li className="text-gray-300 font-bold">✓ Secure Checkout</li>
-              <li className="text-gray-300 font-bold">✓ Fast Delivery</li>
             </ul>
           </div>
         </div>
@@ -66,7 +65,7 @@ export default function MinecraftFooter() {
         {/* Copyright */}
         <div className="mt-12 pt-8 border-t-4 border-black text-center">
           <p className="text-gray-400 text-sm font-bold">
-            © {new Date().getFullYear()} Minecraft Shop. All rights reserved.
+            © {new Date().getFullYear()} Mine Light Shop. All rights reserved.
           </p>
           <p className="text-gray-500 text-xs mt-2">
             Not affiliated with Mojang or Microsoft.

@@ -1,12 +1,12 @@
 import { ButtonHTMLAttributes, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
-interface MinecraftButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface MineLightButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "danger";
   size?: "sm" | "md" | "lg";
 }
 
-const MinecraftButton = forwardRef<HTMLButtonElement, MinecraftButtonProps>(
+const MineLightButton = forwardRef<HTMLButtonElement, MineLightButtonProps>(
   (
     { className, variant = "primary", size = "md", children, ...props },
     ref
@@ -38,6 +38,6 @@ const MinecraftButton = forwardRef<HTMLButtonElement, MinecraftButtonProps>(
   }
 );
 
-MinecraftButton.displayName = "MinecraftButton";
+MineLightButton.displayName = "MineLightButton";
 
-export default MinecraftButton;
+export default MineLightButton;
