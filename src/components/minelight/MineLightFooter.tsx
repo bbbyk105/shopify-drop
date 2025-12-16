@@ -76,7 +76,7 @@ export default function MineLightFooter() {
             © {new Date().getFullYear()} Mine Light Shop. All rights reserved.
           </p>
           <p className="text-gray-500 text-xs mt-2">
-            Not affiliated with Mojang or Microsoft.
+            © {new Date().getFullYear()} evimeria home. All rights reserved.
           </p>
         </div>
       </div>

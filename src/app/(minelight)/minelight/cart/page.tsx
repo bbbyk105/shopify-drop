@@ -134,7 +134,15 @@ export default function MineLightCartPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => remove(node.id)}
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            `Are you sure you want to remove "${node.merchandise.product.title}" from your cart?`
+                          )
+                        ) {
+                          remove(node.id);
+                        }
+                      }}
                       className="text-red-200 hover:text-white hover:bg-red-600/30 border-2 border-transparent hover:border-black rounded-none p-2"
                       aria-label="Remove item"
                     >
@@ -185,8 +193,11 @@ export default function MineLightCartPage() {
 
         {/* 合計 */}
         <div className="mt-10 bg-[#4A4A4A] border-8 border-black shadow-[12px_12px_0px_rgba(0,0,0,1)] p-6 md:p-8 text-white space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Stat label="Subtotal" value={`${cart.cost.subtotalAmount.currencyCode} $${parseFloat(cart.cost.subtotalAmount.amount).toFixed(2)}`} />
+          <div className={`grid gap-6 ${cart.cost.subtotalAmount.amount !== cart.cost.totalAmount.amount ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
+            {/* SubtotalとTotalが異なる場合のみSubtotalを表示 */}
+            {cart.cost.subtotalAmount.amount !== cart.cost.totalAmount.amount && (
+              <Stat label="Subtotal" value={`${cart.cost.subtotalAmount.currencyCode} $${parseFloat(cart.cost.subtotalAmount.amount).toFixed(2)}`} />
+            )}
             <Stat label="Total" value={`${cart.cost.totalAmount.currencyCode} $${parseFloat(cart.cost.totalAmount.amount).toFixed(2)}`} accent />
           </div>
 
