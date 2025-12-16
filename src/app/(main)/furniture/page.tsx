@@ -48,7 +48,7 @@ export default function FurniturePage() {
               placeholder="Enter your email"
               className="px-6 py-3 rounded-md bg-secondary border border-border"
             />
-            <button className="px-8 py-3 bg-primary text-primary-foreground rounded-md font-semibold hover:bg-primary/90 transition-colors">
+            <button className="px-8 py-3 bg-primary text-primary-foreground rounded-md font-semibold hover:bg-primary/90 transition-colors cursor-pointer">
               Notify Me
             </button>
           </div>

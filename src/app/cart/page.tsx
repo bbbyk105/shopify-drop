@@ -104,7 +104,7 @@ export default function CartPage() {
                         }
                       }}
                       disabled={node.quantity <= 1}
-                      className="p-1.5 md:p-2 hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="p-1.5 md:p-2 hover:bg-secondary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       aria-label="Decrease quantity"
                     >
                       <Minus className="w-3 h-3 md:w-4 md:h-4" />
@@ -116,7 +116,7 @@ export default function CartPage() {
 
                     <button
                       onClick={() => setQty(node.id, node.quantity + 1)}
-                      className="p-1.5 md:p-2 hover:bg-secondary transition-colors"
+                      className="p-1.5 md:p-2 hover:bg-secondary transition-colors cursor-pointer"
                       aria-label="Increase quantity"
                     >
                       <Plus className="w-3 h-3 md:w-4 md:h-4" />

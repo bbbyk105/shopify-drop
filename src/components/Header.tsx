@@ -61,6 +61,12 @@ export default function Header() {
             >
               Sale
             </Link>
+            <Link
+              href="/contact"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Contact
+            </Link>
           </nav>
 
           {/* Search and Icons */}

@@ -45,7 +45,7 @@ export default function LightingPage() {
                 <ul className="space-y-2">
                   {categories.map((category) => (
                     <li key={category.name}>
-                      <button className="flex justify-between w-full text-left hover:text-primary transition-colors py-1">
+                      <button className="flex justify-between w-full text-left hover:text-primary transition-colors py-1 cursor-pointer">
                         <span>{category.name}</span>
                         <span className="text-muted-foreground">
                           ({category.count})

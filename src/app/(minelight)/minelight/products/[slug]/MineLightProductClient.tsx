@@ -76,14 +76,14 @@ export default function MineLightProductClient({
             <>
               <button
                 onClick={prevImage}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-[#5CB85C] hover:bg-[#4A9B4A] text-white font-bold border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-[#5CB85C] hover:bg-[#4A9B4A] text-white font-bold border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
                 aria-label="Previous image"
               >
                 <ChevronLeft className="h-6 w-6" />
               </button>
               <button
                 onClick={nextImage}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-[#5CB85C] hover:bg-[#4A9B4A] text-white font-bold border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-[#5CB85C] hover:bg-[#4A9B4A] text-white font-bold border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
                 aria-label="Next image"
               >
                 <ChevronRight className="h-6 w-6" />
@@ -98,7 +98,7 @@ export default function MineLightProductClient({
                 <button
                   key={index}
                   onClick={() => setCurrentImageIndex(index)}
-                  className={`w-3 h-3 border-2 border-black transition-all ${
+                  className={`w-3 h-3 border-2 border-black transition-all cursor-pointer ${
                     index === currentImageIndex
                       ? "bg-yellow-400 scale-125"
                       : "bg-white"
@@ -176,9 +176,9 @@ export default function MineLightProductClient({
                   disabled={!variant.availableForSale}
                   className={`px-6 py-3 font-bold border-4 border-black transition-all shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 ${
                     selectedVariant.id === variant.id
-                      ? "bg-yellow-400 text-black"
+                      ? "bg-yellow-400 text-black cursor-pointer"
                       : variant.availableForSale
-                      ? "bg-white text-black hover:bg-gray-200"
+                      ? "bg-white text-black hover:bg-gray-200 cursor-pointer"
                       : "bg-gray-600 text-gray-400 cursor-not-allowed opacity-50"
                   }`}
                 >
@@ -198,7 +198,7 @@ export default function MineLightProductClient({
             <button
               onClick={() => setQuantity(Math.max(1, quantity - 1))}
               disabled={quantity <= 1 || !isAvailable}
-              className="w-12 h-12 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white font-bold text-2xl border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-12 h-12 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white font-bold text-2xl border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
             >
               -
             </button>
@@ -208,7 +208,7 @@ export default function MineLightProductClient({
             <button
               onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
               disabled={quantity >= maxQuantity || !isAvailable}
-              className="w-12 h-12 bg-[#5CB85C] hover:bg-[#4A9B4A] disabled:bg-gray-600 text-white font-bold text-2xl border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-12 h-12 bg-[#5CB85C] hover:bg-[#4A9B4A] disabled:bg-gray-600 text-white font-bold text-2xl border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
             >
               +
             </button>

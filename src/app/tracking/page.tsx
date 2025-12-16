@@ -1,20 +1,56 @@
 "use client";
 
 import { useState } from "react";
-
+import { z } from "zod";
 import type { TrackingLookupResponse } from "@/types/tracking";
+
+const trackingSchema = z.object({
+  orderNumber: z
+    .string()
+    .min(1, "Order number is required")
+    .max(50, "Order number must be less than 50 characters"),
+  email: z.string().email("Please enter a valid email address"),
+});
+
+type FormErrors = {
+  orderNumber?: string;
+  email?: string;
+};
 
 export default function TrackingPage() {
   const [orderNumber, setOrderNumber] = useState("");
   const [email, setEmail] = useState("");
+  const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<TrackingLookupResponse | null>(null);
+
+  const validateForm = (): boolean => {
+    const result = trackingSchema.safeParse({ orderNumber, email });
+    if (!result.success) {
+      const newErrors: FormErrors = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as keyof FormErrors;
+        if (field) {
+          newErrors[field] = issue.message;
+        }
+      });
+      setErrors(newErrors);
+      return false;
+    }
+    setErrors({});
+    return true;
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
     setResult(null);
+
+    if (!validateForm()) {
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -29,15 +65,33 @@ export default function TrackingPage() {
       };
 
       if (!response.ok) {
-        throw new Error(data?.message || "検索に失敗しました。");
+        throw new Error(data?.message || "Search failed.");
       }
 
       setResult(data);
     } catch (err) {
       console.error(err);
-      setError("検索に失敗しました。時間をおいて再試行してください。");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Search failed. Please try again later."
+      );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOrderNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setOrderNumber(e.target.value);
+    if (errors.orderNumber) {
+      setErrors((prev) => ({ ...prev, orderNumber: undefined }));
+    }
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    if (errors.email) {
+      setErrors((prev) => ({ ...prev, email: undefined }));
     }
   };
 
@@ -68,11 +122,24 @@ export default function TrackingPage() {
             <input
               type="text"
               value={orderNumber}
-              onChange={(e) => setOrderNumber(e.target.value)}
+              onChange={handleOrderNumberChange}
               placeholder="#1001 or 1001"
-              className="mt-2 w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm focus:border-black focus:outline-none focus:ring-2 focus:ring-black/10"
-              required
+              className={`mt-2 w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 ${
+                errors.orderNumber
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                  : "border-gray-300 focus:border-black focus:ring-black/10"
+              }`}
+              aria-invalid={!!errors.orderNumber}
+              aria-describedby={errors.orderNumber ? "orderNumber-error" : undefined}
             />
+            {errors.orderNumber && (
+              <p
+                id="orderNumber-error"
+                className="mt-1 text-sm text-red-600"
+              >
+                {errors.orderNumber}
+              </p>
+            )}
           </div>
 
           <div className="mb-6">
@@ -82,17 +149,27 @@ export default function TrackingPage() {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={handleEmailChange}
               placeholder="you@example.com"
-              className="mt-2 w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm focus:border-black focus:outline-none focus:ring-2 focus:ring-black/10"
-              required
+              className={`mt-2 w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 ${
+                errors.email
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                  : "border-gray-300 focus:border-black focus:ring-black/10"
+              }`}
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? "email-error" : undefined}
             />
+            {errors.email && (
+              <p id="email-error" className="mt-1 text-sm text-red-600">
+                {errors.email}
+              </p>
+            )}
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex w-full items-center justify-center rounded-lg bg-black px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
+            className="inline-flex w-full items-center justify-center rounded-lg bg-black px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-800 cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-400"
           >
             {loading ? "Searching..." : "Check tracking"}
           </button>

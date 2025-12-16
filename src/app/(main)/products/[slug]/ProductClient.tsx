@@ -115,14 +115,14 @@ export default function ProductClient({
               <>
                 <button
                   onClick={prevImage}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-50 rounded-full p-2.5 shadow-xl transition-all hover:scale-110 active:scale-95 z-10"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-50 rounded-full p-2.5 shadow-xl transition-all hover:scale-110 active:scale-95 z-10 cursor-pointer"
                   aria-label="Previous image"
                 >
                   <ChevronLeft className="w-5 h-5 text-black" />
                 </button>
                 <button
                   onClick={nextImage}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-50 rounded-full p-2.5 shadow-xl transition-all hover:scale-110 active:scale-95 z-10"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-50 rounded-full p-2.5 shadow-xl transition-all hover:scale-110 active:scale-95 z-10 cursor-pointer"
                   aria-label="Next image"
                 >
                   <ChevronRight className="w-5 h-5 text-black" />
@@ -134,7 +134,7 @@ export default function ProductClient({
                     <button
                       key={index}
                       onClick={() => setSelectedImage(index)}
-                      className={`w-2 h-2 rounded-full transition-all ${
+                      className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
                         selectedImage === index
                           ? "bg-white w-6"
                           : "bg-white/50 hover:bg-white/75"
@@ -154,7 +154,7 @@ export default function ProductClient({
                 <button
                   key={image.id}
                   onClick={() => setSelectedImage(index)}
-                  className={`relative w-20 h-20 md:w-24 md:h-24 shrink-0 overflow-hidden rounded-xl bg-secondary border-2 transition-all ${
+                  className={`relative w-20 h-20 md:w-24 md:h-24 shrink-0 overflow-hidden rounded-xl bg-secondary border-2 transition-all cursor-pointer ${
                     selectedImage === index
                       ? "border-primary ring-2 ring-primary/30 scale-105"
                       : "border-transparent hover:border-primary/50 hover:scale-105"
@@ -267,7 +267,7 @@ export default function ProductClient({
                     } ${
                       !node.availableForSale
                         ? "opacity-50 cursor-not-allowed"
-                        : "hover:scale-105 active:scale-95"
+                        : "hover:scale-105 active:scale-95 cursor-pointer"
                     }`}
                   >
                     <div className="font-semibold">{node.title}</div>
@@ -295,7 +295,7 @@ export default function ProductClient({
                 <div className="flex items-center border-2 rounded-xl overflow-hidden">
                   <button
                     onClick={() => handleQuantityChange(quantity - 1)}
-                    className="px-4 py-3 hover:bg-secondary transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-3 hover:bg-secondary transition-colors font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={quantity <= 1}
                   >
                     −
@@ -312,7 +312,7 @@ export default function ProductClient({
                   />
                   <button
                     onClick={() => handleQuantityChange(quantity + 1)}
-                    className="px-4 py-3 hover:bg-secondary transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-3 hover:bg-secondary transition-colors font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={quantity >= maxQuantity}
                   >
                     +

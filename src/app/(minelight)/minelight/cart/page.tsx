@@ -152,7 +152,7 @@ export default function MineLightCartPage() {
                           }
                         }}
                         disabled={node.quantity <= 1}
-                        className="px-3 py-2 text-white hover:bg-[#2E2E2E] disabled:opacity-50 disabled:cursor-not-allowed border-r-4 border-black transition-colors"
+                        className="px-3 py-2 text-white hover:bg-[#2E2E2E] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed border-r-4 border-black transition-colors"
                         aria-label="Decrease quantity"
                       >
                         <Minus className="h-4 w-4" />
@@ -162,7 +162,7 @@ export default function MineLightCartPage() {
                       </span>
                       <button
                         onClick={() => setQty(node.id, node.quantity + 1)}
-                        className="px-3 py-2 text-white hover:bg-[#2E2E2E] border-l-4 border-black transition-colors"
+                        className="px-3 py-2 text-white hover:bg-[#2E2E2E] border-l-4 border-black transition-colors cursor-pointer"
                         aria-label="Increase quantity"
                       >
                         <Plus className="h-4 w-4" />

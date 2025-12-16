@@ -1,7 +1,5 @@
 import { getProductsByTag } from "@/lib/shopify/queries/products";
 import MineLightProductCard from "@/components/minelight/MineLightProductCard";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { Pickaxe, Flame } from "lucide-react";
 
 export const metadata = {
@@ -110,24 +108,6 @@ export default async function MineLightPage() {
               description="Multiple color modes with remote control"
             />
           </div>
-        </div>
-      </section>
-      {/* CTA Section */}
-      <section className="relative py-16 px-4 text-center">
-        <div className="container mx-auto max-w-2xl">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 drop-shadow-[3px_3px_0px_rgba(0,0,0,0.8)] font-minecraft">
-            READY TO CRAFT YOUR SETUP?
-          </h2>
-          <p className="text-lg text-white mb-8 drop-shadow-[2px_2px_0px_rgba(0,0,0,0.8)]">
-            Free shipping on all orders. 30-day returns.
-          </p>
-          <Button
-            asChild
-            size="lg"
-            className="bg-[#5CB85C] hover:bg-[#4A9B4A] text-white font-bold text-lg px-8 py-6 border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
-          >
-            <Link href="#products">Shop Now</Link>
-          </Button>
         </div>
       </section>
     </div>

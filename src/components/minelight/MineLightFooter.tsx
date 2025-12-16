@@ -40,6 +40,14 @@ export default function MineLightFooter() {
               </li>
               <li>
                 <Link
+                  href="/minelight/contact"
+                  className="text-gray-300 hover:text-yellow-400 transition-colors font-bold"
+                >
+                  → Contact Us
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/minelight/cart"
                   className="text-gray-300 hover:text-yellow-400 transition-colors font-bold"
                 >
