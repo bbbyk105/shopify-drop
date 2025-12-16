@@ -42,7 +42,7 @@ export default function TrackingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white text-gray-900">
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white text-gray-900">
       <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-12">
         <div className="space-y-2">
           <p className="inline-flex items-center gap-2 rounded-full bg-gray-900/80 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white shadow-sm">
@@ -106,7 +106,7 @@ export default function TrackingPage() {
 
         {result && !result.found && (
           <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800">
-            We couldn't find an order matching those details. Please
+            We couldn&apos;t find an order matching those details. Please
             double-check and try again.
           </div>
         )}
