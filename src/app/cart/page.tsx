@@ -104,7 +104,7 @@ export default function CartPage() {
                         }
                       }}
                       disabled={node.quantity <= 1}
-                      className="p-1.5 md:p-2 hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="p-1.5 md:p-2 hover:bg-secondary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       aria-label="Decrease quantity"
                     >
                       <Minus className="w-3 h-3 md:w-4 md:h-4" />
@@ -116,7 +116,7 @@ export default function CartPage() {
 
                     <button
                       onClick={() => setQty(node.id, node.quantity + 1)}
-                      className="p-1.5 md:p-2 hover:bg-secondary transition-colors"
+                      className="p-1.5 md:p-2 hover:bg-secondary transition-colors cursor-pointer"
                       aria-label="Increase quantity"
                     >
                       <Plus className="w-3 h-3 md:w-4 md:h-4" />
@@ -138,7 +138,15 @@ export default function CartPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => remove(node.id)}
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        `Are you sure you want to remove "${node.merchandise.product.title}" from your cart?`
+                      )
+                    ) {
+                      remove(node.id);
+                    }
+                  }}
                   className="text-destructive hover:text-destructive hover:bg-destructive/10 p-2"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -151,13 +159,16 @@ export default function CartPage() {
         {/* 合計・チェックアウト */}
         <div className="border-t pt-6 space-y-4">
           <div className="space-y-2">
-            <div className="flex justify-between text-base md:text-lg">
-              <span className="font-semibold">Subtotal:</span>
-              <span className="font-bold">
-                {cart.cost.subtotalAmount.currencyCode} $
-                {parseFloat(cart.cost.subtotalAmount.amount).toFixed(2)}
-              </span>
-            </div>
+            {/* SubtotalとTotalが異なる場合のみSubtotalを表示 */}
+            {cart.cost.subtotalAmount.amount !== cart.cost.totalAmount.amount && (
+              <div className="flex justify-between text-base md:text-lg">
+                <span className="font-semibold">Subtotal:</span>
+                <span className="font-bold">
+                  {cart.cost.subtotalAmount.currencyCode} $
+                  {parseFloat(cart.cost.subtotalAmount.amount).toFixed(2)}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between text-lg md:text-xl">
               <span className="font-semibold">Total:</span>
               <span className="font-bold">

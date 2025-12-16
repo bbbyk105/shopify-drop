@@ -1,20 +1,56 @@
 "use client";
 
 import { useState } from "react";
-
+import { z } from "zod";
 import type { TrackingLookupResponse } from "@/types/tracking";
+
+const trackingSchema = z.object({
+  orderNumber: z
+    .string()
+    .min(1, "Order number is required")
+    .max(50, "Order number must be less than 50 characters"),
+  email: z.string().email("Please enter a valid email address"),
+});
+
+type FormErrors = {
+  orderNumber?: string;
+  email?: string;
+};
 
 export default function MineLightTrackingPage() {
   const [orderNumber, setOrderNumber] = useState("");
   const [email, setEmail] = useState("");
+  const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<TrackingLookupResponse | null>(null);
+
+  const validateForm = (): boolean => {
+    const result = trackingSchema.safeParse({ orderNumber, email });
+    if (!result.success) {
+      const newErrors: FormErrors = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as keyof FormErrors;
+        if (field) {
+          newErrors[field] = issue.message;
+        }
+      });
+      setErrors(newErrors);
+      return false;
+    }
+    setErrors({});
+    return true;
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
     setResult(null);
+
+    if (!validateForm()) {
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -29,15 +65,33 @@ export default function MineLightTrackingPage() {
       };
 
       if (!response.ok) {
-        throw new Error(data?.message || "検索に失敗しました。");
+        throw new Error(data?.message || "Search failed.");
       }
 
       setResult(data);
     } catch (err) {
       console.error(err);
-      setError("検索に失敗しました。時間をおいて再試行してください。");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Search failed. Please try again later."
+      );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOrderNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setOrderNumber(e.target.value);
+    if (errors.orderNumber) {
+      setErrors((prev) => ({ ...prev, orderNumber: undefined }));
+    }
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    if (errors.email) {
+      setErrors((prev) => ({ ...prev, email: undefined }));
     }
   };
 
@@ -71,11 +125,26 @@ export default function MineLightTrackingPage() {
               <input
                 type="text"
                 value={orderNumber}
-                onChange={(e) => setOrderNumber(e.target.value)}
+                onChange={handleOrderNumberChange}
                 placeholder="#1001 or 1001"
-                className="rounded-md border-4 border-black bg-white px-3 py-2 text-sm text-black shadow-[3px_3px_0px_rgba(0,0,0,1)] focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                required
+                className={`rounded-md border-4 border-black bg-white px-3 py-2 text-sm text-black shadow-[3px_3px_0px_rgba(0,0,0,1)] focus:outline-none focus:ring-2 ${
+                  errors.orderNumber
+                    ? "border-red-500 focus:ring-red-500"
+                    : "focus:ring-yellow-400"
+                }`}
+                aria-invalid={!!errors.orderNumber}
+                aria-describedby={
+                  errors.orderNumber ? "orderNumber-error" : undefined
+                }
               />
+              {errors.orderNumber && (
+                <p
+                  id="orderNumber-error"
+                  className="text-sm text-red-400 font-bold"
+                >
+                  {errors.orderNumber}
+                </p>
+              )}
             </div>
 
             <div className="flex flex-col gap-2">
@@ -83,18 +152,28 @@ export default function MineLightTrackingPage() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={handleEmailChange}
                 placeholder="you@example.com"
-                className="rounded-md border-4 border-black bg-white px-3 py-2 text-sm text-black shadow-[3px_3px_0px_rgba(0,0,0,1)] focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                required
+                className={`rounded-md border-4 border-black bg-white px-3 py-2 text-sm text-black shadow-[3px_3px_0px_rgba(0,0,0,1)] focus:outline-none focus:ring-2 ${
+                  errors.email
+                    ? "border-red-500 focus:ring-red-500"
+                    : "focus:ring-yellow-400"
+                }`}
+                aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? "email-error" : undefined}
               />
+              {errors.email && (
+                <p id="email-error" className="text-sm text-red-400 font-bold">
+                  {errors.email}
+                </p>
+              )}
             </div>
 
             <div className="flex items-end">
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-md bg-[#5CB85C] px-4 py-3 text-sm font-bold text-white border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:bg-[#4A9B4A] hover:translate-x-0.5 hover:translate-y-0.5 transition disabled:cursor-not-allowed disabled:bg-gray-400"
+                className="w-full rounded-md bg-[#5CB85C] px-4 py-3 text-sm font-bold text-white border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:bg-[#4A9B4A] hover:translate-x-0.5 hover:translate-y-0.5 transition cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-400"
               >
                 {loading ? "Searching..." : "Check tracking"}
               </button>

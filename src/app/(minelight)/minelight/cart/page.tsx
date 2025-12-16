@@ -134,7 +134,15 @@ export default function MineLightCartPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => remove(node.id)}
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            `Are you sure you want to remove "${node.merchandise.product.title}" from your cart?`
+                          )
+                        ) {
+                          remove(node.id);
+                        }
+                      }}
                       className="text-red-200 hover:text-white hover:bg-red-600/30 border-2 border-transparent hover:border-black rounded-none p-2"
                       aria-label="Remove item"
                     >
@@ -152,7 +160,7 @@ export default function MineLightCartPage() {
                           }
                         }}
                         disabled={node.quantity <= 1}
-                        className="px-3 py-2 text-white hover:bg-[#2E2E2E] disabled:opacity-50 disabled:cursor-not-allowed border-r-4 border-black transition-colors"
+                        className="px-3 py-2 text-white hover:bg-[#2E2E2E] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed border-r-4 border-black transition-colors"
                         aria-label="Decrease quantity"
                       >
                         <Minus className="h-4 w-4" />
@@ -162,7 +170,7 @@ export default function MineLightCartPage() {
                       </span>
                       <button
                         onClick={() => setQty(node.id, node.quantity + 1)}
-                        className="px-3 py-2 text-white hover:bg-[#2E2E2E] border-l-4 border-black transition-colors"
+                        className="px-3 py-2 text-white hover:bg-[#2E2E2E] border-l-4 border-black transition-colors cursor-pointer"
                         aria-label="Increase quantity"
                       >
                         <Plus className="h-4 w-4" />
@@ -185,8 +193,11 @@ export default function MineLightCartPage() {
 
         {/* 合計 */}
         <div className="mt-10 bg-[#4A4A4A] border-8 border-black shadow-[12px_12px_0px_rgba(0,0,0,1)] p-6 md:p-8 text-white space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Stat label="Subtotal" value={`${cart.cost.subtotalAmount.currencyCode} $${parseFloat(cart.cost.subtotalAmount.amount).toFixed(2)}`} />
+          <div className={`grid gap-6 ${cart.cost.subtotalAmount.amount !== cart.cost.totalAmount.amount ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
+            {/* SubtotalとTotalが異なる場合のみSubtotalを表示 */}
+            {cart.cost.subtotalAmount.amount !== cart.cost.totalAmount.amount && (
+              <Stat label="Subtotal" value={`${cart.cost.subtotalAmount.currencyCode} $${parseFloat(cart.cost.subtotalAmount.amount).toFixed(2)}`} />
+            )}
             <Stat label="Total" value={`${cart.cost.totalAmount.currencyCode} $${parseFloat(cart.cost.totalAmount.amount).toFixed(2)}`} accent />
           </div>
 

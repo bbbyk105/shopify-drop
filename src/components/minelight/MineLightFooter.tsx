@@ -40,6 +40,14 @@ export default function MineLightFooter() {
               </li>
               <li>
                 <Link
+                  href="/minelight/contact"
+                  className="text-gray-300 hover:text-yellow-400 transition-colors font-bold"
+                >
+                  → Contact Us
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/minelight/cart"
                   className="text-gray-300 hover:text-yellow-400 transition-colors font-bold"
                 >
@@ -68,7 +76,7 @@ export default function MineLightFooter() {
             © {new Date().getFullYear()} Mine Light Shop. All rights reserved.
           </p>
           <p className="text-gray-500 text-xs mt-2">
-            Not affiliated with Mojang or Microsoft.
+            © {new Date().getFullYear()} evimeria home. All rights reserved.
           </p>
         </div>
       </div>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { ShoppingCart, Home, LocateFixed, Menu, X } from "lucide-react";
+import { ShoppingCart, Home, LocateFixed, Menu, X, Mail } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 
 type MineLightMenuProduct = {
@@ -81,28 +81,42 @@ export default function MineLightHeader() {
             <nav className="hidden sm:flex items-center gap-4">
               <Link
                 href="/minelight"
-                className="flex items-center gap-2 bg-[#5CB85C] hover:bg-[#4A9B4A] text-white px-4 py-2 font-bold border-4 border-black shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+                className="flex items-center justify-center gap-2 bg-[#5CB85C] hover:bg-[#4A9B4A] text-white px-4 py-2 h-10 font-bold border-4 border-black shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all min-w-[100px]"
               >
                 <Home className="h-5 w-5" />
-                <span className="hidden sm:inline">HOME</span>
+                <span className="hidden sm:inline text-sm font-minecraft">
+                  HOME
+                </span>
               </Link>
 
               <Link
                 href="/minelight/tracking"
-                className="flex items-center gap-2 bg-white text-black px-4 py-2 font-bold border-4 border-black shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+                className="flex items-center justify-center gap-2 bg-white text-black px-4 py-2 h-10 font-bold border-4 border-black shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all min-w-[100px]"
               >
                 <LocateFixed className="h-5 w-5" />
-                <span className="hidden sm:inline text-xs font-minecraft">
+                <span className="hidden sm:inline text-sm font-minecraft">
                   TRACKING
                 </span>
               </Link>
 
               <Link
+                href="/minelight/contact"
+                className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 h-10 font-bold border-4 border-black shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all min-w-[100px]"
+              >
+                <Mail className="h-5 w-5" />
+                <span className="hidden sm:inline text-sm font-minecraft">
+                  CONTACT
+                </span>
+              </Link>
+
+              <Link
                 href="/minelight/cart"
-                className="relative flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 font-bold border-4 border-black shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+                className="relative flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 h-10 font-bold border-4 border-black shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all min-w-[100px]"
               >
                 <ShoppingCart className="h-5 w-5" />
-                <span className="hidden sm:inline">CART</span>
+                <span className="hidden sm:inline text-sm font-minecraft">
+                  CART
+                </span>
                 {itemCount > 0 && (
                   <span className="absolute -top-3 -right-3 bg-red-600 text-white text-xs font-bold w-6 h-6 flex items-center justify-center border-2 border-black">
                     {itemCount}
@@ -116,7 +130,7 @@ export default function MineLightHeader() {
               type="button"
               aria-label="Toggle menu"
               onClick={() => setOpen((v) => !v)}
-              className="sm:hidden inline-flex items-center justify-center rounded-md border-4 border-black bg-white p-2 text-black shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_rgba(0,0,0,1)] transition"
+              className="sm:hidden inline-flex items-center justify-center rounded-md border-4 border-black bg-white p-2 text-black shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_rgba(0,0,0,1)] transition cursor-pointer"
             >
               {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -142,7 +156,7 @@ export default function MineLightHeader() {
                   type="button"
                   aria-label="Close menu"
                   onClick={() => setOpen(false)}
-                  className="inline-flex items-center justify-center rounded-md border-4 border-black bg-white p-2 text-black shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_rgba(0,0,0,1)] transition"
+                  className="inline-flex items-center justify-center rounded-md border-4 border-black bg-white p-2 text-black shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_rgba(0,0,0,1)] transition cursor-pointer"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -155,7 +169,7 @@ export default function MineLightHeader() {
                   className="flex items-center gap-2 bg-[#5CB85C] hover:bg-[#4A9B4A] text-white px-4 py-3 font-bold border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all"
                 >
                   <Home className="h-5 w-5" />
-                  <span>HOME</span>
+                  <span className="text-sm font-minecraft">HOME</span>
                 </Link>
 
                 <Link
@@ -164,7 +178,16 @@ export default function MineLightHeader() {
                   className="flex items-center gap-2 bg-white text-black px-4 py-3 font-bold border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all"
                 >
                   <LocateFixed className="h-5 w-5" />
-                  <span className="text-xs font-minecraft">TRACKING</span>
+                  <span className="text-sm font-minecraft">TRACKING</span>
+                </Link>
+
+                <Link
+                  href="/minelight/contact"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 font-bold border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all"
+                >
+                  <Mail className="h-5 w-5" />
+                  <span className="text-sm font-minecraft">CONTACT</span>
                 </Link>
 
                 <Link
@@ -173,7 +196,7 @@ export default function MineLightHeader() {
                   className="relative flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-3 font-bold border-4 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] transition-all"
                 >
                   <ShoppingCart className="h-5 w-5" />
-                  <span>CART</span>
+                  <span className="text-sm font-minecraft">CART</span>
                   {itemCount > 0 && (
                     <span className="absolute -top-3 -right-3 bg-red-600 text-white text-xs font-bold w-6 h-6 flex items-center justify-center border-2 border-black">
                       {itemCount}

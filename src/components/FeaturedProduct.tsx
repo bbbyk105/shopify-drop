@@ -74,7 +74,7 @@ export default function FeaturedProduct() {
               {/* Navigation Arrows */}
               <button
                 onClick={prevImage}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm hover:bg-background transition-colors rounded-full p-2"
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm hover:bg-background transition-colors rounded-full p-2 cursor-pointer"
                 aria-label="Previous image"
               >
                 <ChevronLeft className="h-6 w-6" />
@@ -82,7 +82,7 @@ export default function FeaturedProduct() {
 
               <button
                 onClick={nextImage}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm hover:bg-background transition-colors rounded-full p-2"
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm hover:bg-background transition-colors rounded-full p-2 cursor-pointer"
                 aria-label="Next image"
               >
                 <ChevronRight className="h-6 w-6" />
@@ -100,7 +100,7 @@ export default function FeaturedProduct() {
                 <button
                   key={index}
                   onClick={() => setCurrentImage(index)}
-                  className={`relative aspect-square overflow-hidden rounded-lg bg-muted border-2 transition-all ${
+                  className={`relative aspect-square overflow-hidden rounded-lg bg-muted border-2 transition-all cursor-pointer ${
                     currentImage === index
                       ? "border-primary ring-2 ring-primary/20"
                       : "border-transparent hover:border-muted-foreground/30"
@@ -172,7 +172,7 @@ export default function FeaturedProduct() {
                 {product.colors.map((color, index) => (
                   <button
                     key={index}
-                    className="relative h-16 w-16 rounded-full overflow-hidden border-2 border-foreground ring-2 ring-offset-2 ring-foreground"
+                    className="relative h-16 w-16 rounded-full overflow-hidden border-2 border-foreground ring-2 ring-offset-2 ring-foreground cursor-pointer"
                   >
                     <Image
                       src={color.image}
@@ -192,7 +192,7 @@ export default function FeaturedProduct() {
                 <div className="flex items-center border border-border rounded-md">
                   <button
                     onClick={decrementQuantity}
-                    className="px-4 py-3 hover:bg-muted transition-colors"
+                    className="px-4 py-3 hover:bg-muted transition-colors cursor-pointer"
                     aria-label="Decrease quantity"
                   >
                     <Minus className="h-4 w-4" />
@@ -202,7 +202,7 @@ export default function FeaturedProduct() {
                   </div>
                   <button
                     onClick={incrementQuantity}
-                    className="px-4 py-3 hover:bg-muted transition-colors"
+                    className="px-4 py-3 hover:bg-muted transition-colors cursor-pointer"
                     aria-label="Increase quantity"
                   >
                     <Plus className="h-4 w-4" />
@@ -229,7 +229,7 @@ export default function FeaturedProduct() {
 
               {/* More Payment Options */}
               <div className="text-center">
-                <button className="text-sm text-muted-foreground hover:text-foreground underline transition-colors">
+                <button className="text-sm text-muted-foreground hover:text-foreground underline transition-colors cursor-pointer">
                   More payment options
                 </button>
               </div>

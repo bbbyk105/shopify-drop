@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 import { checkRateLimit } from "@/lib/rateLimit";
 import { shopifyAdminFetch } from "@/lib/shopifyAdmin";
@@ -6,6 +7,20 @@ import type {
   TrackingLookupRequest,
   TrackingLookupResponse,
 } from "@/types/tracking";
+
+const trackingSchema = z.object({
+  orderNumber: z
+    .string()
+    .min(1, "Order number is required")
+    .max(50, "Order number must be less than 50 characters")
+    .trim(),
+  email: z
+    .string()
+    .email("Please enter a valid email address")
+    .max(255, "Email must be less than 255 characters")
+    .trim()
+    .toLowerCase(),
+});
 
 const TRACKING_QUERY = `
   query OrderLookup($query: String!) {
@@ -50,21 +65,26 @@ export async function POST(
 ): Promise<NextResponse<TrackingLookupResponse | { message: string }>> {
   try {
     const body = (await request.json()) as TrackingLookupRequest;
-    const orderNumber = normalizeOrderNumber(body.orderNumber || "");
-    const email = (body.email || "").trim().toLowerCase();
 
-    if (!orderNumber || !email) {
+    // Zodバリデーション
+    const validationResult = trackingSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      const errors = validationResult.error.issues.map((issue) => issue.message);
       return NextResponse.json(
-        { message: "注文番号とメールアドレスを入力してください。" },
+        { message: errors[0] || "Validation failed" },
         { status: 400 }
       );
     }
+
+    const orderNumber = normalizeOrderNumber(validationResult.data.orderNumber);
+    const email = validationResult.data.email;
 
     const ip = getClientIp(request);
     const rate = checkRateLimit(`tracking:${ip}`);
     if (!rate.allowed) {
       return NextResponse.json(
-        { message: "しばらくしてから再度お試しください。" },
+        { message: "Too many requests. Please try again later." },
         {
           status: 429,
           headers: rate.retryAfter
@@ -123,7 +143,7 @@ export async function POST(
   } catch (error) {
     console.error("Tracking lookup error", error);
     return NextResponse.json(
-      { message: "検索に失敗しました。時間をおいて再試行してください。" },
+      { message: "Failed to search. Please try again later." },
       { status: 500 }
     );
   }
