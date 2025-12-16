@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=VT323&display=swap");
 @import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
@@ -95,4 +96,31 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.font-minecraft {
+  font-family: "VT323", monospace;
+  letter-spacing: 0.05em;
+}
+
+/* Minecraft テーマ用のユーティリティ */
+.minecraft-theme {
+  image-rendering: pixelated;
+  -webkit-font-smoothing: none;
+}
+
+/* ピクセルボーダーアニメーション */
+@keyframes pixel-glow {
+  0%,
+  100% {
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 1);
+  }
+  50% {
+    box-shadow: 4px 4px 0px rgba(92, 184, 92, 0.8),
+      0 0 10px rgba(92, 184, 92, 0.3);
+  }
+}
+
+.animate-pixel-glow {
+  animation: pixel-glow 2s ease-in-out infinite;
 }

@@ -88,16 +88,52 @@ export const useCart = create<CartState>()(
 
       // 数量変更
       setQty: async (lineId: string, qty: number) => {
-        const { cartId } = get();
-        if (!cartId) return;
+        const { cartId, cart } = get();
+        if (!cartId || !cart) return;
 
-        set({ loading: true });
+        // 楽観的更新: 先にローカル反映し体感速度を上げる
+        const previousCart = cart;
+        const optimisticCart: Cart = {
+          ...cart,
+          lines: {
+            ...cart.lines,
+            edges: cart.lines.edges.map((edge) =>
+              edge.node.id === lineId
+                ? {
+                    ...edge,
+                    node: {
+                      ...edge.node,
+                      quantity: qty,
+                      cost: {
+                        ...edge.node.cost,
+                        totalAmount: {
+                          ...edge.node.cost.totalAmount,
+                          amount: (
+                            qty * parseFloat(edge.node.merchandise.price.amount)
+                          ).toString(),
+                        },
+                      },
+                    },
+                  }
+                : edge
+            ),
+          },
+          totalQuantity:
+            cart.totalQuantity -
+            (cart.lines.edges.find((e) => e.node.id === lineId)?.node.quantity ||
+              0) +
+            qty,
+        };
+
+        set({ cart: optimisticCart });
+
         try {
           const data = await updateLineQty(cartId, lineId, qty);
-          set({ cart: data.cartLinesUpdate.cart, loading: false });
+          set({ cart: data.cartLinesUpdate.cart });
         } catch (error) {
           console.error("Error updating quantity:", error);
-          set({ loading: false });
+          // 失敗時は元に戻す
+          set({ cart: previousCart });
           throw error;
         }
       },
