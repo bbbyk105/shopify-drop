@@ -3,6 +3,7 @@ import ProductCard from "@/components/ProductCard";
 import CollectionCard from "@/components/CollectionCard";
 import ImageGrid from "@/components/ImageGrid";
 import FeaturedProduct from "@/components/FeaturedProduct";
+import FeaturedCollections from "@/components/home/FeaturedCollections";
 import { products, collections } from "@/lib/products";
 import BrandStory from "@/components/BrandStory";
 
@@ -13,6 +14,9 @@ export default function HomePage() {
   return (
     <div>
       <Hero />
+
+      {/* Featured Collections */}
+      <FeaturedCollections />
 
       {/* New Arrivals */}
       <section className="container mx-auto px-4 py-16">

@@ -46,6 +46,7 @@ export default function Header() {
     { href: "/furniture", label: "Furniture" },
     { href: "/decor", label: "Decor" },
     { href: "/sale", label: "Sale" },
+    { href: "/minelight", label: "Featured" },
     { href: "/tracking", label: "Tracking" },
     { href: "/contact", label: "Contact" },
   ];
@@ -131,7 +132,7 @@ export default function Header() {
             className="fixed inset-0 bg-background/80 backdrop-blur-sm"
             onClick={closeMobileMenu}
           />
-          
+
           {/* Menu Panel */}
           <div className="fixed inset-0 h-screen w-full bg-background overflow-y-auto">
             <div className="container mx-auto px-4 py-6">
