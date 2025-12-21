@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { z } from "zod";
 import type { TrackingLookupResponse } from "@/types/tracking";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const trackingSchema = z.object({
   orderNumber: z
@@ -96,46 +98,37 @@ export default function TrackingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white text-gray-900">
-      <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-12">
-        <div className="space-y-2">
-          <p className="inline-flex items-center gap-2 rounded-full bg-gray-900/80 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white shadow-sm">
-            Order Tracking
-          </p>
-          <h1 className="text-3xl font-semibold tracking-tight">
-            Track your order
-          </h1>
-          <p className="text-sm text-gray-600">
-            Enter your order number (e.g. #1001 or 1001) and the email used at
-            checkout.
-          </p>
-        </div>
+    <div className="container mx-auto px-4 py-16">
+      <div className="max-w-3xl mx-auto">
+        <h1 className="text-3xl font-bold mb-4">Order Tracking</h1>
+        <p className="text-muted-foreground mb-8">
+          Enter your order number (e.g. #1001 or 1001) and the email used at
+          checkout.
+        </p>
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-gray-200 bg-white p-6 shadow-lg shadow-gray-200/50"
+          className="rounded-lg border border-border bg-card p-6 shadow-sm mb-6"
         >
           <div className="mb-5">
-            <label className="block text-sm font-medium text-gray-800">
+            <label className="block text-sm font-medium mb-2">
               Order number
             </label>
-            <input
+            <Input
               type="text"
               value={orderNumber}
               onChange={handleOrderNumberChange}
               placeholder="#1001 or 1001"
-              className={`mt-2 w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 ${
-                errors.orderNumber
-                  ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
-                  : "border-gray-300 focus:border-black focus:ring-black/10"
-              }`}
+              className={errors.orderNumber ? "border-destructive" : ""}
               aria-invalid={!!errors.orderNumber}
-              aria-describedby={errors.orderNumber ? "orderNumber-error" : undefined}
+              aria-describedby={
+                errors.orderNumber ? "orderNumber-error" : undefined
+              }
             />
             {errors.orderNumber && (
               <p
                 id="orderNumber-error"
-                className="mt-1 text-sm text-red-600"
+                className="mt-1 text-sm text-destructive"
               >
                 {errors.orderNumber}
               </p>
@@ -143,64 +136,52 @@ export default function TrackingPage() {
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-800">
-              Email
-            </label>
-            <input
+            <label className="block text-sm font-medium mb-2">Email</label>
+            <Input
               type="email"
               value={email}
               onChange={handleEmailChange}
               placeholder="you@example.com"
-              className={`mt-2 w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 ${
-                errors.email
-                  ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
-                  : "border-gray-300 focus:border-black focus:ring-black/10"
-              }`}
+              className={errors.email ? "border-destructive" : ""}
               aria-invalid={!!errors.email}
               aria-describedby={errors.email ? "email-error" : undefined}
             />
             {errors.email && (
-              <p id="email-error" className="mt-1 text-sm text-red-600">
+              <p id="email-error" className="mt-1 text-sm text-destructive">
                 {errors.email}
               </p>
             )}
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="inline-flex w-full items-center justify-center rounded-lg bg-black px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-800 cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-400"
-          >
+          <Button type="submit" disabled={loading} className="w-full">
             {loading ? "Searching..." : "Check tracking"}
-          </button>
+          </Button>
         </form>
 
         {error && (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive mb-6">
             {error}
           </div>
         )}
 
         {result && !result.found && (
-          <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800">
+          <div className="rounded-lg border border-border bg-card px-4 py-3 text-sm text-muted-foreground mb-6">
             We couldn&apos;t find an order matching those details. Please
             double-check and try again.
           </div>
         )}
 
         {result && result.found && (
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-lg shadow-gray-200/50">
+          <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
             <div className="mb-4 space-y-1">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Order details
-              </h2>
-              <p className="text-sm text-gray-700">
+              <h2 className="text-lg font-semibold">Order details</h2>
+              <p className="text-sm text-muted-foreground">
                 Order: {result.order.name}
               </p>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-muted-foreground">
                 Status: {result.order.fulfillmentStatus}
               </p>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-muted-foreground">
                 Placed at:{" "}
                 {new Date(result.order.processedAt).toLocaleString("en-US")}
               </p>
@@ -208,7 +189,7 @@ export default function TrackingPage() {
 
             <div className="space-y-4">
               {result.fulfillments.length === 0 && (
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-muted-foreground">
                   Tracking info is not yet available.
                 </p>
               )}
@@ -216,28 +197,28 @@ export default function TrackingPage() {
               {result.fulfillments.map((fulfillment, index) => (
                 <div
                   key={`${fulfillment.status}-${index}`}
-                  className="rounded-lg border border-gray-100 bg-gray-50 p-4"
+                  className="rounded-lg border border-border bg-secondary/50 p-4"
                 >
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-medium mb-2">
                     Fulfillment: {fulfillment.status}
                   </p>
 
                   {fulfillment.tracking.length === 0 ? (
-                    <p className="mt-2 text-sm text-gray-700">
+                    <p className="text-sm text-muted-foreground">
                       Tracking number is not yet available.
                     </p>
                   ) : (
-                    <ul className="mt-3 space-y-2">
+                    <ul className="space-y-2">
                       {fulfillment.tracking.map((tracking) => (
                         <li
                           key={tracking.number}
-                          className="flex flex-col gap-1 rounded border border-gray-200 bg-white p-3 text-sm text-gray-900"
+                          className="flex flex-col gap-1 rounded border border-border bg-background p-3 text-sm"
                         >
                           <span className="font-medium">
                             Number: {tracking.number}
                           </span>
                           {tracking.company && (
-                            <span className="text-gray-700">
+                            <span className="text-muted-foreground">
                               Carrier: {tracking.company}
                             </span>
                           )}
@@ -246,7 +227,7 @@ export default function TrackingPage() {
                               href={tracking.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-blue-600 underline hover:text-blue-800"
+                              className="text-primary underline hover:text-primary/80"
                             >
                               Track Package
                             </a>
