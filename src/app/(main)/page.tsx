@@ -19,8 +19,25 @@ export default async function HomePage() {
 
   // Shopify商品があればそれを使用、なければローカル商品を使用
   const allProducts = shopifyProducts.length > 0 ? shopifyProducts : products;
-  const newArrivals = allProducts.slice(0, 3);
-  const bestSellers = allProducts.slice(3, 6);
+  // New Arrivals: 最新商品として最大8件まで表示（取得順を新しい順とみなす）
+  const newArrivals = allProducts.slice(0, 8);
+
+  // Best Sellers: 「bestseller」系タグが付いている商品を最大8件
+  const bestSellers = allProducts
+    .filter((product: any) => {
+      const tags: string[] = Array.isArray(product.tags) ? product.tags : [];
+      return tags.some((tag) => {
+        const lower = tag.toLowerCase();
+        return [
+          "bestseller",
+          "best-seller",
+          "best seller",
+          "top-seller",
+          "top seller",
+        ].includes(lower);
+      });
+    })
+    .slice(0, 8);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -30,17 +47,19 @@ export default async function HomePage() {
       <FeaturedCollections />
 
       {/* New Arrivals */}
-      <section className="py-12 lg:py-16 mb-12 lg:mb-16">
-        <div className="mb-8 lg:mb-12">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 leading-tight">
-            New Arrivals
-          </h2>
-          <p className="text-sm md:text-base text-muted-foreground">
-            Discover our latest collection of premium home essentials
-          </p>
-        </div>
-        <ProductSlider products={newArrivals} />
-      </section>
+      {newArrivals.length > 0 && (
+        <section className="py-12 lg:py-16 mb-12 lg:mb-16">
+          <div className="mb-8 lg:mb-12">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 leading-tight">
+              New Arrivals
+            </h2>
+            <p className="text-sm md:text-base text-muted-foreground">
+              Discover our latest collection of premium home essentials
+            </p>
+          </div>
+          <ProductSlider products={newArrivals} />
+        </section>
+      )}
 
       <div className="mb-12 lg:mb-16">
         <ImageGrid />
@@ -73,17 +92,19 @@ export default async function HomePage() {
       </div>
 
       {/* Best Sellers */}
-      <section className="py-12 lg:py-16 border-t">
-        <div className="mb-8 lg:mb-12">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 leading-tight">
-            Best Sellers
-          </h2>
-          <p className="text-sm md:text-base text-muted-foreground">
-            Our most loved products, handpicked for you
-          </p>
-        </div>
-        <ProductSlider products={bestSellers} />
-      </section>
+      {bestSellers.length > 0 && (
+        <section className="py-12 lg:py-16 border-t">
+          <div className="mb-8 lg:mb-12">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 leading-tight">
+              Best Sellers
+            </h2>
+            <p className="text-sm md:text-base text-muted-foreground">
+              Our most loved products, handpicked for you
+            </p>
+          </div>
+          <ProductSlider products={bestSellers} />
+        </section>
+      )}
     </div>
   );
 }

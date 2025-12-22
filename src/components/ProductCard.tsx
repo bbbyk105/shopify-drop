@@ -16,24 +16,25 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   // ローカル商品とShopify商品の両方に対応
   const isShopifyProduct = "handle" in product;
-  
+
   const slug = isShopifyProduct ? product.handle : product.slug;
   const title = isShopifyProduct ? product.title : product.name;
-  const description = isShopifyProduct ? product.description : product.description;
-  const image = isShopifyProduct 
-    ? (product.featuredImage?.url || product.images.edges[0]?.node.url || "/placeholder.png")
+  const description = isShopifyProduct
+    ? product.description
+    : product.description;
+  const image = isShopifyProduct
+    ? product.featuredImage?.url ||
+      product.images.edges[0]?.node.url ||
+      "/placeholder.png"
     : product.image;
   const price = isShopifyProduct
     ? parseFloat(product.priceRange.minVariantPrice.amount)
     : product.price;
 
   return (
-    <Link 
-      href={`/products/${slug}`}
-      className="block group"
-    >
+    <Link href={`/products/${slug}`} className="block group">
       <div
-        className="cursor-pointer space-y-4 transition-all hover:scale-[1.02]"
+        className="cursor-pointer space-y-4 transition-all"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -42,9 +43,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             src={image}
             alt={title}
             fill
-            className={`object-cover transition-transform duration-500 ${
-              isHovered ? "scale-110" : "scale-100"
-            }`}
+            className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
           <div
