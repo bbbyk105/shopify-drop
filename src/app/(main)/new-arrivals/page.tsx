@@ -1,6 +1,8 @@
 import { Metadata } from "next";
-import ProductCard from "@/components/ProductCard";
 import { products } from "@/lib/products";
+import { getAllProducts } from "@/lib/shopify/queries/products";
+import type { Product as ShopifyProduct } from "@/lib/shopify/types";
+import NewArrivalsClient from "./NewArrivalsClient";
 
 export const metadata: Metadata = {
   title: "New Arrivals - Lumina Luxe",
@@ -8,9 +10,21 @@ export const metadata: Metadata = {
     "Discover our latest collection of elegant lighting solutions and home decor.",
 };
 
-export default function NewArrivalsPage() {
-  // 最新の商品を表示（実際にはデータベースから取得）
-  const newProducts = products;
+export default async function NewArrivalsPage() {
+  // Shopifyから商品を取得（フォールバックとしてローカル商品も使用）
+  let shopifyProducts: ShopifyProduct[] = [];
+  try {
+    shopifyProducts = await getAllProducts(50);
+  } catch (error) {
+    console.error("Failed to fetch Shopify products:", error);
+  }
+
+  // Shopify商品があればそれを使用、なければローカル商品を使用
+  const allProducts: ShopifyProduct[] | typeof products =
+    shopifyProducts.length > 0 ? shopifyProducts : products;
+  
+  // New Arrivals: 最新商品として表示（取得順を新しい順とみなす）
+  const newProducts = allProducts;
 
   return (
     <div className="min-h-screen">
@@ -31,25 +45,7 @@ export default function NewArrivalsPage() {
       </section>
 
       {/* Products Grid */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="flex justify-between items-center mb-8">
-          <p className="text-muted-foreground">
-            Showing {newProducts.length} products
-          </p>
-          <select className="bg-secondary border border-border rounded-md px-4 py-2">
-            <option>Sort by: Latest</option>
-            <option>Price: Low to High</option>
-            <option>Price: High to Low</option>
-            <option>Name: A to Z</option>
-          </select>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {newProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </section>
+      <NewArrivalsClient products={newProducts} />
     </div>
   );
 }
