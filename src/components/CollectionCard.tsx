@@ -15,11 +15,11 @@ export default function CollectionCard({ collection }: CollectionCardProps) {
   return (
     <Link href={`/collections/${collection.id}`}>
       <div
-        className="group cursor-pointer"
+        className="group cursor-pointer space-y-4"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div className="relative aspect-4/3 overflow-hidden rounded-lg bg-secondary mb-4">
+        <div className="relative aspect-4/3 overflow-hidden rounded-2xl bg-secondary/30 mb-4 shadow-lg group-hover:shadow-xl transition-all">
           <Image
             src={collection.image}
             alt={collection.name}
@@ -34,12 +34,14 @@ export default function CollectionCard({ collection }: CollectionCardProps) {
             }`}
           />
         </div>
-        <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">
-          {collection.name}
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          {collection.description}
-        </p>
+        <div className="space-y-2">
+          <h3 className="text-xl md:text-2xl font-bold mb-2 group-hover:text-primary transition-colors leading-tight">
+            {collection.name}
+          </h3>
+          <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
+            {collection.description}
+          </p>
+        </div>
       </div>
     </Link>
   );
