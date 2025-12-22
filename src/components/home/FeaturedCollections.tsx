@@ -2,10 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { featuredCollections } from "@/config/featuredCollections";
-import { useState } from "react";
 
 export default function FeaturedCollections() {
   const minelight = featuredCollections.find((c) => c.id === "minelight");
@@ -32,41 +30,22 @@ interface FeaturedCollectionCardProps {
 }
 
 function FeaturedCollectionCard({ collection }: FeaturedCollectionCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
-  const router = useRouter();
-
-  const handleCardClick = (e: React.MouseEvent) => {
-    // ボタンがクリックされた場合は親のクリックイベントを無視
-    if ((e.target as HTMLElement).closest("a, button")) {
-      return;
-    }
-    router.push(collection.href);
-  };
-
   return (
-    <div
-      className="group cursor-pointer"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onClick={handleCardClick}
+    <Link
+      href={collection.href}
+      target="_blank"
+      rel="noreferrer"
+      className="group cursor-pointer block"
     >
-      <div className="flex flex-col md:flex-row gap-6 border border-border rounded-lg bg-card shadow-sm transition-all hover:shadow-md overflow-hidden">
+      <div className="flex flex-col md:flex-row gap-6 border border-border rounded-lg bg-card shadow-sm overflow-hidden">
         {/* Left: Image - 小さめで横長 */}
         <div className="relative w-full md:w-64 lg:w-80 h-48 md:h-auto md:min-h-[200px] shrink-0 overflow-hidden bg-secondary rounded-l-lg">
           <Image
             src={collection.image}
             alt={collection.title}
             fill
-            className={`object-cover transition-transform duration-500 ease-in-out ${
-              isHovered ? "scale-110" : "scale-100"
-            }`}
-            style={{ willChange: "transform" }}
+            className="object-cover"
             priority={false}
-          />
-          <div
-            className={`absolute inset-0 bg-black/20 transition-opacity duration-300 ease-in-out pointer-events-none ${
-              isHovered ? "opacity-100" : "opacity-0"
-            }`}
           />
           {/* Badge */}
           {collection.badge && (
@@ -84,7 +63,7 @@ function FeaturedCollectionCard({ collection }: FeaturedCollectionCardProps) {
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
               {collection.subtitle}
             </p>
-            <h3 className="text-2xl md:text-3xl font-bold mb-3 group-hover:text-primary transition-colors">
+            <h3 className="text-2xl md:text-3xl font-bold mb-3">
               {collection.title}
             </h3>
             <p className="text-sm md:text-base text-muted-foreground mb-6">
@@ -94,14 +73,12 @@ function FeaturedCollectionCard({ collection }: FeaturedCollectionCardProps) {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-3">
-            <Link href={collection.href} onClick={(e) => e.stopPropagation()}>
-              <Button className="w-full sm:w-auto" size="default">
-                Explore MineLight
-              </Button>
-            </Link>
+            <Button className="w-full sm:w-auto" size="default" type="button">
+              Explore MineLight
+            </Button>
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
