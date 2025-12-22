@@ -1,16 +1,16 @@
 import Hero from "@/components/Hero";
-import ProductCard from "@/components/ProductCard";
 import CollectionCard from "@/components/CollectionCard";
 import ImageGrid from "@/components/ImageGrid";
 import FeaturedProduct from "@/components/FeaturedProduct";
 import FeaturedCollections from "@/components/home/FeaturedCollections";
+import ProductSlider from "@/components/home/ProductSlider";
 import { products, collections } from "@/lib/products";
 import { getAllProducts } from "@/lib/shopify/queries/products";
 import BrandStory from "@/components/BrandStory";
 
 export default async function HomePage() {
   // Shopifyから商品を取得（フォールバックとしてローカル商品も使用）
-  let shopifyProducts = [];
+  let shopifyProducts: any[] = [];
   try {
     shopifyProducts = await getAllProducts(20);
   } catch (error) {
@@ -39,11 +39,7 @@ export default async function HomePage() {
             Discover our latest collection of premium home essentials
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-12">
-          {newArrivals.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        <ProductSlider products={newArrivals} />
       </section>
 
       <div className="mb-12 lg:mb-16">
@@ -86,11 +82,7 @@ export default async function HomePage() {
             Our most loved products, handpicked for you
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-12">
-          {bestSellers.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        <ProductSlider products={bestSellers} />
       </section>
     </div>
   );
