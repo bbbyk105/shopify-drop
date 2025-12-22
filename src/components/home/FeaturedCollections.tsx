@@ -99,15 +99,6 @@ function FeaturedCollectionCard({ collection }: FeaturedCollectionCardProps) {
                 Explore MineLight
               </Button>
             </Link>
-            <Link href="/lighting" onClick={(e) => e.stopPropagation()}>
-              <Button
-                variant="outline"
-                className="w-full sm:w-auto"
-                size="default"
-              >
-                View Lighting
-              </Button>
-            </Link>
           </div>
         </div>
       </div>

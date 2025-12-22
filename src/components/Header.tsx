@@ -46,7 +46,6 @@ export default function Header() {
     { href: "/furniture", label: "Furniture" },
     { href: "/decor", label: "Decor" },
     { href: "/sale", label: "Sale" },
-    { href: "/minelight", label: "Featured" },
     { href: "/tracking", label: "Tracking" },
     { href: "/contact", label: "Contact" },
   ];
