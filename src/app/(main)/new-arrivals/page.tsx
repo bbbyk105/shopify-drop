@@ -20,8 +20,7 @@ export default async function NewArrivalsPage() {
   }
 
   // Shopify商品があればそれを使用、なければローカル商品を使用
-  const allProducts: ShopifyProduct[] | typeof products =
-    shopifyProducts.length > 0 ? shopifyProducts : products;
+  const allProducts = shopifyProducts.length > 0 ? shopifyProducts : products;
   
   // New Arrivals: 最新商品として表示（取得順を新しい順とみなす）
   const newProducts = allProducts;

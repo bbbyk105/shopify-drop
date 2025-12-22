@@ -19,8 +19,7 @@ export default async function LightingPage() {
   }
 
   // Shopify商品があればそれを使用、なければローカル商品を使用
-  const allProducts: ShopifyProduct[] | typeof products =
-    shopifyProducts.length > 0 ? shopifyProducts : products;
+  const allProducts = shopifyProducts.length > 0 ? shopifyProducts : products;
 
   return (
     <div className="min-h-screen">
