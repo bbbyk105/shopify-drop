@@ -9,9 +9,13 @@ import { useState } from "react";
 
 interface ProductCardProps {
   product: LocalProduct | ShopifyProduct;
+  variant?: "default" | "titleOnly";
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  variant = "default",
+}: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   // ローカル商品とShopify商品の両方に対応
@@ -30,6 +34,8 @@ export default function ProductCard({ product }: ProductCardProps) {
   const price = isShopifyProduct
     ? parseFloat(product.priceRange.minVariantPrice.amount)
     : product.price;
+
+  const isTitleOnly = variant === "titleOnly";
 
   return (
     <Link href={`/products/${slug}`} className="block group">
@@ -59,7 +65,9 @@ export default function ProductCard({ product }: ProductCardProps) {
           <p className="text-sm text-muted-foreground mb-2 leading-relaxed line-clamp-2">
             {description}
           </p>
-          <p className="text-lg md:text-xl font-bold">{formatPrice(price)}</p>
+          {!isTitleOnly && (
+            <p className="text-lg md:text-xl font-bold">{formatPrice(price)}</p>
+          )}
         </div>
       </div>
     </Link>

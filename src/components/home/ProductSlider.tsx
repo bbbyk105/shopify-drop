@@ -3,13 +3,19 @@
 import { useRef, useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
+import type { Product as ShopifyProduct } from "@/lib/shopify/types";
+import type { Product as LocalProduct } from "@/types";
 
 interface ProductSliderProps {
   title?: string;
-  products: any[];
+  products: Array<ShopifyProduct | LocalProduct>;
+  variant?: "default" | "titleOnly";
 }
 
-export default function ProductSlider({ products }: ProductSliderProps) {
+export default function ProductSlider({
+  products,
+  variant = "default",
+}: ProductSliderProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -86,7 +92,7 @@ export default function ProductSlider({ products }: ProductSliderProps) {
             key={product.id}
             className="snap-start shrink-0 w-[220px] sm:w-[260px] md:w-[280px]"
           >
-            <ProductCard product={product} />
+            <ProductCard product={product} variant={variant} />
           </div>
         ))}
       </div>

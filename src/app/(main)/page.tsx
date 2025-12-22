@@ -6,11 +6,12 @@ import FeaturedCollections from "@/components/home/FeaturedCollections";
 import ProductSlider from "@/components/home/ProductSlider";
 import { products, collections } from "@/lib/products";
 import { getAllProducts } from "@/lib/shopify/queries/products";
+import type { Product as ShopifyProduct } from "@/lib/shopify/types";
 import BrandStory from "@/components/BrandStory";
 
 export default async function HomePage() {
   // Shopifyから商品を取得（フォールバックとしてローカル商品も使用）
-  let shopifyProducts: any[] = [];
+  let shopifyProducts: ShopifyProduct[] = [];
   try {
     shopifyProducts = await getAllProducts(20);
   } catch (error) {
@@ -18,14 +19,18 @@ export default async function HomePage() {
   }
 
   // Shopify商品があればそれを使用、なければローカル商品を使用
-  const allProducts = shopifyProducts.length > 0 ? shopifyProducts : products;
+  const allProducts: ShopifyProduct[] | typeof products =
+    shopifyProducts.length > 0 ? shopifyProducts : products;
   // New Arrivals: 最新商品として最大8件まで表示（取得順を新しい順とみなす）
   const newArrivals = allProducts.slice(0, 8);
 
   // Best Sellers: 「bestseller」系タグが付いている商品を最大8件
   const bestSellers = allProducts
-    .filter((product: any) => {
-      const tags: string[] = Array.isArray(product.tags) ? product.tags : [];
+    .filter((product) => {
+      const tags: string[] =
+        "tags" in product && Array.isArray((product as ShopifyProduct).tags)
+          ? (product as ShopifyProduct).tags
+          : [];
       return tags.some((tag) => {
         const lower = tag.toLowerCase();
         return [
@@ -53,11 +58,8 @@ export default async function HomePage() {
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 leading-tight">
               New Arrivals
             </h2>
-            <p className="text-sm md:text-base text-muted-foreground">
-              Discover our latest collection of premium home essentials
-            </p>
           </div>
-          <ProductSlider products={newArrivals} />
+          <ProductSlider products={newArrivals} variant="titleOnly" />
         </section>
       )}
 
@@ -98,11 +100,8 @@ export default async function HomePage() {
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 leading-tight">
               Best Sellers
             </h2>
-            <p className="text-sm md:text-base text-muted-foreground">
-              Our most loved products, handpicked for you
-            </p>
           </div>
-          <ProductSlider products={bestSellers} />
+          <ProductSlider products={bestSellers} variant="titleOnly" />
         </section>
       )}
     </div>
