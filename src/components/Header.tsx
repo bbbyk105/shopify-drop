@@ -8,7 +8,11 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useCart } from "@/hooks/useCart";
 
-export default function Header() {
+interface HeaderProps {
+  hasSale?: boolean;
+}
+
+export default function Header({ hasSale = true }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const cart = useCart((state) => state.cart);
   const [cartCount, setCartCount] = useState(0);
@@ -71,12 +75,14 @@ export default function Header() {
             >
               Decor
             </Link>
-            <Link
-              href="/sale"
-              className="text-sm font-medium transition-colors hover:text-primary"
-            >
-              Sale
-            </Link>
+            {hasSale && (
+              <Link
+                href="/sale"
+                className="text-sm font-medium transition-colors hover:text-primary"
+              >
+                Sale
+              </Link>
+            )}
             <Link
               href="/contact"
               className="text-sm font-medium transition-colors hover:text-primary"

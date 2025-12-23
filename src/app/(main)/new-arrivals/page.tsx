@@ -22,7 +22,9 @@ export default async function NewArrivalsPage() {
   // Shopify商品があればそれを使用、なければローカル商品を使用
   const allProducts = shopifyProducts.length > 0 ? shopifyProducts : products;
   
-  // New Arrivals: 最新商品として表示（取得順を新しい順とみなす）
+  // New Arrivals: 新しい商品から左から順に表示
+  // ShopifyのAPIは新しい順（CREATED_AT DESC）で返すため、そのまま使用
+  // 配列の最初が最新商品、最後が最古商品
   const newProducts = allProducts;
 
   return (

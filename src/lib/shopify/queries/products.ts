@@ -163,12 +163,12 @@ export async function getProductsByTag(
   }
 }
 
-// 全商品取得
+// 全商品取得（新しい順）
 export async function getAllProducts(first: number = 50): Promise<Product[]> {
   const query = /* GraphQL */ `
     ${PRODUCT_FRAGMENT}
     query getAllProducts($first: Int!) {
-      products(first: $first) {
+      products(first: $first, sortKey: CREATED_AT, reverse: true) {
         edges {
           node {
             ...ProductFields

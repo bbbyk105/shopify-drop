@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import ProductCard from "@/components/ProductCard";
-import { formatPrice } from "@/lib/utils";
 import type { Product as ShopifyProduct } from "@/lib/shopify/types";
 import { Product as LocalProduct } from "@/types";
 
@@ -93,55 +92,10 @@ export default function LightingClient({ products }: LightingClientProps) {
         </div>
       </div>
 
-      {/* Featured Product (First Product - Larger) */}
-      {sortedProducts.length > 0 && (
-        <div className="mb-16">
-          <div className="bg-linear-to-br from-primary/5 via-secondary/30 to-primary/5 rounded-3xl p-8 md:p-12 border border-primary/10">
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-              <div className="order-2 md:order-1">
-                <div className="inline-block bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
-                  Featured Lighting
-                </div>
-                <h3 className="text-3xl md:text-4xl font-bold mb-4">
-                  {("title" in sortedProducts[0]
-                    ? sortedProducts[0].title
-                    : sortedProducts[0].name) || "Premium Lighting"}
-                </h3>
-                <p className="text-muted-foreground mb-6 text-lg leading-relaxed">
-                  {("description" in sortedProducts[0]
-                    ? sortedProducts[0].description
-                    : sortedProducts[0].description) ||
-                    "Illuminate your space with style"}
-                </p>
-                <div className="flex items-center gap-4">
-                  <span className="text-3xl font-bold">
-                    {formatPrice(
-                      "priceRange" in sortedProducts[0]
-                        ? parseFloat(
-                            sortedProducts[0].priceRange.minVariantPrice.amount
-                          )
-                        : sortedProducts[0].price
-                    )}
-                  </span>
-                </div>
-              </div>
-              <div className="order-1 md:order-2">
-                <ProductCard product={sortedProducts[0]} />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Grid Layout - Different from New Arrivals */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-        {sortedProducts.slice(1).map((product, index) => (
-          <div
-            key={product.id}
-            className={`${
-              index % 3 === 0 && index < 3 ? "md:col-span-2 lg:col-span-1" : ""
-            }`}
-          >
+        {sortedProducts.map((product) => (
+          <div key={product.id}>
             <div className="bg-card border border-border rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow">
               <ProductCard product={product} />
             </div>

@@ -19,9 +19,11 @@ export default async function HomePage() {
   }
 
   // Shopify商品があればそれを使用、なければローカル商品を使用
-  const allProducts: ShopifyProduct[] | typeof products =
-    shopifyProducts.length > 0 ? shopifyProducts : products;
-  // New Arrivals: 最新商品として最大8件まで表示（取得順を新しい順とみなす）
+  const allProducts = shopifyProducts.length > 0 ? shopifyProducts : products;
+  
+  // New Arrivals: 最新商品として最大8件まで表示
+  // ShopifyのAPIは新しい順（CREATED_AT DESC）で返すため、最初の8件が最新
+  // 新しい商品が追加されると、9件目以降は表示されないため、古い商品から順に消える
   const newArrivals = allProducts.slice(0, 8);
 
   // Best Sellers: 「bestseller」系タグが付いている商品を最大8件
