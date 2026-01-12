@@ -2,32 +2,55 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Product } from "@/types";
+import { Product as LocalProduct } from "@/types";
+import { Product as ShopifyProduct } from "@/lib/shopify/types";
 import { formatPrice } from "@/lib/utils";
 import { useState } from "react";
 
 interface ProductCardProps {
-  product: Product;
+  product: LocalProduct | ShopifyProduct;
+  variant?: "default" | "titleOnly";
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  variant = "default",
+}: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
 
+  // ローカル商品とShopify商品の両方に対応
+  const isShopifyProduct = "handle" in product;
+
+  const slug = isShopifyProduct ? product.handle : product.slug;
+  const title = isShopifyProduct ? product.title : product.name;
+  const description = isShopifyProduct
+    ? product.description
+    : product.description;
+  const image = isShopifyProduct
+    ? product.featuredImage?.url ||
+      product.images.edges[0]?.node.url ||
+      "/placeholder.png"
+    : product.image;
+  const price = isShopifyProduct
+    ? parseFloat(product.priceRange.minVariantPrice.amount)
+    : product.price;
+
+  const isTitleOnly = variant === "titleOnly";
+
   return (
-    <Link href={`/products/${product.slug}`}>
+    <Link href={`/products/${slug}`} className="block group">
       <div
-        className="group cursor-pointer"
+        className="cursor-pointer space-y-4 transition-all"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div className="relative aspect-square overflow-hidden rounded-lg bg-secondary mb-4">
+        <div className="relative aspect-square overflow-hidden rounded-2xl bg-secondary/30 mb-4 shadow-lg group-hover:shadow-xl transition-all">
           <Image
-            src={product.image}
-            alt={product.name}
+            src={image}
+            alt={title}
             fill
-            className={`object-cover transition-transform duration-500 ${
-              isHovered ? "scale-110" : "scale-100"
-            }`}
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
           <div
             className={`absolute inset-0 bg-black/20 transition-opacity duration-300 ${
@@ -35,13 +58,17 @@ export default function ProductCard({ product }: ProductCardProps) {
             }`}
           />
         </div>
-        <h3 className="text-lg font-semibold mb-1 group-hover:text-primary transition-colors">
-          {product.name}
-        </h3>
-        <p className="text-sm text-muted-foreground mb-2">
-          {product.description}
-        </p>
-        <p className="text-sm font-medium">{formatPrice(product.price)}</p>
+        <div className="space-y-2">
+          <h3 className="text-lg md:text-xl font-bold mb-1 group-hover:text-primary transition-colors leading-tight">
+            {title}
+          </h3>
+          <p className="text-sm text-muted-foreground mb-2 leading-relaxed line-clamp-2">
+            {description}
+          </p>
+          {!isTitleOnly && (
+            <p className="text-lg md:text-xl font-bold">{formatPrice(price)}</p>
+          )}
+        </div>
       </div>
     </Link>
   );

@@ -4,16 +4,36 @@ import Link from "next/link";
 import { Search, Heart, ShoppingCart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useCart } from "@/hooks/useCart";
 
-export default function Header() {
+interface HeaderProps {
+  hasSale?: boolean;
+}
+
+export default function Header({ hasSale = true }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const cart = useCart((state) => state.cart);
+  const [cartCount, setCartCount] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Searching for:", searchQuery);
   };
+
+  // カート数量の監視とアニメーション
+  useEffect(() => {
+    const newCount = cart?.totalQuantity || 0;
+    if (newCount > cartCount && cartCount > 0) {
+      setIsAnimating(true);
+      const timer = setTimeout(() => setIsAnimating(false), 600);
+      return () => clearTimeout(timer);
+    }
+    setCartCount(newCount);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cart?.totalQuantity]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
@@ -55,12 +75,14 @@ export default function Header() {
             >
               Decor
             </Link>
-            <Link
-              href="/sale"
-              className="text-sm font-medium transition-colors hover:text-primary"
-            >
-              Sale
-            </Link>
+            {hasSale && (
+              <Link
+                href="/sale"
+                className="text-sm font-medium transition-colors hover:text-primary"
+              >
+                Sale
+              </Link>
+            )}
             <Link
               href="/contact"
               className="text-sm font-medium transition-colors hover:text-primary"
@@ -89,9 +111,18 @@ export default function Header() {
                 <Heart className="h-5 w-5" />
               </Button>
             </Link>
-            <Link href={"/cart"}>
-              <Button variant="ghost" size="icon">
+            <Link href={"/cart"} className="relative">
+              <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="h-5 w-5" />
+                {cartCount > 0 && (
+                  <span
+                    className={`absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground ${
+                      isAnimating ? "animate-bounce scale-125" : "scale-100"
+                    } transition-transform duration-300`}
+                  >
+                    {cartCount > 99 ? "99+" : cartCount}
+                  </span>
+                )}
               </Button>
             </Link>
           </div>

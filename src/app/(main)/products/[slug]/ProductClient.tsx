@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import AddToCartButton from "@/components/shared/AddToCartButton";
+import { formatPrice } from "@/lib/utils";
 import type { Product, Variant } from "@/lib/shopify/types";
 import {
   ChevronLeft,
@@ -39,19 +40,26 @@ export default function ProductClient({
   );
   const [quantity, setQuantity] = useState(1);
 
+  // 価格計算 - トップページと同じロジック
   const price = selectedVariant
     ? parseFloat(selectedVariant.price.amount)
     : parseFloat(product.priceRange.minVariantPrice.amount);
 
-  const compareAtPrice = selectedVariant?.compareAtPrice
+  // 割引価格の計算
+  const compareAtPriceValue = selectedVariant?.compareAtPrice
     ? parseFloat(selectedVariant.compareAtPrice.amount)
     : product.compareAtPriceRange?.minVariantPrice
     ? parseFloat(product.compareAtPriceRange.minVariantPrice.amount)
     : null;
 
-  const hasDiscount = compareAtPrice && compareAtPrice > price;
+  // 割引があるかチェック
+  const hasDiscount =
+    compareAtPriceValue !== null &&
+    compareAtPriceValue > 0 &&
+    compareAtPriceValue > price;
+
   const discountPercentage = hasDiscount
-    ? Math.round(((compareAtPrice - price) / compareAtPrice) * 100)
+    ? Math.round(((compareAtPriceValue - price) / compareAtPriceValue) * 100)
     : 0;
 
   // 在庫数を取得
@@ -75,7 +83,7 @@ export default function ProductClient({
       {/* Product Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 mb-12 lg:mb-16">
         {/* Images - Left Side */}
-        <div className="space-y-4">
+        <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
           {/* Main Image */}
           <div className="relative aspect-square overflow-hidden rounded-2xl bg-secondary/30 group">
             <Image
@@ -200,18 +208,17 @@ export default function ProductClient({
           <div className="space-y-2">
             <div className="flex items-baseline gap-3">
               <span className="text-3xl md:text-4xl font-bold">
-                ${price.toFixed(2)}
+                {formatPrice(price)}
               </span>
               {hasDiscount && (
                 <span className="text-xl text-muted-foreground line-through">
-                  ${compareAtPrice.toFixed(2)}
+                  {formatPrice(compareAtPriceValue)}
                 </span>
               )}
             </div>
             {hasDiscount && (
               <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1.5 rounded-full text-sm font-semibold">
-                <span>💰</span>
-                You save ${(compareAtPrice - price).toFixed(2)}
+                You save {formatPrice(compareAtPriceValue - price)}
               </div>
             )}
           </div>
@@ -238,12 +245,16 @@ export default function ProductClient({
             </div>
           )}
 
-          {/* 説明 */}
-          <div className="prose prose-sm max-w-none bg-secondary/30 p-4 rounded-xl">
-            <p className="text-sm md:text-base text-muted-foreground leading-relaxed m-0">
-              {product.description}
-            </p>
-          </div>
+          {/* Product Details (HTML) */}
+          {product.descriptionHtml && (
+            <div className="border-t pt-6 space-y-4">
+              <h2 className="text-xl font-bold">Product Details</h2>
+              <div
+                className="prose prose-sm max-w-none text-muted-foreground [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-2 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:space-y-2 [&>p]:leading-relaxed [&>h3]:text-base [&>h3]:font-semibold [&>h3]:mt-4"
+                dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
+              />
+            </div>
+          )}
 
           {/* バリエーション選択 */}
           {product.variants.edges.length > 1 && (
@@ -322,7 +333,7 @@ export default function ProductClient({
                   <span className="text-sm text-muted-foreground">
                     Total:{" "}
                     <span className="font-bold text-foreground">
-                      ${(price * quantity).toFixed(2)}
+                      {formatPrice(price * quantity)}
                     </span>
                   </span>
                   <span className="text-xs text-muted-foreground">
@@ -365,17 +376,6 @@ export default function ProductClient({
               <span className="text-xs font-medium">Easy Returns</span>
             </div>
           </div>
-
-          {/* Product Details (HTML) */}
-          {product.descriptionHtml && (
-            <div className="border-t pt-6 space-y-4">
-              <h2 className="text-xl font-bold">Product Details</h2>
-              <div
-                className="prose prose-sm max-w-none text-muted-foreground [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-2 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:space-y-2 [&>p]:leading-relaxed [&>h3]:text-base [&>h3]:font-semibold [&>h3]:mt-4"
-                dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
-              />
-            </div>
-          )}
         </div>
       </div>
 

@@ -94,7 +94,7 @@ export default function ImageGrid() {
     const horizontalOffset = isEven ? wave : -wave;
 
     const rotation = offset * 0.03;
-    const scale = hoveredId === image.id ? 1.15 : 0.95 + adjustedProgress * 0.1;
+    const scale = 0.95 + adjustedProgress * 0.1;
 
     const opacity = Math.max(0.3, Math.min(1, adjustedProgress * 1.5));
 

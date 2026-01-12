@@ -258,3 +258,4 @@ function TrustBadge({ text }: { text: string }) {
     </div>
   );
 }
+
