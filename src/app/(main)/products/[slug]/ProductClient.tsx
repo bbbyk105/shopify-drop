@@ -253,7 +253,7 @@ export default function ProductClient({
                 className="prose prose-sm max-w-none text-muted-foreground [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-2 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:space-y-2 [&>p]:leading-relaxed [&>h3]:text-base [&>h3]:font-semibold [&>h3]:mt-4"
                 dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
               />
-            </div>
+          </div>
           )}
 
           {/* バリエーション選択 */}

@@ -36,11 +36,11 @@ export default function CollectionCard({ collection }: CollectionCardProps) {
         </div>
         <div className="space-y-2">
           <h3 className="text-xl md:text-2xl font-bold mb-2 group-hover:text-primary transition-colors leading-tight">
-            {collection.name}
-          </h3>
+          {collection.name}
+        </h3>
           <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
-            {collection.description}
-          </p>
+          {collection.description}
+        </p>
         </div>
       </div>
     </Link>

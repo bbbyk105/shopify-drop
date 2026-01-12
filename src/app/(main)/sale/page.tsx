@@ -41,7 +41,7 @@ export default async function SalePage() {
         return false;
       });
 
-      return (
+  return (
         (compareAtPrice !== null && compareAtPrice > price) || hasVariantDiscount
       );
     } else {

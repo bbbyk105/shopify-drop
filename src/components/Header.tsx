@@ -76,12 +76,12 @@ export default function Header({ hasSale = true }: HeaderProps) {
               Decor
             </Link>
             {hasSale && (
-              <Link
-                href="/sale"
-                className="text-sm font-medium transition-colors hover:text-primary"
-              >
-                Sale
-              </Link>
+            <Link
+              href="/sale"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Sale
+            </Link>
             )}
             <Link
               href="/contact"

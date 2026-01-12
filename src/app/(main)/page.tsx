@@ -60,18 +60,18 @@ export default async function HomePage() {
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 leading-tight">
               New Arrivals
             </h2>
-          </div>
+        </div>
           <ProductSlider products={newArrivals} variant="titleOnly" />
-        </section>
+      </section>
       )}
 
       <div className="mb-12 lg:mb-16">
-        <ImageGrid />
+      <ImageGrid />
       </div>
 
       {/* Featured Product */}
       <div className="mb-12 lg:mb-16">
-        <FeaturedProduct />
+      <FeaturedProduct />
       </div>
 
       {/* Featured Collections */}
@@ -92,7 +92,7 @@ export default async function HomePage() {
       </section>
 
       <div className="mb-12 lg:mb-16 border-t pt-12 lg:pt-16">
-        <BrandStory />
+      <BrandStory />
       </div>
 
       {/* Best Sellers */}
@@ -102,9 +102,9 @@ export default async function HomePage() {
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 leading-tight">
               Best Sellers
             </h2>
-          </div>
+        </div>
           <ProductSlider products={bestSellers} variant="titleOnly" />
-        </section>
+      </section>
       )}
     </div>
   );
