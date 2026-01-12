@@ -3,13 +3,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Cart } from "@/lib/shopify/types";
-import {
-  createCart,
-  addLines,
-  updateLineQty,
-  removeLines,
-} from "@/lib/shopify/mutations/cart";
-import { getCart } from "@/lib/shopify/queries/cart";
 
 type CartState = {
   cartId?: string;
@@ -35,12 +28,21 @@ export const useCart = create<CartState>()(
         if (cartId) {
           set({ loading: true });
           try {
-            const data = await getCart(cartId);
+            // APIルート経由で取得
+            const response = await fetch(`/api/shopify/cart?cartId=${cartId}`);
+            if (!response.ok) throw new Error("Cart not found");
+            const data = await response.json();
             set({ cartId, cart: data.cart, loading: false });
           } catch (error) {
             console.error("Error loading cart:", error);
             // カートが見つからない場合は新規作成
-            const data = await createCart();
+            const response = await fetch("/api/shopify/cart", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action: "create" }),
+            });
+            if (!response.ok) throw new Error("Failed to create cart");
+            const data = await response.json();
             set({
               cartId: data.cartCreate.cart.id,
               cart: data.cartCreate.cart,
@@ -52,12 +54,24 @@ export const useCart = create<CartState>()(
 
         // カートIDがない場合は新規作成
         set({ loading: true });
-        const data = await createCart();
-        set({
-          cartId: data.cartCreate.cart.id,
-          cart: data.cartCreate.cart,
-          loading: false,
-        });
+        try {
+          const response = await fetch("/api/shopify/cart", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "create" }),
+          });
+          if (!response.ok) throw new Error("Failed to create cart");
+          const data = await response.json();
+          set({
+            cartId: data.cartCreate.cart.id,
+            cart: data.cartCreate.cart,
+            loading: false,
+          });
+        } catch (error) {
+          console.error("Error creating cart:", error);
+          set({ loading: false });
+          throw error;
+        }
       },
 
       // カートに商品追加
@@ -75,9 +89,17 @@ export const useCart = create<CartState>()(
 
         set({ loading: true });
         try {
-          const data = await addLines(currentCartId, [
-            { merchandiseId: variantId, quantity },
-          ]);
+          const response = await fetch("/api/shopify/cart", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "add",
+              cartId: currentCartId,
+              lines: [{ merchandiseId: variantId, quantity }],
+            }),
+          });
+          if (!response.ok) throw new Error("Failed to add to cart");
+          const data = await response.json();
           set({ cart: data.cartLinesAdd.cart, loading: false });
         } catch (error) {
           console.error("Error adding to cart:", error);
@@ -91,44 +113,84 @@ export const useCart = create<CartState>()(
         const { cartId, cart } = get();
         if (!cartId || !cart) return;
 
-        // 楽観的更新: 先にローカル反映し体感速度を上げる
+        // 楽観的更新: 価格も即座に計算して表示
         const previousCart = cart;
+        const oldLine = cart.lines.edges.find((e) => e.node.id === lineId);
+        const oldQuantity = oldLine?.node.quantity || 0;
+        const pricePerUnit = oldLine
+          ? parseFloat(oldLine.node.merchandise.price.amount)
+          : 0;
+        const oldLineTotal = oldLine
+          ? parseFloat(oldLine.node.cost.totalAmount.amount)
+          : 0;
+        const newLineTotal = qty * pricePerUnit;
+        const lineTotalDiff = newLineTotal - oldLineTotal;
+
+        // 更新されたラインアイテム
+        const updatedEdges = cart.lines.edges.map((edge) =>
+          edge.node.id === lineId
+            ? {
+                ...edge,
+                node: {
+                  ...edge.node,
+                  quantity: qty,
+                  cost: {
+                    ...edge.node.cost,
+                    totalAmount: {
+                      ...edge.node.cost.totalAmount,
+                      amount: newLineTotal.toFixed(2),
+                    },
+                  },
+                },
+              }
+            : edge
+        );
+
+        // カート全体のSubtotalとTotalを計算
+        const currentSubtotal = parseFloat(cart.cost.subtotalAmount.amount);
+        const newSubtotal = currentSubtotal + lineTotalDiff;
+        
+        // TotalはSubtotalと同じか、税金が含まれる場合は差分を維持
+        const currentTotal = parseFloat(cart.cost.totalAmount.amount);
+        const totalDiff = currentTotal - currentSubtotal; // 税金や割引の差分
+        const newTotal = newSubtotal + totalDiff;
+
         const optimisticCart: Cart = {
           ...cart,
           lines: {
             ...cart.lines,
-            edges: cart.lines.edges.map((edge) =>
-              edge.node.id === lineId
-                ? {
-                    ...edge,
-                    node: {
-                      ...edge.node,
-                      quantity: qty,
-                      cost: {
-                        ...edge.node.cost,
-                        totalAmount: {
-                          ...edge.node.cost.totalAmount,
-                          amount: (
-                            qty * parseFloat(edge.node.merchandise.price.amount)
-                          ).toString(),
-                        },
-                      },
-                    },
-                  }
-                : edge
-            ),
+            edges: updatedEdges,
           },
-          totalQuantity:
-            cart.totalQuantity -
-            (cart.lines.edges.find((e) => e.node.id === lineId)?.node.quantity ||
-              0) +
-            qty,
+          totalQuantity: cart.totalQuantity - oldQuantity + qty,
+          cost: {
+            ...cart.cost,
+            subtotalAmount: {
+              ...cart.cost.subtotalAmount,
+              amount: newSubtotal.toFixed(2),
+            },
+            totalAmount: {
+              ...cart.cost.totalAmount,
+              amount: newTotal.toFixed(2),
+            },
+          },
         };
 
         set({ cart: optimisticCart });
 
         try {
-          const data = await updateLineQty(cartId, lineId, qty);
+          const response = await fetch("/api/shopify/cart", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "update",
+              cartId,
+              lineId,
+              quantity: qty,
+            }),
+          });
+          if (!response.ok) throw new Error("Failed to update quantity");
+          const data = await response.json();
+          // APIレスポンスで正確な価格情報を更新（税金や割引が含まれる場合の正確な値）
           set({ cart: data.cartLinesUpdate.cart });
         } catch (error) {
           console.error("Error updating quantity:", error);
@@ -145,7 +207,17 @@ export const useCart = create<CartState>()(
 
         set({ loading: true });
         try {
-          const data = await removeLines(cartId, [lineId]);
+          const response = await fetch("/api/shopify/cart", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "remove",
+              cartId,
+              lineIds: [lineId],
+            }),
+          });
+          if (!response.ok) throw new Error("Failed to remove from cart");
+          const data = await response.json();
           set({ cart: data.cartLinesRemove.cart, loading: false });
         } catch (error) {
           console.error("Error removing from cart:", error);

@@ -1,0 +1,89 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createCart, addLines, updateLineQty, removeLines } from "@/lib/shopify/mutations/cart";
+import { getCart } from "@/lib/shopify/queries/cart";
+
+// カート操作（作成、追加、更新、削除）
+export async function POST(request: NextRequest) {
+  try {
+    const { action, ...params } = await request.json();
+
+    switch (action) {
+      case "create": {
+        const createResult = await createCart();
+        return NextResponse.json(createResult);
+      }
+      
+      case "add": {
+        const { cartId, lines } = params;
+        if (!cartId || !lines) {
+          return NextResponse.json(
+            { error: "cartId and lines are required" },
+            { status: 400 }
+          );
+        }
+        const addResult = await addLines(cartId, lines);
+        return NextResponse.json(addResult);
+      }
+      
+      case "update": {
+        const { cartId, lineId, quantity } = params;
+        if (!cartId || !lineId || quantity === undefined) {
+          return NextResponse.json(
+            { error: "cartId, lineId, and quantity are required" },
+            { status: 400 }
+          );
+        }
+        const updateResult = await updateLineQty(cartId, lineId, quantity);
+        return NextResponse.json(updateResult);
+      }
+      
+      case "remove": {
+        const { cartId, lineIds } = params;
+        if (!cartId || !lineIds) {
+          return NextResponse.json(
+            { error: "cartId and lineIds are required" },
+            { status: 400 }
+          );
+        }
+        const removeResult = await removeLines(cartId, lineIds);
+        return NextResponse.json(removeResult);
+      }
+      
+      default:
+        return NextResponse.json(
+          { error: "Invalid action. Use 'create', 'add', 'update', or 'remove'" },
+          { status: 400 }
+        );
+    }
+  } catch (error) {
+    console.error("Cart API error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// カート取得
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const cartId = searchParams.get("cartId");
+    
+    if (!cartId) {
+      return NextResponse.json(
+        { error: "cartId is required" },
+        { status: 400 }
+      );
+    }
+
+    const result = await getCart(cartId);
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("Cart fetch error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
