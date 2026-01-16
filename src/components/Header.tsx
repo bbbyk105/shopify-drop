@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Search, Heart, ShoppingCart } from "lucide-react";
+import { Search, Heart, ShoppingCart, Sun, Moon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useCart } from "@/hooks/useCart";
+import { useTheme } from "@/components/ThemeProvider";
 
 interface HeaderProps {
   hasSale?: boolean;
@@ -17,6 +18,7 @@ export default function Header({ hasSale = true }: HeaderProps) {
   const cart = useCart((state) => state.cart);
   const [cartCount, setCartCount] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,6 +107,19 @@ export default function Header({ hasSale = true }: HeaderProps) {
                 />
               </div>
             </form>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+            >
+              {theme === "light" ? (
+                <Moon className="h-5 w-5" />
+              ) : (
+                <Sun className="h-5 w-5" />
+              )}
+            </Button>
 
             <Link href={"/favorite"}>
               <Button variant="ghost" size="icon">

@@ -7,12 +7,10 @@ export default async function MainLayout({ children }: { children: ReactNode }) 
   const hasSale = await hasSaleProducts();
 
   return (
-    <>
-      <main className="min-h-screen">
-        <Header hasSale={hasSale} />
-        {children}
-        <Footer />
-      </main>
-    </>
+    <main className="min-h-screen">
+      <Header hasSale={hasSale} />
+      {children}
+      <Footer />
+    </main>
   );
 }
