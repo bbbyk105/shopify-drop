@@ -6,6 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2 } from "lucide-react";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export default function CartPage() {
   const { cart, init, setQty, remove, loading } = useCart();
@@ -16,30 +18,40 @@ export default function CartPage() {
 
   if (loading && !cart) {
     return (
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center">Loading cart...</div>
-      </div>
+      <main className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-1 container mx-auto px-4 py-16">
+          <div className="text-center">Loading cart...</div>
+        </div>
+        <Footer />
+      </main>
     );
   }
 
   if (!cart || cart.totalQuantity === 0) {
     return (
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-2xl mx-auto text-center space-y-4">
-          <h1 className="text-3xl font-bold">Your cart is empty</h1>
-          <p className="text-muted-foreground">
-            Add some products to get started!
-          </p>
-          <Link href="/">
-            <Button>Continue Shopping</Button>
-          </Link>
+      <main className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center container mx-auto px-4 py-16">
+          <div className="max-w-2xl mx-auto text-center space-y-4">
+            <h1 className="text-3xl font-bold">Your cart is empty</h1>
+            <p className="text-muted-foreground">
+              Add some products to get started!
+            </p>
+            <Link href="/">
+              <Button>Continue Shopping</Button>
+            </Link>
+          </div>
         </div>
-      </div>
+        <Footer />
+      </main>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 md:py-8">
+    <main className="min-h-screen flex flex-col">
+      <Header />
+      <div className="flex-1 container mx-auto px-4 py-6 md:py-8">
       <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
         {/* ヘッダー */}
         <div>
@@ -192,6 +204,8 @@ export default function CartPage() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+      <Footer />
+    </main>
   );
 }

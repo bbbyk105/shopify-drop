@@ -65,18 +65,6 @@ export default function Header({ hasSale = true }: HeaderProps) {
             >
               Lighting
             </Link>
-            <Link
-              href="/furniture"
-              className="text-sm font-medium transition-colors hover:text-primary"
-            >
-              Furniture
-            </Link>
-            <Link
-              href="/decor"
-              className="text-sm font-medium transition-colors hover:text-primary"
-            >
-              Decor
-            </Link>
             {hasSale && (
             <Link
               href="/sale"
@@ -90,6 +78,12 @@ export default function Header({ hasSale = true }: HeaderProps) {
               className="text-sm font-medium transition-colors hover:text-primary"
             >
               Contact
+            </Link>
+            <Link
+              href="/tracking"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Tracking
             </Link>
           </nav>
 

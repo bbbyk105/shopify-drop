@@ -2,9 +2,7 @@ import Hero from "@/components/Hero";
 import FeaturedCollections from "@/components/home/FeaturedCollections";
 import ProductSlider from "@/components/home/ProductSlider";
 import ShopByRoom from "@/components/home/ShopByRoom";
-import CustomizeForConnection from "@/components/home/CustomizeForConnection";
-import FunInFunction from "@/components/home/FunInFunction";
-import FreeDesignPlan from "@/components/home/FreeDesignPlan";
+import PromotionalTwoColumn from "@/components/home/PromotionalTwoColumn";
 import Section from "@/components/home/Section";
 import { products } from "@/lib/products";
 import { getAllProducts } from "@/lib/shopify/queries/products";
@@ -69,9 +67,9 @@ export default async function HomePage() {
         <FeaturedCollections />
       </Section>
 
-      {/* (5) Fun In Function - 編集バナー（1枚だけ） */}
+      {/* (5) Promotional Two Column - 統合されたプロモーションバナー */}
       <div className="container mx-auto px-4 py-12 lg:py-16">
-        <FunInFunction />
+        <PromotionalTwoColumn />
       </div>
 
       {/* (6) New Arrivals - 商品密度の山2 */}
@@ -81,15 +79,7 @@ export default async function HomePage() {
         </Section>
       )}
 
-      {/* (7) Customize For Connection - 編集バナー（任意で1枚） */}
-      <div className="container mx-auto px-4 py-12 lg:py-16">
-        <CustomizeForConnection />
-      </div>
-
-      {/* (8) Free Design Plan - ページ最下部の強いCTA */}
-      <div className="container mx-auto px-4 py-12 lg:py-16">
-        <FreeDesignPlan />
-      </div>
+      
     </div>
   );
 }
