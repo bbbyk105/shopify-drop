@@ -27,26 +27,5 @@ export default async function NewArrivalsPage() {
   // 配列の最初が最新商品、最後が最古商品
   const newProducts = allProducts;
 
-  return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative bg-muted/30 py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6">
-              New Arrivals
-            </h1>
-            <p className="text-xl text-muted-foreground">
-              Explore our latest collection of contemporary lighting designs.
-              Each piece is carefully curated to bring elegance and
-              sophistication to your space.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Products Grid */}
-      <NewArrivalsClient products={newProducts} />
-    </div>
-  );
+  return <NewArrivalsClient products={newProducts} />;
 }
