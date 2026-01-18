@@ -98,6 +98,64 @@
   }
 }
 
+/* Toast animations */
+@keyframes slide-in-from-top {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-from-bottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-out-to-right {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Toast state animations */
+[data-state="open"] {
+  animation: slide-in-from-top 0.3s ease-out;
+}
+
+@media (min-width: 640px) {
+  [data-state="open"] {
+    animation: slide-in-from-bottom 0.3s ease-out;
+  }
+}
+
+[data-state="closed"] {
+  animation: slide-out-to-right 0.3s ease-in, fade-out 0.3s ease-in;
+}
+
 .font-minecraft {
   font-family: "VT323", monospace;
   letter-spacing: 0.05em;

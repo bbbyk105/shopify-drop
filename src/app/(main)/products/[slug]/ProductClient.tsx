@@ -4,16 +4,21 @@ import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import AddToCartButton from "@/components/shared/AddToCartButton";
+import AddToFavoritesButton from "@/components/shared/AddToFavoritesButton";
 import { formatPrice } from "@/lib/utils";
 import type { Product, Variant } from "@/lib/shopify/types";
 import {
-  ChevronLeft,
   ChevronRight,
   Truck,
   Shield,
-  RotateCcw,
-  AlertCircle,
+  Star,
 } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface ProductClientProps {
   product: Product;
@@ -40,7 +45,7 @@ export default function ProductClient({
   );
   const [quantity, setQuantity] = useState(1);
 
-  // 価格計算 - トップページと同じロジック
+  // 価格計算
   const price = selectedVariant
     ? parseFloat(selectedVariant.price.amount)
     : parseFloat(product.priceRange.minVariantPrice.amount);
@@ -58,20 +63,23 @@ export default function ProductClient({
     compareAtPriceValue > 0 &&
     compareAtPriceValue > price;
 
-  const discountPercentage = hasDiscount
-    ? Math.round(((compareAtPriceValue - price) / compareAtPriceValue) * 100)
-    : 0;
-
   // 在庫数を取得
   const maxQuantity = selectedVariant ? inventory[selectedVariant.id] ?? 10 : 5;
 
-  const nextImage = () => {
-    setSelectedImage((prev) => (prev + 1) % images.length);
-  };
-
-  const prevImage = () => {
-    setSelectedImage((prev) => (prev - 1 + images.length) % images.length);
-  };
+  // バリエーションをグループ化（Seating、Material、Colorなど）
+  const variantGroups: Record<string, Variant[]> = {};
+  product.variants.edges.forEach(({ node }) => {
+    const title = node.title;
+    // バリエーションタイトルからグループを抽出（例: "Sofa / Leather / Charme Tan"）
+    const parts = title.split(" / ");
+    if (parts.length > 0) {
+      const group = parts[0]; // 最初の部分をグループとして使用
+      if (!variantGroups[group]) {
+        variantGroups[group] = [];
+      }
+      variantGroups[group].push(node);
+    }
+  });
 
   const handleQuantityChange = (newQuantity: number) => {
     const validQuantity = Math.max(1, Math.min(maxQuantity, newQuantity));
@@ -79,13 +87,13 @@ export default function ProductClient({
   };
 
   return (
-    <>
+    <div className="bg-background">
       {/* Product Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 mb-12 lg:mb-16">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-8 lg:gap-12 mb-12 lg:mb-16">
         {/* Images - Left Side */}
-        <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+        <div className="space-y-4">
           {/* Main Image */}
-          <div className="relative aspect-square overflow-hidden rounded-2xl bg-secondary/30 group">
+          <div className="relative aspect-square overflow-hidden rounded-lg bg-secondary/30 group">
             <Image
               src={
                 images[selectedImage]?.url ||
@@ -96,13 +104,13 @@ export default function ProductClient({
               fill
               className="object-cover"
               priority
-              sizes="(max-width: 1024px) 100vw, 50vw"
+              sizes="(max-width: 1024px) 100vw, 60vw"
             />
 
             {/* セールバッジ */}
             {hasDiscount && (
-              <div className="absolute top-4 left-4 bg-linear-to-r from-red-500 to-red-600 text-white text-sm font-bold px-4 py-2 rounded-full shadow-xl backdrop-blur-sm">
-                SAVE {discountPercentage}%
+              <div className="absolute top-4 left-4 bg-red-600 text-white text-sm font-bold px-4 py-2 rounded-full">
+                SALE
               </div>
             )}
 
@@ -113,59 +121,35 @@ export default function ProductClient({
                   <span className="text-white font-bold text-3xl block mb-2">
                     Sold Out
                   </span>
-                  <span className="text-white/80 text-sm">Check back soon</span>
                 </div>
               </div>
             )}
 
             {/* 画像ナビゲーション */}
             {images.length > 1 && (
-              <>
-                <button
-                  onClick={prevImage}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-50 rounded-full p-2.5 shadow-xl transition-all hover:scale-110 active:scale-95 z-10 cursor-pointer"
-                  aria-label="Previous image"
-                >
-                  <ChevronLeft className="w-5 h-5 text-black" />
-                </button>
-                <button
-                  onClick={nextImage}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-white hover:bg-gray-50 rounded-full p-2.5 shadow-xl transition-all hover:scale-110 active:scale-95 z-10 cursor-pointer"
-                  aria-label="Next image"
-                >
-                  <ChevronRight className="w-5 h-5 text-black" />
-                </button>
-
-                {/* 画像インジケーター */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                  {images.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedImage(index)}
-                      className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
-                        selectedImage === index
-                          ? "bg-white w-6"
-                          : "bg-white/50 hover:bg-white/75"
-                      }`}
-                      aria-label={`Go to image ${index + 1}`}
-                    />
-                  ))}
-                </div>
-              </>
+              <button
+                onClick={() =>
+                  setSelectedImage((prev) => (prev + 1) % images.length)
+                }
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all z-10"
+                aria-label="Next image"
+              >
+                <ChevronRight className="w-5 h-5 text-foreground" />
+              </button>
             )}
           </div>
 
-          {/* Thumbnail Images */}
+          {/* Thumbnail Gallery */}
           {images.length > 1 && (
-            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+            <div className="flex gap-3 overflow-x-auto pb-2">
               {images.map((image, index) => (
                 <button
                   key={image.id}
                   onClick={() => setSelectedImage(index)}
-                  className={`relative w-20 h-20 md:w-24 md:h-24 shrink-0 overflow-hidden rounded-xl bg-secondary border-2 transition-all cursor-pointer ${
+                  className={`relative w-20 h-20 shrink-0 overflow-hidden rounded-lg border-2 transition-all ${
                     selectedImage === index
-                      ? "border-primary ring-2 ring-primary/30 scale-105"
-                      : "border-transparent hover:border-primary/50 hover:scale-105"
+                      ? "border-foreground"
+                      : "border-transparent hover:border-border"
                   }`}
                 >
                   <Image
@@ -173,7 +157,7 @@ export default function ProductClient({
                     alt={image.altText || `${product.title} ${index + 1}`}
                     fill
                     className="object-cover"
-                    sizes="96px"
+                    sizes="80px"
                   />
                 </button>
               ))}
@@ -185,210 +169,236 @@ export default function ProductClient({
         <div className="space-y-6">
           {/* タイトル */}
           <div>
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 leading-tight">
+            <h1 className="text-3xl lg:text-4xl font-bold mb-2 leading-tight">
               {product.title}
             </h1>
-
-            {/* タグ表示 */}
-            {product.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {product.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="text-xs font-medium bg-primary/10 text-primary px-3 py-1.5 rounded-full"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* 価格 */}
-          <div className="space-y-2">
+          <div className="space-y-1">
             <div className="flex items-baseline gap-3">
-              <span className="text-3xl md:text-4xl font-bold">
-                {formatPrice(price)}
-              </span>
-              {hasDiscount && (
+              <span className="text-3xl font-bold">{formatPrice(price)}</span>
+              {hasDiscount && compareAtPriceValue && (
                 <span className="text-xl text-muted-foreground line-through">
                   {formatPrice(compareAtPriceValue)}
                 </span>
               )}
             </div>
             {hasDiscount && (
-              <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1.5 rounded-full text-sm font-semibold">
-                You save {formatPrice(compareAtPriceValue - price)}
-              </div>
+              <a href="#" className="text-sm text-muted-foreground hover:underline">
+                or from ${Math.round(price / 12)}/mo with Affirm
+              </a>
             )}
           </div>
 
-          {/* 在庫状況 */}
-          {product.availableForSale && (
-            <div className="flex items-center gap-2 text-sm">
-              {maxQuantity > 5 ? (
-                <span className="flex items-center gap-1.5 text-green-600 font-medium">
-                  <span className="w-2 h-2 bg-green-600 rounded-full"></span>
-                  In Stock
-                </span>
-              ) : maxQuantity > 0 ? (
-                <span className="flex items-center gap-1.5 text-orange-600 font-medium">
-                  <AlertCircle className="w-4 h-4" />
-                  Only {maxQuantity} left in stock
-                </span>
-              ) : (
-                <span className="flex items-center gap-1.5 text-red-600 font-medium">
-                  <span className="w-2 h-2 bg-red-600 rounded-full"></span>
-                  Sold Out
-                </span>
-              )}
+          {/* 評価（星） */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={`w-4 h-4 ${
+                    i < 4
+                      ? "fill-yellow-400 text-yellow-400"
+                      : "fill-none text-gray-300"
+                  }`}
+                />
+              ))}
             </div>
-          )}
-
-          {/* Product Details (HTML) */}
-          {product.descriptionHtml && (
-            <div className="border-t pt-6 space-y-4">
-              <h2 className="text-xl font-bold">Product Details</h2>
-              <div
-                className="prose prose-sm max-w-none text-muted-foreground [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-2 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:space-y-2 [&>p]:leading-relaxed [&>h3]:text-base [&>h3]:font-semibold [&>h3]:mt-4"
-                dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
-              />
+            <a href="#" className="text-sm text-muted-foreground hover:underline">
+              (2118)
+            </a>
           </div>
-          )}
 
           {/* バリエーション選択 */}
-          {product.variants.edges.length > 1 && (
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Select Variant
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {product.variants.edges.map(({ node }) => (
-                  <button
-                    key={node.id}
-                    onClick={() => {
-                      setSelectedVariant(node);
-                      setQuantity(1); // バリアント変更時に数量をリセット
-                    }}
-                    disabled={!node.availableForSale}
-                    className={`relative px-4 py-3 border-2 rounded-xl transition-all font-medium text-sm ${
-                      selectedVariant?.id === node.id
-                        ? "border-primary bg-primary/10 shadow-md scale-105"
-                        : "border-border hover:border-primary hover:bg-secondary/50"
-                    } ${
-                      !node.availableForSale
-                        ? "opacity-50 cursor-not-allowed"
-                        : "hover:scale-105 active:scale-95 cursor-pointer"
-                    }`}
-                  >
-                    <div className="font-semibold">{node.title}</div>
-                    {!node.availableForSale && (
-                      <div className="text-xs text-red-500 mt-1">Sold Out</div>
-                    )}
-                    {selectedVariant?.id === node.id && (
-                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs">✓</span>
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 数量選択 */}
-          {product.availableForSale && maxQuantity > 0 && (
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Quantity
-              </label>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center border-2 rounded-xl overflow-hidden">
-                  <button
-                    onClick={() => handleQuantityChange(quantity - 1)}
-                    className="px-4 py-3 hover:bg-secondary transition-colors font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={quantity <= 1}
-                  >
-                    −
-                  </button>
-                  <input
-                    type="number"
-                    min={1}
-                    max={maxQuantity}
-                    value={quantity}
-                    onChange={(e) =>
-                      handleQuantityChange(parseInt(e.target.value) || 1)
-                    }
-                    className="w-16 text-center font-semibold focus:outline-none"
-                  />
-                  <button
-                    onClick={() => handleQuantityChange(quantity + 1)}
-                    className="px-4 py-3 hover:bg-secondary transition-colors font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={quantity >= maxQuantity}
-                  >
-                    +
-                  </button>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-sm text-muted-foreground">
-                    Total:{" "}
-                    <span className="font-bold text-foreground">
-                      {formatPrice(price * quantity)}
-                    </span>
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    Max: {maxQuantity} {maxQuantity === 1 ? "item" : "items"}
-                  </span>
-                </div>
-              </div>
+          {Object.keys(variantGroups).length > 0 && (
+            <div className="space-y-4">
+              {Object.entries(variantGroups).map(([groupName, variants]) => {
+                const selectedInGroup = variants.find(
+                  (v) => v.id === selectedVariant?.id
+                );
+                return (
+                  <div key={groupName} className="space-y-2">
+                    <label className="text-sm font-medium">
+                      {groupName === "Sofa" || groupName === "LOVESAT"
+                        ? "Seating:"
+                        : groupName === "Leather" || groupName === "FABRIC"
+                        ? "Featured Material:"
+                        : "Color:"}
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {variants.map((variant) => {
+                        const isSelected = selectedVariant?.id === variant.id;
+                        return (
+                          <button
+                            key={variant.id}
+                            onClick={() => {
+                              setSelectedVariant(variant);
+                              setQuantity(1);
+                            }}
+                            disabled={!variant.availableForSale}
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                              isSelected
+                                ? "bg-red-50 text-foreground border-2 border-red-500"
+                                : "bg-background border border-border text-muted-foreground hover:border-foreground"
+                            } ${
+                              !variant.availableForSale
+                                ? "opacity-50 cursor-not-allowed"
+                                : "cursor-pointer"
+                            }`}
+                          >
+                            {variant.title.split(" / ").pop() || variant.title}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
 
           {/* カートに追加ボタン */}
-          {product.availableForSale && selectedVariant && maxQuantity > 0 ? (
-            <AddToCartButton
-              variantId={selectedVariant.id}
-              quantity={quantity}
-              className="w-full text-base h-14 font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95"
-            />
-          ) : (
-            <Button
-              disabled
-              size="lg"
-              className="w-full text-base h-14 font-bold"
-            >
-              Sold Out
-            </Button>
-          )}
+          <div className="flex items-center gap-3">
+            {product.availableForSale && selectedVariant && maxQuantity > 0 ? (
+              <>
+                <AddToCartButton
+                  variantId={selectedVariant.id}
+                  quantity={quantity}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white h-12 font-semibold uppercase"
+                  productName={product.title}
+                  productImage={images[selectedImage]?.url || images[0]?.url}
+                />
+                <AddToFavoritesButton
+                  productId={product.id}
+                  productName={product.title}
+                  productImage={images[selectedImage]?.url || images[0]?.url}
+                  variant="icon"
+                  size="lg"
+                  className="h-12 w-12"
+                />
+              </>
+            ) : (
+              <>
+                <Button
+                  disabled
+                  size="lg"
+                  className="flex-1 h-12 font-semibold uppercase"
+                >
+                  Sold Out
+                </Button>
+                <AddToFavoritesButton
+                  productId={product.id}
+                  productName={product.title}
+                  productImage={images[selectedImage]?.url || images[0]?.url}
+                  variant="icon"
+                  size="lg"
+                  className="h-12 w-12"
+                />
+              </>
+            )}
+          </div>
 
-          {/* Trust Badges */}
-          <div className="grid grid-cols-3 gap-3 pt-4 border-t">
-            <div className="flex flex-col items-center text-center p-3 rounded-lg bg-secondary/30">
-              <Truck className="w-6 h-6 mb-2 text-primary" />
-              <span className="text-xs font-medium">Free Shipping</span>
+          {/* 配送情報 */}
+          <div className="space-y-3 pt-4 border-t">
+            <div className="flex items-center gap-2 text-sm">
+              <Truck className="w-5 h-5 text-muted-foreground" />
+              <span className="text-muted-foreground">
+                Delivered to{" "}
+                <a href="#" className="text-foreground hover:underline">
+                  Los Angeles, CA
+                </a>
+                : Jan 20th - Feb 2nd
+              </span>
             </div>
-            <div className="flex flex-col items-center text-center p-3 rounded-lg bg-secondary/30">
-              <Shield className="w-6 h-6 mb-2 text-primary" />
-              <span className="text-xs font-medium">Secure Payment</span>
-            </div>
-            <div className="flex flex-col items-center text-center p-3 rounded-lg bg-secondary/30">
-              <RotateCcw className="w-6 h-6 mb-2 text-primary" />
-              <span className="text-xs font-medium">Easy Returns</span>
+            <div className="flex items-center gap-2 text-sm">
+              <Shield className="w-5 h-5 text-muted-foreground" />
+              <a href="#" className="text-muted-foreground hover:underline">
+                30 day satisfaction guarantee.
+              </a>
             </div>
           </div>
+
         </div>
       </div>
 
-      {/* Related Products Section */}
-      <section className="border-t pt-12">
-        <h2 className="text-2xl md:text-3xl font-bold mb-6">
-          You May Also Like
-        </h2>
-        <div className="text-center text-muted-foreground py-12 bg-linear-to-br from-secondary/30 to-secondary/10 rounded-2xl border-2 border-dashed border-secondary">
-          <p className="text-lg font-medium">Related products coming soon...</p>
-          <p className="text-sm mt-2">Check back later for recommendations</p>
-        </div>
-      </section>
-    </>
+      {/* Accordion Section */}
+      <div className="border-t pt-8">
+        <Accordion type="single" collapsible className="w-full space-y-0">
+          <AccordionItem value="description" className="border-b">
+            <AccordionTrigger className="text-base font-medium py-4 hover:no-underline">
+              <span>Description</span>
+            </AccordionTrigger>
+            <AccordionContent className="text-sm text-muted-foreground pb-4">
+              {product.descriptionHtml ? (
+                <div
+                  className="prose prose-sm max-w-none [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-2 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:space-y-2 [&>p]:leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
+                />
+              ) : (
+                <p>{product.description || "No description available."}</p>
+              )}
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="features" className="border-b">
+            <AccordionTrigger className="text-base font-medium py-4 hover:no-underline">
+              <span>Features</span>
+            </AccordionTrigger>
+            <AccordionContent className="text-sm text-muted-foreground pb-4">
+              <ul className="list-disc pl-5 space-y-2">
+                <li>Premium quality materials</li>
+                <li>Expert craftsmanship</li>
+                <li>Designer approved</li>
+                <li>Easy to assemble</li>
+              </ul>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="specifications" className="border-b">
+            <AccordionTrigger className="text-base font-medium py-4 hover:no-underline">
+              <span>Specifications</span>
+            </AccordionTrigger>
+            <AccordionContent className="text-sm text-muted-foreground pb-4">
+              <dl className="space-y-2">
+                <div className="flex justify-between">
+                  <dt className="font-medium">Material:</dt>
+                  <dd className="text-muted-foreground">
+                    {product.tags.find((t) =>
+                      t.toLowerCase().includes("material")
+                    ) || "Premium materials"}
+                  </dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="font-medium">Dimensions:</dt>
+                  <dd className="text-muted-foreground">Check product details</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="font-medium">Weight:</dt>
+                  <dd className="text-muted-foreground">Varies by variant</dd>
+                </div>
+              </dl>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="care" className="border-b">
+            <AccordionTrigger className="text-base font-medium py-4 hover:no-underline">
+              <span>Care & Assembly</span>
+            </AccordionTrigger>
+            <AccordionContent className="text-sm text-muted-foreground pb-4">
+              <p className="mb-3">
+                Follow these care instructions to maintain your product's quality:
+              </p>
+              <ul className="list-disc pl-5 space-y-2">
+                <li>Clean with a soft, damp cloth</li>
+                <li>Avoid harsh chemicals</li>
+                <li>Keep away from direct sunlight</li>
+                <li>Assembly instructions included</li>
+              </ul>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
+    </div>
   );
 }

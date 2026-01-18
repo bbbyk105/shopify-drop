@@ -63,6 +63,22 @@ export default function Header({ hasSale = true }: HeaderProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
+  // ハンバーガーメニューが開いている時、背景のスクロールを無効化
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      // メニューが開いている時は背景のスクロールを無効化
+      document.body.style.overflow = "hidden";
+    } else {
+      // メニューが閉じている時はスクロールを有効化
+      document.body.style.overflow = "";
+    }
+
+    // クリーンアップ
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileMenuOpen]);
+
   return (
     <>
       <header
