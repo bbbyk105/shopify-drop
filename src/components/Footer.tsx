@@ -42,6 +42,12 @@ export default function Footer() {
               Privacy Policy
             </Link>
             <Link
+              href="/cancellation"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Cancellation Policy
+            </Link>
+            <Link
               href="/terms"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >

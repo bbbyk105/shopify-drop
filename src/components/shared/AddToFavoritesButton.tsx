@@ -49,7 +49,9 @@ export default function AddToFavoritesButton({
 
   const favorite = mounted ? isFavorite(productId) : false;
 
-  const handleAddToFavorites = () => {
+  const handleAddToFavorites = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setIsAnimating(true);
     toggle(productId);
 
@@ -64,7 +66,11 @@ export default function AddToFavoritesButton({
     setTimeout(() => setIsAnimating(false), 300);
   };
 
-  const handleRemoveFromFavorites = () => {
+  const handleRemoveFromFavorites = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setIsAnimating(true);
     toggle(productId);
     setOpen(false);
@@ -95,6 +101,10 @@ export default function AddToFavoritesButton({
               variant="ghost"
               size="icon"
               aria-label="Remove from favorites"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
               className={cn(
                 sizeClasses[size],
                 "text-red-500",
@@ -175,6 +185,10 @@ export default function AddToFavoritesButton({
         <AlertDialogTrigger asChild>
           <Button
             variant="outline"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
             className={cn(
               "border-red-500 text-red-500",
               isAnimating && "scale-105",
