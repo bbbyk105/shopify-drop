@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { getAllProducts } from "@/lib/shopify/queries/products";
 import type { Product as ShopifyProduct } from "@/lib/shopify/types";
+import type { Product as LocalProduct } from "@/types";
 import { products } from "@/lib/products";
+
+type Product = ShopifyProduct | LocalProduct;
 
 export async function POST(request: Request) {
   try {
@@ -23,14 +26,19 @@ export async function POST(request: Request) {
     }
 
     // Shopify商品があればそれを使用、なければローカル商品を使用
-    const allProducts =
+    const allProducts: Product[] =
       shopifyProducts.length > 0 ? shopifyProducts : products;
 
     // お気に入りIDに一致する商品をフィルター
-    const favoriteProducts = allProducts.filter((product) => {
-      const productId =
-        "id" in product ? product.id : `local-${product.slug}`;
-      return productIds.includes(productId);
+    const favoriteProducts = allProducts.filter((product): product is Product => {
+      if ("slug" in product) {
+        // LocalProductの場合
+        const productId = `local-${product.slug}`;
+        return productIds.includes(productId);
+      } else {
+        // ShopifyProductの場合
+        return productIds.includes(product.id);
+      }
     });
 
     return NextResponse.json({ products: favoriteProducts });

@@ -205,7 +205,14 @@ export default function ProductsClient({ products }: ProductsClientProps) {
 
     // 在庫フィルター
     if (inStock) {
-      filtered = filtered.filter((product) => product.availableForSale !== false);
+      filtered = filtered.filter((product) => {
+        // Shopify商品の場合はavailableForSaleをチェック
+        if ("availableForSale" in product) {
+          return product.availableForSale !== false;
+        }
+        // ローカル商品の場合は常に在庫ありとみなす
+        return true;
+      });
     }
 
     // ソート
