@@ -52,7 +52,7 @@ export default function Footer() {
 
           {/* Copyright */}
           <p className="text-sm text-muted-foreground text-center">
-            © 2025 Evimería. All rights reserved.
+            © 2025 Evimeria. All rights reserved.
           </p>
         </div>
       </div>

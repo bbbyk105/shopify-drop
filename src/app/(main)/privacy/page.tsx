@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy - EVIMERÍA Home",
+  title: "Privacy Policy - EVIMERIA Home",
   description:
-    "Privacy Policy for EVIMERÍA Home. Learn how we collect, use, and protect your personal information.",
+    "Privacy Policy for EVIMERIA Home. Learn how we collect, use, and protect your personal information.",
 };
 
 export default function PrivacyPolicyPage() {
@@ -25,7 +25,7 @@ export default function PrivacyPolicyPage() {
         <section>
           <h2 className="text-2xl font-bold mb-4">1. Introduction</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Welcome to EVIMERÍA Home. We are committed to protecting your
+            Welcome to EVIMERIA Home. We are committed to protecting your
             personal information and your right to privacy. This Privacy Policy
             explains how we collect, use, disclose, and safeguard your
             information when you visit our website and use our services.
@@ -194,7 +194,7 @@ export default function PrivacyPolicyPage() {
               <strong>Email:</strong> privacy@evimeria.com
             </p>
             <p>
-              <strong>Address:</strong> EVIMERÍA Home Customer Service
+              <strong>Address:</strong> EVIMERIA Home Customer Service
             </p>
           </div>
         </section>
