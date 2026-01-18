@@ -12,8 +12,8 @@ export default function TermsPage() {
 
       <div className="prose prose-lg max-w-none space-y-6">
         <p>
-          These Terms of Service ("Terms") govern your use of the Evimeria Home
-          online store and related services (the "Service"). By using our
+          These Terms of Service (&quot;Terms&quot;) govern your use of the Evimeria Home
+          online store and related services (the &quot;Service&quot;). By using our
           Service, you agree to be bound by these Terms.
         </p>
 
@@ -22,8 +22,8 @@ export default function TermsPage() {
             Article 1 (Scope)
           </h2>
           <p>
-            These Terms apply to all relationships between Evimeria Home ("we,"
-            "us," or "our") and users ("you" or "customer") regarding the use of
+            These Terms apply to all relationships between Evimeria Home (&quot;we,&quot;
+            &quot;us,&quot; or &quot;our&quot;) and users (&quot;you&quot; or &quot;customer&quot;) regarding the use of
             the Service.
           </p>
         </section>
@@ -139,7 +139,7 @@ export default function TermsPage() {
             </h3>
             <p>
               We do not accept returns or refunds due to customer preference, such
-              as "I changed my mind," "It looked different," or "It doesn't fit."
+              as &quot;I changed my mind,&quot; &quot;It looked different,&quot; or &quot;It doesn&apos;t fit.&quot;
             </p>
           </div>
 
