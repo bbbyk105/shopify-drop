@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import type { Product as ShopifyProduct } from "@/lib/shopify/types";
 import { Product as LocalProduct } from "@/types";
@@ -16,7 +17,8 @@ interface DiningRoomKitchenClientProps {
 
 type SortOption = "popularity" | "price-high" | "price-low" | "newest";
 
-const ITEMS_PER_LOAD = 20;
+const ITEMS_PER_PAGE = 8;
+const FEATURED_COUNT = 3; // フィーチャー商品の数
 
 const colorMap: Record<string, string> = {
   white: "#FFFFFF",
@@ -38,7 +40,7 @@ export default function DiningRoomKitchenClient({
   products,
 }: DiningRoomKitchenClientProps) {
   const [sortOption, setSortOption] = useState<SortOption>("popularity");
-  const [showCount, setShowCount] = useState(ITEMS_PER_LOAD);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = [...products];
@@ -76,12 +78,21 @@ export default function DiningRoomKitchenClient({
     }
   }, [products, sortOption]);
 
-  const displayedProducts = filteredAndSortedProducts.slice(0, showCount);
-  const hasMore = showCount < filteredAndSortedProducts.length;
+  // マガジンスタイル用のフィーチャー商品（最初の3件）- 常に表示
+  const featuredProducts = filteredAndSortedProducts.slice(0, FEATURED_COUNT);
+  
+  // フィーチャー商品以外の商品をページネーション
+  const regularProductsAll = filteredAndSortedProducts.slice(FEATURED_COUNT);
+  const totalPages = Math.ceil(regularProductsAll.length / (ITEMS_PER_PAGE - FEATURED_COUNT));
+  const startIndex = (currentPage - 1) * (ITEMS_PER_PAGE - FEATURED_COUNT);
+  const endIndex = startIndex + (ITEMS_PER_PAGE - FEATURED_COUNT);
+  const regularProducts = regularProductsAll.slice(startIndex, endIndex);
 
-  // マガジンスタイル用のフィーチャー商品（最初の3件）
-  const featuredProducts = filteredAndSortedProducts.slice(0, 3);
-  const regularProducts = displayedProducts.slice(3);
+  // ソート変更時にページを1にリセット
+  const handleSortChange = (option: SortOption) => {
+    setSortOption(option);
+    setCurrentPage(1);
+  };
 
   return (
     <div className="bg-background min-h-screen">
@@ -145,7 +156,7 @@ export default function DiningRoomKitchenClient({
             <h2 className="text-3xl font-bold">All Products</h2>
             <select
               value={sortOption}
-              onChange={(e) => setSortOption(e.target.value as SortOption)}
+              onChange={(e) => handleSortChange(e.target.value as SortOption)}
               className="bg-secondary border border-border rounded-lg px-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               <option value="popularity">Sort by: Popularity</option>
@@ -228,17 +239,73 @@ export default function DiningRoomKitchenClient({
             })}
           </div>
 
-          {hasMore && (
-            <div className="text-center py-8">
-              <p className="text-sm text-muted-foreground mb-4">
-                Showing {displayedProducts.length} of{" "}
-                {filteredAndSortedProducts.length}
-              </p>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-12">
               <Button
-                onClick={() => setShowCount((prev) => prev + ITEMS_PER_LOAD)}
-                className="bg-red-600 hover:bg-red-700 text-white px-8 py-2"
+                variant="outline"
+                size="icon"
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="h-10 w-10"
               >
-                SEE MORE
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                  // ページ数が多い場合は省略表示
+                  if (totalPages > 7) {
+                    if (
+                      page === 1 ||
+                      page === totalPages ||
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    ) {
+                      return (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(page)}
+                          className="h-10 w-10"
+                        >
+                          {page}
+                        </Button>
+                      );
+                    } else if (page === currentPage - 2 || page === currentPage + 2) {
+                      return (
+                        <span key={page} className="px-2 text-muted-foreground">
+                          ...
+                        </span>
+                      );
+                    }
+                    return null;
+                  }
+
+                  return (
+                    <Button
+                      key={page}
+                      variant={currentPage === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(page)}
+                      className="h-10 w-10"
+                    >
+                      {page}
+                    </Button>
+                  );
+                })}
+              </div>
+
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                }
+                disabled={currentPage === totalPages}
+                className="h-10 w-10"
+              >
+                <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
           )}
