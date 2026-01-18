@@ -7,9 +7,9 @@ import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Lumina Luxe - Illuminate Your World",
+  title: "Evimeria Home - Illuminate Your World",
   description:
-    "Discover elegant lighting solutions and premium home decor at Lumina Luxe. Transform your space with our curated collection of contemporary and classic designs.",
+    "Discover elegant lighting solutions and premium home decor at Evimeria Home. Transform your space with our curated collection of contemporary and classic designs.",
   keywords: [
     "lighting",
     "lamps",

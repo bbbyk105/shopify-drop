@@ -6,7 +6,7 @@ import LightingClient from "./LightingClient";
 import { filterProductsByLighting } from "@/lib/utils/room-filters";
 
 export const metadata: Metadata = {
-  title: "Lighting Collection - Lumina Luxe",
+  title: "Lighting Collection - Evimeria Home",
   description: "Browse our complete collection of premium lighting solutions.",
 };
 

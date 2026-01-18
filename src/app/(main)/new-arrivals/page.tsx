@@ -5,7 +5,7 @@ import type { Product as ShopifyProduct } from "@/lib/shopify/types";
 import NewArrivalsClient from "./NewArrivalsClient";
 
 export const metadata: Metadata = {
-  title: "New Arrivals - Lumina Luxe",
+  title: "New Arrivals - Evimeria Home",
   description:
     "Discover our latest collection of elegant lighting solutions and home decor.",
 };
