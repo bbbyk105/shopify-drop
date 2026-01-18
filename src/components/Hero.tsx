@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 export default function Hero() {
   return (
-    <section className="relative h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden rounded-2xl mb-12 lg:mb-16 shadow-xl">
+    <section className="relative h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden rounded-2xl mb-8 lg:mb-12 shadow-xl">
       <div className="absolute inset-0">
         <video
           autoPlay
@@ -36,6 +36,13 @@ export default function Hero() {
               SHOP EVERGREEN BEDROOM
             </Button>
           </Link>
+        </div>
+      </div>
+      
+      {/* 下方向の視覚ヒント */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+        <div className="w-6 h-10 border-2 border-white/50 rounded-full flex items-start justify-center p-2">
+          <div className="w-1.5 h-1.5 bg-white/70 rounded-full animate-pulse" />
         </div>
       </div>
     </section>

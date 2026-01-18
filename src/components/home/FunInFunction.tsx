@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export default function FunInFunction() {
   return (
-    <section className="mb-12 lg:mb-16">
+    <section>
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
           {/* Put the 'fun' in function */}

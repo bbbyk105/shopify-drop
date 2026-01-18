@@ -66,7 +66,7 @@ export default function ProductSlider({
           type="button"
           aria-label="Scroll left"
           onClick={() => scrollByAmount("left")}
-          className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 items-center justify-center rounded-full border bg-background/90 shadow-sm hover:bg-background transition-colors"
+          className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 h-12 w-12 items-center justify-center rounded-full border border-border bg-background/95 backdrop-blur-sm shadow-lg hover:bg-background transition-colors"
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
@@ -76,7 +76,7 @@ export default function ProductSlider({
           type="button"
           aria-label="Scroll right"
           onClick={() => scrollByAmount("right")}
-          className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 items-center justify-center rounded-full border bg-background/90 shadow-sm hover:bg-background transition-colors"
+          className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 h-12 w-12 items-center justify-center rounded-full border border-border bg-background/95 backdrop-blur-sm shadow-lg hover:bg-background transition-colors"
         >
           <ChevronRight className="h-5 w-5" />
         </button>
@@ -85,12 +85,12 @@ export default function ProductSlider({
       {/* Slider */}
       <div
         ref={scrollRef}
-        className="flex gap-6 lg:gap-8 overflow-x-auto pb-2 md:pb-4 scroll-smooth snap-x snap-mandatory scrollbar-thin scrollbar-thumb-muted-foreground/40 scrollbar-track-transparent"
+        className="flex gap-4 lg:gap-6 overflow-x-auto pb-2 md:pb-4 scroll-smooth snap-x snap-mandatory scrollbar-thin scrollbar-thumb-muted-foreground/40 scrollbar-track-transparent"
       >
         {products.map((product) => (
           <div
             key={product.id}
-            className="snap-start shrink-0 w-[220px] sm:w-[260px] md:w-[280px]"
+            className="snap-start shrink-0 w-[168px] sm:w-[220px] md:w-[237px] lg:w-[203px]"
           >
             <ProductCard product={product} variant={variant} />
           </div>

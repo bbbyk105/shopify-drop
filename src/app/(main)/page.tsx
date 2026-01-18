@@ -5,7 +5,7 @@ import ShopByRoom from "@/components/home/ShopByRoom";
 import CustomizeForConnection from "@/components/home/CustomizeForConnection";
 import FunInFunction from "@/components/home/FunInFunction";
 import FreeDesignPlan from "@/components/home/FreeDesignPlan";
-import PromotionalTwoColumn from "@/components/home/PromotionalTwoColumn";
+import Section from "@/components/home/Section";
 import { products } from "@/lib/products";
 import { getAllProducts } from "@/lib/shopify/queries/products";
 import type { Product as ShopifyProduct } from "@/lib/shopify/types";
@@ -47,57 +47,49 @@ export default async function HomePage() {
     })
     .slice(0, 8);
 
-    return (
-      <div>
-        {/* Hero */}
-        <div className="container mx-auto px-4 pt-8 pb-0">
-          <Hero />
-        </div>
-
-        {/* Featured Collections */}
-        <div className="mb-12 lg:mb-16 border-t pt-12 lg:pt-16">
-          <div className="container mx-auto px-4">
-            <FeaturedCollections />
-          </div>
-        </div>
-    
-        {/* Shop By Room */}
-        <ShopByRoom />
-    
-        {/* Promotional Two-Column Layout */}
-        <PromotionalTwoColumn />
-    
-        
-    
-        {/* ストーリー枠（連続させない） */}
-        <div className="container mx-auto px-4">
-          <FunInFunction />
-        </div>
-    
-        {/* New Arrivals */}
-        {newArrivals.length > 0 && (
-          <section className="py-12 lg:py-16 mb-12 lg:mb-16 border-t">
-            <div className="container mx-auto px-4">
-              <div className="mb-8 lg:mb-12">
-                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 leading-tight">
-                  New Arrivals
-                </h2>
-              </div>
-              <ProductSlider products={newArrivals} variant="titleOnly" />
-            </div>
-          </section>
-        )}
-    
-        {/* もう1枚ストーリーを入れるならここ（任意） */}
-        <div className="container mx-auto px-4">
-          <CustomizeForConnection />
-        </div>
-    
-        {/* 最後に強いCTA（下に置く） */}
-        <div className="container mx-auto px-4">
-          <FreeDesignPlan />
-        </div>
+  return (
+    <div>
+      {/* (1) Hero */}
+      <div className="container mx-auto px-4 pt-8 pb-0">
+        <Hero />
       </div>
-    );
-    
+
+      {/* (2) Shop By Room - 回遊導線 */}
+      <ShopByRoom />
+
+      {/* (3) Top Sellers - 商品密度の山1 */}
+      {bestSellers.length > 0 && (
+        <Section title="Top Sellers" showDivider>
+          <ProductSlider products={bestSellers} variant="titleOnly" />
+        </Section>
+      )}
+
+      {/* (4) Featured Collections - 回遊の次の一手 */}
+      <Section title="Featured Collection" subtitle="Discover our special curated collections" showDivider>
+        <FeaturedCollections />
+      </Section>
+
+      {/* (5) Fun In Function - 編集バナー（1枚だけ） */}
+      <div className="container mx-auto px-4 py-12 lg:py-16">
+        <FunInFunction />
+      </div>
+
+      {/* (6) New Arrivals - 商品密度の山2 */}
+      {newArrivals.length > 0 && (
+        <Section title="New Arrivals" showDivider>
+          <ProductSlider products={newArrivals} variant="titleOnly" />
+        </Section>
+      )}
+
+      {/* (7) Customize For Connection - 編集バナー（任意で1枚） */}
+      <div className="container mx-auto px-4 py-12 lg:py-16">
+        <CustomizeForConnection />
+      </div>
+
+      {/* (8) Free Design Plan - ページ最下部の強いCTA */}
+      <div className="container mx-auto px-4 py-12 lg:py-16">
+        <FreeDesignPlan />
+      </div>
+    </div>
+  );
 }

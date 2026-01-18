@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export default function CustomizeForConnection() {
   return (
-    <section className="relative h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden rounded-2xl mb-12 lg:mb-16">
+    <section className="relative h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden rounded-2xl">
       <div className="absolute inset-0">
         <Image
           src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1200&h=800&fit=crop"

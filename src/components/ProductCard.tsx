@@ -38,35 +38,37 @@ export default function ProductCard({
   const isTitleOnly = variant === "titleOnly";
 
   return (
-    <Link href={`/products/${slug}`} className="block group">
+    <Link href={`/products/${slug}`} className="block group h-full">
       <div
-        className="cursor-pointer space-y-4 transition-all"
+        className="cursor-pointer h-full flex flex-col transition-all"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div className="relative aspect-square overflow-hidden rounded-2xl bg-secondary/30 mb-4 shadow-lg group-hover:shadow-xl transition-all">
+        <div className="relative aspect-square overflow-hidden rounded-lg bg-secondary/30 mb-3 shadow-sm group-hover:shadow-md transition-all">
           <Image
             src={image}
             alt={title}
             fill
-            className="object-cover"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
           <div
-            className={`absolute inset-0 bg-black/20 transition-opacity duration-300 ${
+            className={`absolute inset-0 bg-black/10 transition-opacity duration-300 ${
               isHovered ? "opacity-100" : "opacity-0"
             }`}
           />
         </div>
-        <div className="space-y-2">
-          <h3 className="text-lg md:text-xl font-bold mb-1 group-hover:text-primary transition-colors leading-tight">
+        <div className="flex flex-col flex-1 space-y-1.5">
+          <h3 className="text-base md:text-lg font-semibold group-hover:text-primary transition-colors leading-tight line-clamp-2">
             {title}
           </h3>
-          <p className="text-sm text-muted-foreground mb-2 leading-relaxed line-clamp-2">
-            {description}
-          </p>
           {!isTitleOnly && (
-            <p className="text-lg md:text-xl font-bold">{formatPrice(price)}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 flex-1">
+              {description}
+            </p>
+          )}
+          {price && price > 0 && (
+            <p className="text-base md:text-lg font-bold mt-auto">{formatPrice(price)}</p>
           )}
         </div>
       </div>

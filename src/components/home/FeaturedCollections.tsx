@@ -13,15 +13,9 @@ export default function FeaturedCollections() {
   }
 
   return (
-    <section className="container mx-auto px-4 py-16">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold mb-2">Featured Collection</h2>
-        <p className="text-muted-foreground">
-          Discover our special curated collections
-        </p>
-      </div>
+    <>
       <FeaturedCollectionCard collection={minelight} />
-    </section>
+    </>
   );
 }
 
