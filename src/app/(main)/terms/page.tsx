@@ -51,7 +51,7 @@ export default function TermsPage() {
           </p>
         </section>
 
-        <section>
+        <section id="shipping" className="scroll-mt-20 md:scroll-mt-28">
           <h2 className="text-2xl font-semibold mt-8 mb-4">
             Article 4 (Shipping)
           </h2>
@@ -97,7 +97,7 @@ export default function TermsPage() {
           </p>
         </section>
 
-        <section>
+        <section id="returns" className="scroll-mt-20 md:scroll-mt-28">
           <h2 className="text-2xl font-semibold mt-8 mb-4">
             Article 7 (Returns & Refunds)
           </h2>
@@ -225,20 +225,60 @@ export default function TermsPage() {
           </p>
         </section>
 
+        {/* Legal Information - FTC Compliance */}
         <section className="mt-8 p-4 bg-muted rounded-lg">
           <h2 className="text-2xl font-semibold mb-4">
-            For Legal Display (Japan / Specified Commercial Transactions Act)
+            Legal Information
           </h2>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <p>
               <strong>Business Name:</strong> Evimeria Home
+            </p>
+            <p>
+              <strong>Owner/Representative:</strong> Byakko Kondo
+            </p>
+            <p>
+              <strong>Business Address:</strong><br />
+              8-21-2, Yoshiwara 2-chome<br />
+              Fuji City, Shizuoka 417-0051<br />
+              Japan
             </p>
             <p>
               <strong>Contact Email:</strong> info@evimeria105.com
             </p>
             <p>
-              <strong>Business Address:</strong> Will be disclosed without delay
-              upon request.
+              <strong>Pricing:</strong> All prices displayed on product pages include applicable taxes. Shipping fees and handling charges are displayed separately during checkout.
+            </p>
+            <p>
+              <strong>Payment Methods:</strong> Credit card
+            </p>
+            <p>
+              <strong>Payment Timing:</strong> Payment is processed at the time of order placement.
+            </p>
+            <p>
+              <strong>Shipping & Delivery:</strong> Items are typically shipped within 5-20 business days after order confirmation, depending on the shipping destination. Estimated delivery times: Japan (5-14 business days), United States (7-20 business days). For more details, please see our{" "}
+              <a href="/terms#shipping" className="text-primary hover:underline">
+                Shipping Policy
+              </a>
+              .
+            </p>
+            <p>
+              <strong>Return Policy:</strong> We offer refunds only (no replacements or reshipments) if you contact us within 7 days after delivery and we can confirm the issue. We do not accept returns or refunds due to customer preference. Please refer to our{" "}
+              <a href="/cancellation" className="text-primary hover:underline">
+                Cancellation Policy
+              </a>
+              {" "}and{" "}
+              <a href="/terms#returns" className="text-primary hover:underline">
+                Returns & Refunds
+              </a>
+              {" "}section for complete details.
+            </p>
+            <p>
+              <strong>Cancellation:</strong> Orders can only be cancelled before shipment. Once an order has been processed for shipment, it cannot be cancelled. Please refer to our{" "}
+              <a href="/cancellation" className="text-primary hover:underline">
+                Cancellation Policy
+              </a>
+              {" "}for details.
             </p>
           </div>
         </section>
