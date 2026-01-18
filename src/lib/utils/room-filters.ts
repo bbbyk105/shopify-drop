@@ -50,6 +50,18 @@ const roomTagMap: Record<string, string[]> = {
     "light",
     "lamp",
   ],
+  clothing: [
+    "Clothing", // Shopifyで使用する正確なタグ名
+    "clothing",
+    "apparel",
+    "wear",
+    "tshirt",
+    "t-shirt",
+    "t shirt",
+    "shirt",
+    "top",
+    "fashion",
+  ],
 };
 
 export function filterProductsByRoom(
@@ -106,4 +118,9 @@ export function filterProductsByRoom(
 // Lighting専用のフィルター関数
 export function filterProductsByLighting(products: Product[]): Product[] {
   return filterProductsByRoom(products, "lighting");
+}
+
+// Clothing専用のフィルター関数
+export function filterProductsByClothing(products: Product[]): Product[] {
+  return filterProductsByRoom(products, "clothing");
 }

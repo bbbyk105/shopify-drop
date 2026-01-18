@@ -253,6 +253,12 @@ export default function Header({ hasSale = true }: HeaderProps) {
             >
               Lighting
             </Link>
+            <Link
+              href="/clothing"
+              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+            >
+              Clothing
+            </Link>
             {hasSale && (
               <Link
                 href="/sale"
@@ -362,6 +368,13 @@ export default function Header({ hasSale = true }: HeaderProps) {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <span>Lighting</span>
+              </Link>
+              <Link
+                href="/clothing"
+                className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <span>Clothing</span>
               </Link>
               {hasSale && (
                 <Link
