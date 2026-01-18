@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Lumina Luxe - Illuminate Your World",
+  title: "Evimeria Home - Illuminate Your World",
   description:
-    "Discover elegant lighting solutions and premium home decor at Lumina Luxe. Transform your space with our curated collection of contemporary and classic designs.",
+    "Discover elegant lighting solutions and premium home decor at Evimeria Home. Transform your space with our curated collection of contemporary and classic designs.",
   keywords: [
     "lighting",
     "lamps",
@@ -45,6 +46,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider>
           {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

@@ -1,14 +1,28 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useCart } from "@/hooks/useCart";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2 } from "lucide-react";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function CartPage() {
   const { cart, init, setQty, remove, loading } = useCart();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null);
 
   useEffect(() => {
     init();
@@ -16,30 +30,40 @@ export default function CartPage() {
 
   if (loading && !cart) {
     return (
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center">Loading cart...</div>
-      </div>
+      <main className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-1 container mx-auto px-4 py-16">
+          <div className="text-center">Loading cart...</div>
+        </div>
+        <Footer />
+      </main>
     );
   }
 
   if (!cart || cart.totalQuantity === 0) {
     return (
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-2xl mx-auto text-center space-y-4">
-          <h1 className="text-3xl font-bold">Your cart is empty</h1>
-          <p className="text-muted-foreground">
-            Add some products to get started!
-          </p>
-          <Link href="/">
-            <Button>Continue Shopping</Button>
-          </Link>
+      <main className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center container mx-auto px-4 py-16">
+          <div className="max-w-2xl mx-auto text-center space-y-4">
+            <h1 className="text-3xl font-bold">Your cart is empty</h1>
+            <p className="text-muted-foreground">
+              Add some products to get started!
+            </p>
+            <Link href="/">
+              <Button>Continue Shopping</Button>
+            </Link>
+          </div>
         </div>
-      </div>
+        <Footer />
+      </main>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 md:py-8">
+    <main className="min-h-screen flex flex-col">
+      <Header />
+      <div className="flex-1 container mx-auto px-4 py-6 md:py-8">
       <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
         {/* ヘッダー */}
         <div>
@@ -135,22 +159,60 @@ export default function CartPage() {
 
               {/* 削除ボタン */}
               <div className="flex items-start">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    if (
-                      window.confirm(
-                        `Are you sure you want to remove "${node.merchandise.product.title}" from your cart?`
-                      )
-                    ) {
-                      remove(node.id);
-                    }
-                  }}
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10 p-2"
+                <AlertDialog
+                  open={deleteDialogOpen === node.id}
+                  onOpenChange={(open) =>
+                    setDeleteDialogOpen(open ? node.id : null)
+                  }
                 >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10 p-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Remove from Cart?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to remove{" "}
+                        <strong>{node.merchandise.product.title}</strong> from
+                        your cart? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    {node.merchandise.product.featuredImage && (
+                      <div className="flex justify-center my-4">
+                        <div className="relative h-24 w-24 overflow-hidden rounded-md border bg-secondary">
+                          <Image
+                            src={node.merchandise.product.featuredImage.url}
+                            alt={
+                              node.merchandise.product.featuredImage.altText ||
+                              node.merchandise.product.title
+                            }
+                            fill
+                            className="object-cover"
+                            sizes="96px"
+                          />
+                        </div>
+                      </div>
+                    )}
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => {
+                          remove(node.id);
+                          setDeleteDialogOpen(null);
+                        }}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Remove
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
           ))}
@@ -192,6 +254,8 @@ export default function CartPage() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+      <Footer />
+    </main>
   );
 }

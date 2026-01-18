@@ -74,6 +74,252 @@ export const products: Product[] = [
       "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=800&h=800&fit=crop&q=80",
     category: "Table Lamps",
   },
+  // Living Room Products
+  {
+    id: "7",
+    slug: "modern-sofa-living",
+    name: "Modern Comfort Sofa",
+    description: "Elegant and comfortable sofa perfect for your living room.",
+    price: 1299,
+    image:
+      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&h=800&fit=crop&q=80",
+    category: "Living Room",
+  },
+  {
+    id: "8",
+    slug: "coffee-table-oak",
+    name: "Oak Coffee Table",
+    description: "Sturdy oak coffee table with modern design.",
+    price: 450,
+    image:
+      "https://images.unsplash.com/photo-1532372320572-cda25653a26d?w=800&h=800&fit=crop&q=80",
+    category: "Living Room",
+  },
+  {
+    id: "9",
+    slug: "tv-stand-modern",
+    name: "Modern TV Stand",
+    description: "Sleek TV stand with storage compartments.",
+    price: 599,
+    image:
+      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=800&fit=crop&q=80",
+    category: "Living Room",
+  },
+  {
+    id: "10",
+    slug: "accent-chair-velvet",
+    name: "Velvet Accent Chair",
+    description: "Luxurious velvet accent chair for your living space.",
+    price: 399,
+    image:
+      "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=800&h=800&fit=crop&q=80",
+    category: "Living Room",
+  },
+  // Bedroom Products
+  {
+    id: "11",
+    slug: "platform-bed-queen",
+    name: "Modern Platform Bed",
+    description: "Minimalist platform bed with built-in storage.",
+    price: 899,
+    image:
+      "https://images.unsplash.com/photo-1631889993951-f6f02e98c5a2?w=800&h=800&fit=crop&q=80",
+    category: "Bedroom",
+  },
+  {
+    id: "12",
+    slug: "dresser-wooden",
+    name: "Wooden Dresser",
+    description: "Spacious dresser with multiple drawers.",
+    price: 699,
+    image:
+      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&h=800&fit=crop&q=80",
+    category: "Bedroom",
+  },
+  {
+    id: "13",
+    slug: "nightstand-set",
+    name: "Matching Nightstand Set",
+    description: "Pair of elegant nightstands for your bedroom.",
+    price: 349,
+    image:
+      "https://images.unsplash.com/photo-1532372320572-cda25653a26d?w=800&h=800&fit=crop&q=80",
+    category: "Bedroom",
+  },
+  {
+    id: "14",
+    slug: "wardrobe-modern",
+    name: "Modern Wardrobe",
+    description: "Spacious wardrobe with sliding doors.",
+    price: 1199,
+    image:
+      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=800&fit=crop&q=80",
+    category: "Bedroom",
+  },
+  // Dining Room & Kitchen Products
+  {
+    id: "15",
+    slug: "dining-table-extendable",
+    name: "Extendable Dining Table",
+    description: "Beautiful extendable table perfect for entertaining.",
+    price: 1299,
+    image:
+      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&h=800&fit=crop&q=80",
+    category: "Dining Room",
+  },
+  {
+    id: "16",
+    slug: "dining-chairs-set",
+    name: "Dining Chair Set (4)",
+    description: "Set of 4 comfortable dining chairs.",
+    price: 599,
+    image:
+      "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=800&h=800&fit=crop&q=80",
+    category: "Dining Room",
+  },
+  {
+    id: "17",
+    slug: "kitchen-island",
+    name: "Kitchen Island",
+    description: "Functional kitchen island with storage.",
+    price: 1499,
+    image:
+      "https://images.unsplash.com/photo-1631889993951-f6f02e98c5a2?w=800&h=800&fit=crop&q=80",
+    category: "Kitchen",
+  },
+  {
+    id: "18",
+    slug: "bar-stools-set",
+    name: "Bar Stool Set (2)",
+    description: "Modern bar stools for your kitchen island.",
+    price: 299,
+    image:
+      "https://images.unsplash.com/photo-1532372320572-cda25653a26d?w=800&h=800&fit=crop&q=80",
+    category: "Kitchen",
+  },
+  // Outdoor Products
+  {
+    id: "19",
+    slug: "outdoor-dining-set",
+    name: "Outdoor Dining Set",
+    description: "Weather-resistant outdoor dining set.",
+    price: 899,
+    image:
+      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&h=800&fit=crop&q=80",
+    category: "Outdoor",
+  },
+  {
+    id: "20",
+    slug: "patio-lounge-set",
+    name: "Patio Lounge Set",
+    description: "Comfortable outdoor lounge furniture.",
+    price: 1299,
+    image:
+      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=800&fit=crop&q=80",
+    category: "Outdoor",
+  },
+  {
+    id: "21",
+    slug: "garden-bench",
+    name: "Garden Bench",
+    description: "Elegant garden bench for your outdoor space.",
+    price: 399,
+    image:
+      "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=800&h=800&fit=crop&q=80",
+    category: "Outdoor",
+  },
+  {
+    id: "22",
+    slug: "outdoor-umbrella",
+    name: "Outdoor Umbrella",
+    description: "Large outdoor umbrella for shade.",
+    price: 199,
+    image:
+      "https://images.unsplash.com/photo-1631889993951-f6f02e98c5a2?w=800&h=800&fit=crop&q=80",
+    category: "Outdoor",
+  },
+  // Home Office Products
+  {
+    id: "23",
+    slug: "desk-executive",
+    name: "Executive Desk",
+    description: "Spacious desk perfect for your home office.",
+    price: 799,
+    image:
+      "https://images.unsplash.com/photo-1532372320572-cda25653a26d?w=800&h=800&fit=crop&q=80",
+    category: "Home Office",
+  },
+  {
+    id: "24",
+    slug: "office-chair-ergonomic",
+    name: "Ergonomic Office Chair",
+    description: "Comfortable ergonomic chair for long work sessions.",
+    price: 499,
+    image:
+      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&h=800&fit=crop&q=80",
+    category: "Home Office",
+  },
+  {
+    id: "25",
+    slug: "bookshelf-tall",
+    name: "Tall Bookshelf",
+    description: "Tall bookshelf with multiple shelves.",
+    price: 449,
+    image:
+      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=800&fit=crop&q=80",
+    category: "Home Office",
+  },
+  {
+    id: "26",
+    slug: "filing-cabinet",
+    name: "Filing Cabinet",
+    description: "Organized storage for your documents.",
+    price: 299,
+    image:
+      "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=800&h=800&fit=crop&q=80",
+    category: "Home Office",
+  },
+  // Entryway Products
+  {
+    id: "27",
+    slug: "console-table-entryway",
+    name: "Entryway Console Table",
+    description: "Elegant console table for your entryway.",
+    price: 399,
+    image:
+      "https://images.unsplash.com/photo-1631889993951-f6f02e98c5a2?w=800&h=800&fit=crop&q=80",
+    category: "Entryway",
+  },
+  {
+    id: "28",
+    slug: "hall-tree-bench",
+    name: "Hall Tree with Bench",
+    description: "Functional hall tree with storage bench.",
+    price: 549,
+    image:
+      "https://images.unsplash.com/photo-1532372320572-cda25653a26d?w=800&h=800&fit=crop&q=80",
+    category: "Entryway",
+  },
+  {
+    id: "29",
+    slug: "mirror-entryway",
+    name: "Entryway Mirror",
+    description: "Large decorative mirror for your entry.",
+    price: 249,
+    image:
+      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&h=800&fit=crop&q=80",
+    category: "Entryway",
+  },
+  {
+    id: "30",
+    slug: "shoe-rack-modern",
+    name: "Modern Shoe Rack",
+    description: "Sleek shoe rack for organized entryway.",
+    price: 149,
+    image:
+      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=800&fit=crop&q=80",
+    category: "Entryway",
+  },
 ];
 
 export const collections: Collection[] = [

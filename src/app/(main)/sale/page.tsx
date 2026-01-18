@@ -6,7 +6,7 @@ import { products } from "@/lib/products";
 import SaleClient from "./SaleClient";
 
 export const metadata: Metadata = {
-  title: "Sale - Lumina Luxe",
+  title: "Sale - Evimeria Home",
   description: "Discover amazing deals on premium lighting and home decor.",
 };
 

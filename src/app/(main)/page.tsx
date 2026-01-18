@@ -1,13 +1,12 @@
 import Hero from "@/components/Hero";
-import CollectionCard from "@/components/CollectionCard";
-import ImageGrid from "@/components/ImageGrid";
-import FeaturedProduct from "@/components/FeaturedProduct";
 import FeaturedCollections from "@/components/home/FeaturedCollections";
 import ProductSlider from "@/components/home/ProductSlider";
-import { products, collections } from "@/lib/products";
+import ShopByRoom from "@/components/home/ShopByRoom";
+import PromotionalTwoColumn from "@/components/home/PromotionalTwoColumn";
+import Section from "@/components/home/Section";
+import { products } from "@/lib/products";
 import { getAllProducts } from "@/lib/shopify/queries/products";
 import type { Product as ShopifyProduct } from "@/lib/shopify/types";
-import BrandStory from "@/components/BrandStory";
 
 export default async function HomePage() {
   // Shopifyから商品を取得（フォールバックとしてローカル商品も使用）
@@ -20,7 +19,7 @@ export default async function HomePage() {
 
   // Shopify商品があればそれを使用、なければローカル商品を使用
   const allProducts = shopifyProducts.length > 0 ? shopifyProducts : products;
-  
+
   // New Arrivals: 最新商品として最大8件まで表示
   // ShopifyのAPIは新しい順（CREATED_AT DESC）で返すため、最初の8件が最新
   // 新しい商品が追加されると、9件目以降は表示されないため、古い商品から順に消える
@@ -47,65 +46,40 @@ export default async function HomePage() {
     .slice(0, 8);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Hero />
-
-      {/* Featured Collections */}
-      <FeaturedCollections />
-
-      {/* New Arrivals */}
-      {newArrivals.length > 0 && (
-        <section className="py-12 lg:py-16 mb-12 lg:mb-16">
-          <div className="mb-8 lg:mb-12">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 leading-tight">
-              New Arrivals
-            </h2>
-        </div>
-          <ProductSlider products={newArrivals} variant="titleOnly" />
-      </section>
-      )}
-
-      <div className="mb-12 lg:mb-16">
-      <ImageGrid />
+    <div>
+      {/* (1) Hero */}
+      <div className="container mx-auto px-4 pt-8 pb-0">
+        <Hero />
       </div>
 
-      {/* Featured Product */}
-      <div className="mb-12 lg:mb-16">
-      <FeaturedProduct />
-      </div>
+      {/* (2) Shop By Room - 回遊導線 */}
+      <ShopByRoom />
 
-      {/* Featured Collections */}
-      <section className="py-12 lg:py-16 mb-12 lg:mb-16 border-t">
-        <div className="mb-8 lg:mb-12">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 leading-tight">
-            Featured Collections
-          </h2>
-          <p className="text-sm md:text-base text-muted-foreground">
-            Explore curated collections designed for your home
-          </p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-12">
-          {collections.map((collection) => (
-            <CollectionCard key={collection.id} collection={collection} />
-          ))}
-        </div>
-      </section>
-
-      <div className="mb-12 lg:mb-16 border-t pt-12 lg:pt-16">
-      <BrandStory />
-      </div>
-
-      {/* Best Sellers */}
+      {/* (3) Top Sellers - 商品密度の山1 */}
       {bestSellers.length > 0 && (
-        <section className="py-12 lg:py-16 border-t">
-          <div className="mb-8 lg:mb-12">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 leading-tight">
-              Best Sellers
-            </h2>
-        </div>
+        <Section title="Top Sellers" showDivider>
           <ProductSlider products={bestSellers} variant="titleOnly" />
-      </section>
+        </Section>
       )}
+
+      {/* (4) Featured Collections - 回遊の次の一手 */}
+      <Section title="Featured Collection" subtitle="Discover our special curated collections" showDivider>
+        <FeaturedCollections />
+      </Section>
+
+      {/* (5) Promotional Two Column - 統合されたプロモーションバナー */}
+      <div className="container mx-auto px-4 py-12 lg:py-16">
+        <PromotionalTwoColumn />
+      </div>
+
+      {/* (6) New Arrivals - 商品密度の山2 */}
+      {newArrivals.length > 0 && (
+        <Section title="New Arrivals" showDivider>
+          <ProductSlider products={newArrivals} variant="titleOnly" />
+        </Section>
+      )}
+
+      
     </div>
   );
 }
