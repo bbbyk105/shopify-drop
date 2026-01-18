@@ -10,7 +10,7 @@ import { Product as LocalProduct } from "@/types";
 
 type Product = ShopifyProduct | LocalProduct;
 
-interface LightingClientProps {
+interface DiningRoomKitchenClientProps {
   products: Product[];
 }
 
@@ -18,7 +18,6 @@ type SortOption = "popularity" | "price-high" | "price-low" | "newest";
 
 const ITEMS_PER_LOAD = 20;
 
-// カラーマップ
 const colorMap: Record<string, string> = {
   white: "#FFFFFF",
   black: "#000000",
@@ -35,14 +34,15 @@ const colorMap: Record<string, string> = {
   cream: "#FFFDD0",
 };
 
-export default function LightingClient({ products }: LightingClientProps) {
+export default function DiningRoomKitchenClient({
+  products,
+}: DiningRoomKitchenClientProps) {
   const [sortOption, setSortOption] = useState<SortOption>("popularity");
   const [showCount, setShowCount] = useState(ITEMS_PER_LOAD);
 
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = [...products];
 
-    // ソート
     switch (sortOption) {
       case "price-high":
         return filtered.sort((a, b) => {
@@ -69,23 +69,80 @@ export default function LightingClient({ products }: LightingClientProps) {
           return priceA - priceB;
         });
       case "newest":
-        return filtered; // 既に新しい順で取得されている想定
+        return filtered;
       case "popularity":
       default:
-        return filtered; // デフォルトは人気順（現状の順序を維持）
+        return filtered;
     }
   }, [products, sortOption]);
 
   const displayedProducts = filteredAndSortedProducts.slice(0, showCount);
   const hasMore = showCount < filteredAndSortedProducts.length;
 
+  // マガジンスタイル用のフィーチャー商品（最初の3件）
+  const featuredProducts = filteredAndSortedProducts.slice(0, 3);
+  const regularProducts = displayedProducts.slice(3);
+
   return (
     <div className="bg-background min-h-screen">
+      {/* Magazine Style Hero */}
+      <section className="container mx-auto px-4 py-12">
+        <div className="mb-12 text-center">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
+            Dining Room & Kitchen
+          </h1>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+            Where meals become memories. Design a space that brings people
+            together.
+          </p>
+        </div>
+
+        {/* Featured Products - Large Cards */}
+        {featuredProducts.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+            {featuredProducts.map((product) => {
+              const isShopifyProduct = "handle" in product;
+              const image = isShopifyProduct
+                ? product.featuredImage?.url ||
+                  product.images.edges[0]?.node.url ||
+                  "/placeholder.png"
+                : product.image;
+              const title = isShopifyProduct ? product.title : product.name;
+              const slug = isShopifyProduct ? product.handle : product.slug;
+              const price = isShopifyProduct
+                ? parseFloat(product.priceRange.minVariantPrice.amount)
+                : product.price;
+
+              return (
+                <Link
+                  key={product.id}
+                  href={`/products/${slug}`}
+                  className="group block"
+                >
+                  <div className="relative h-[400px] overflow-hidden rounded-lg bg-secondary/30 mb-4">
+                    <Image
+                      src={image}
+                      alt={title}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                    />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">
+                    {title}
+                  </h3>
+                  <p className="text-lg font-bold">{formatPrice(price)}</p>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
       <div className="container mx-auto px-4 py-8">
-        {/* Main Content - Product Grid */}
-        <main className="space-y-6">
+        <main className="space-y-8">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">Lighting</h1>
+            <h2 className="text-3xl font-bold">All Products</h2>
             <select
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value as SortOption)}
@@ -98,15 +155,18 @@ export default function LightingClient({ products }: LightingClientProps) {
             </select>
           </div>
 
+          {/* Mixed Grid Layout */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {displayedProducts.map((product) => {
+            {regularProducts.map((product) => {
               const isShopifyProduct = "handle" in product;
               const price = isShopifyProduct
                 ? parseFloat(product.priceRange.minVariantPrice.amount)
                 : product.price;
               const compareAtPrice = isShopifyProduct
                 ? product.compareAtPriceRange?.minVariantPrice
-                  ? parseFloat(product.compareAtPriceRange.minVariantPrice.amount)
+                  ? parseFloat(
+                      product.compareAtPriceRange.minVariantPrice.amount
+                    )
                   : null
                 : null;
               const hasSale = compareAtPrice && compareAtPrice > price;
@@ -137,7 +197,6 @@ export default function LightingClient({ products }: LightingClientProps) {
                         SALE
                       </div>
                     )}
-                    {/* カラースウォッチ */}
                     {isShopifyProduct && product.variants.edges.length > 0 && (
                       <div className="absolute bottom-2 left-2 flex gap-1">
                         {product.variants.edges.slice(0, 3).map(({ node }) => {
@@ -169,11 +228,11 @@ export default function LightingClient({ products }: LightingClientProps) {
             })}
           </div>
 
-          {/* Load More */}
           {hasMore && (
             <div className="text-center py-8">
               <p className="text-sm text-muted-foreground mb-4">
-                Showing {displayedProducts.length} of {filteredAndSortedProducts.length}
+                Showing {displayedProducts.length} of{" "}
+                {filteredAndSortedProducts.length}
               </p>
               <Button
                 onClick={() => setShowCount((prev) => prev + ITEMS_PER_LOAD)}

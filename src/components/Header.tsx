@@ -233,28 +233,70 @@ export default function Header({ hasSale = true }: HeaderProps) {
             </form>
           </div>
 
-          {/* Secondary Navigation Bar: Product Links (Desktop) */}
-          <nav className="hidden md:flex items-center h-12 border-t border-border/40 space-x-6">
+          {/* Secondary Navigation Bar: All Links (Desktop) */}
+          <nav className="hidden md:flex items-center h-12 border-t border-border/40 space-x-6 overflow-x-auto">
+            <Link
+              href="/products"
+              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+            >
+              All Products
+            </Link>
             <Link
               href="/new-arrivals"
-              className="text-sm font-medium transition-colors hover:text-primary py-2"
+              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
             >
               New Arrivals
             </Link>
             <Link
               href="/lighting"
-              className="text-sm font-medium transition-colors hover:text-primary py-2"
+              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
             >
               Lighting
             </Link>
             {hasSale && (
               <Link
                 href="/sale"
-                className="text-sm font-medium transition-colors hover:text-primary py-2"
+                className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
               >
                 Sale
               </Link>
             )}
+            <Link
+              href="/rooms/living-room"
+              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+            >
+              Living Room
+            </Link>
+            <Link
+              href="/rooms/bedroom"
+              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+            >
+              Bedroom
+            </Link>
+            <Link
+              href="/rooms/dining-room-kitchen"
+              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+            >
+              Dining Room & Kitchen
+            </Link>
+            <Link
+              href="/rooms/outdoor"
+              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+            >
+              Outdoor
+            </Link>
+            <Link
+              href="/rooms/home-office"
+              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+            >
+              Home Office
+            </Link>
+            <Link
+              href="/rooms/entryway"
+              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+            >
+              Entryway
+            </Link>
           </nav>
         </div>
       </header>
@@ -301,6 +343,13 @@ export default function Header({ hasSale = true }: HeaderProps) {
             {/* Navigation Links */}
             <nav className="py-4">
               <Link
+                href="/products"
+                className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <span>All Products</span>
+              </Link>
+              <Link
                 href="/new-arrivals"
                 className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -323,6 +372,53 @@ export default function Header({ hasSale = true }: HeaderProps) {
                   <span>Sale</span>
                 </Link>
               )}
+
+              {/* Separator */}
+              <div className="border-t border-border/40 my-2" />
+
+              {/* Room Categories */}
+              <Link
+                href="/rooms/living-room"
+                className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <span>Living Room</span>
+              </Link>
+              <Link
+                href="/rooms/bedroom"
+                className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <span>Bedroom</span>
+              </Link>
+              <Link
+                href="/rooms/dining-room-kitchen"
+                className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <span>Dining Room & Kitchen</span>
+              </Link>
+              <Link
+                href="/rooms/outdoor"
+                className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <span>Outdoor</span>
+              </Link>
+              <Link
+                href="/rooms/home-office"
+                className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <span>Home Office</span>
+              </Link>
+              <Link
+                href="/rooms/entryway"
+                className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <span>Entryway</span>
+              </Link>
 
               {/* Separator */}
               <div className="border-t border-border/40 my-2" />

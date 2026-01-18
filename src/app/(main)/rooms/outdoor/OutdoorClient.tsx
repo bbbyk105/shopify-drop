@@ -10,7 +10,7 @@ import { Product as LocalProduct } from "@/types";
 
 type Product = ShopifyProduct | LocalProduct;
 
-interface LightingClientProps {
+interface OutdoorClientProps {
   products: Product[];
 }
 
@@ -18,7 +18,6 @@ type SortOption = "popularity" | "price-high" | "price-low" | "newest";
 
 const ITEMS_PER_LOAD = 20;
 
-// カラーマップ
 const colorMap: Record<string, string> = {
   white: "#FFFFFF",
   black: "#000000",
@@ -35,14 +34,13 @@ const colorMap: Record<string, string> = {
   cream: "#FFFDD0",
 };
 
-export default function LightingClient({ products }: LightingClientProps) {
+export default function OutdoorClient({ products }: OutdoorClientProps) {
   const [sortOption, setSortOption] = useState<SortOption>("popularity");
   const [showCount, setShowCount] = useState(ITEMS_PER_LOAD);
 
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = [...products];
 
-    // ソート
     switch (sortOption) {
       case "price-high":
         return filtered.sort((a, b) => {
@@ -69,10 +67,10 @@ export default function LightingClient({ products }: LightingClientProps) {
           return priceA - priceB;
         });
       case "newest":
-        return filtered; // 既に新しい順で取得されている想定
+        return filtered;
       case "popularity":
       default:
-        return filtered; // デフォルトは人気順（現状の順序を維持）
+        return filtered;
     }
   }, [products, sortOption]);
 
@@ -81,11 +79,40 @@ export default function LightingClient({ products }: LightingClientProps) {
 
   return (
     <div className="bg-background min-h-screen">
-      <div className="container mx-auto px-4 py-8">
-        {/* Main Content - Product Grid */}
-        <main className="space-y-6">
+      {/* Full Screen Hero */}
+      <section className="relative h-screen min-h-[600px] overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/images/outdoor.webp"
+            alt="Outdoor"
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/70" />
+        </div>
+        <div className="container relative mx-auto px-4 h-full flex items-center justify-center">
+          <div className="text-center max-w-3xl">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
+              Outdoor
+            </h1>
+            <p className="text-xl md:text-2xl text-white/90 mb-8">
+              Extend your living space outdoors. Create an oasis that invites
+              relaxation and connection with nature.
+            </p>
+          </div>
+        </div>
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+          <div className="w-6 h-10 border-2 border-white/50 rounded-full flex items-start justify-center p-2">
+            <div className="w-1.5 h-1.5 bg-white/70 rounded-full animate-pulse" />
+          </div>
+        </div>
+      </section>
+
+      <div className="container mx-auto px-4 py-16">
+        <main className="space-y-12">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">Lighting</h1>
+            <h2 className="text-3xl font-bold">Outdoor Collection</h2>
             <select
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value as SortOption)}
@@ -98,15 +125,18 @@ export default function LightingClient({ products }: LightingClientProps) {
             </select>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {displayedProducts.map((product) => {
+          {/* Mosaic Grid Layout */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {displayedProducts.map((product, index) => {
               const isShopifyProduct = "handle" in product;
               const price = isShopifyProduct
                 ? parseFloat(product.priceRange.minVariantPrice.amount)
                 : product.price;
               const compareAtPrice = isShopifyProduct
                 ? product.compareAtPriceRange?.minVariantPrice
-                  ? parseFloat(product.compareAtPriceRange.minVariantPrice.amount)
+                  ? parseFloat(
+                      product.compareAtPriceRange.minVariantPrice.amount
+                    )
                   : null
                 : null;
               const hasSale = compareAtPrice && compareAtPrice > price;
@@ -118,26 +148,38 @@ export default function LightingClient({ products }: LightingClientProps) {
               const title = isShopifyProduct ? product.title : product.name;
               const slug = isShopifyProduct ? product.handle : product.slug;
 
+              // 最初の商品を大きく表示
+              const isLarge = index === 0;
+
               return (
                 <Link
                   key={product.id}
                   href={`/products/${slug}`}
-                  className="group block"
+                  className={`group block ${
+                    isLarge ? "sm:col-span-2 lg:col-span-1 lg:row-span-2" : ""
+                  }`}
                 >
-                  <div className="relative aspect-square overflow-hidden rounded-lg bg-secondary/30 mb-3">
+                  <div
+                    className={`relative overflow-hidden rounded-lg bg-secondary/30 mb-3 ${
+                      isLarge ? "aspect-[4/5]" : "aspect-square"
+                    }`}
+                  >
                     <Image
                       src={image}
                       alt={title}
                       fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      sizes={
+                        isLarge
+                          ? "(max-width: 768px) 100vw, 50vw"
+                          : "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      }
                     />
                     {hasSale && (
                       <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
                         SALE
                       </div>
                     )}
-                    {/* カラースウォッチ */}
                     {isShopifyProduct && product.variants.edges.length > 0 && (
                       <div className="absolute bottom-2 left-2 flex gap-1">
                         {product.variants.edges.slice(0, 3).map(({ node }) => {
@@ -160,20 +202,26 @@ export default function LightingClient({ products }: LightingClientProps) {
                       </div>
                     )}
                   </div>
-                  <h3 className="text-base font-medium mb-1 group-hover:text-primary transition-colors">
+                  <h3
+                    className={`font-medium mb-1 group-hover:text-primary transition-colors ${
+                      isLarge ? "text-lg" : "text-base"
+                    }`}
+                  >
                     {title}
                   </h3>
-                  <p className="text-base font-bold">{formatPrice(price)}</p>
+                  <p className={`font-bold ${isLarge ? "text-lg" : "text-base"}`}>
+                    {formatPrice(price)}
+                  </p>
                 </Link>
               );
             })}
           </div>
 
-          {/* Load More */}
           {hasMore && (
             <div className="text-center py-8">
               <p className="text-sm text-muted-foreground mb-4">
-                Showing {displayedProducts.length} of {filteredAndSortedProducts.length}
+                Showing {displayedProducts.length} of{" "}
+                {filteredAndSortedProducts.length}
               </p>
               <Button
                 onClick={() => setShowCount((prev) => prev + ITEMS_PER_LOAD)}

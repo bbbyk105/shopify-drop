@@ -15,7 +15,7 @@ const rooms = [
   },
   {
     name: "Dining Room & Kitchen",
-    href: "/rooms/dining-kitchen",
+    href: "/rooms/dining-room-kitchen",
     image: "/images/dining.webp",
   },
   {

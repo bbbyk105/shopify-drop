@@ -10,7 +10,7 @@ import { Product as LocalProduct } from "@/types";
 
 type Product = ShopifyProduct | LocalProduct;
 
-interface LightingClientProps {
+interface EntrywayClientProps {
   products: Product[];
 }
 
@@ -18,7 +18,6 @@ type SortOption = "popularity" | "price-high" | "price-low" | "newest";
 
 const ITEMS_PER_LOAD = 20;
 
-// カラーマップ
 const colorMap: Record<string, string> = {
   white: "#FFFFFF",
   black: "#000000",
@@ -35,14 +34,13 @@ const colorMap: Record<string, string> = {
   cream: "#FFFDD0",
 };
 
-export default function LightingClient({ products }: LightingClientProps) {
+export default function EntrywayClient({ products }: EntrywayClientProps) {
   const [sortOption, setSortOption] = useState<SortOption>("popularity");
   const [showCount, setShowCount] = useState(ITEMS_PER_LOAD);
 
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = [...products];
 
-    // ソート
     switch (sortOption) {
       case "price-high":
         return filtered.sort((a, b) => {
@@ -69,10 +67,10 @@ export default function LightingClient({ products }: LightingClientProps) {
           return priceA - priceB;
         });
       case "newest":
-        return filtered; // 既に新しい順で取得されている想定
+        return filtered;
       case "popularity":
       default:
-        return filtered; // デフォルトは人気順（現状の順序を維持）
+        return filtered;
     }
   }, [products, sortOption]);
 
@@ -81,11 +79,38 @@ export default function LightingClient({ products }: LightingClientProps) {
 
   return (
     <div className="bg-background min-h-screen">
-      <div className="container mx-auto px-4 py-8">
-        {/* Main Content - Product Grid */}
-        <main className="space-y-6">
+      {/* Compact Hero with Card Style */}
+      <section className="container mx-auto px-4 py-12">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-card border border-border rounded-2xl p-8 md:p-12 shadow-lg">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+              <div>
+                <h1 className="text-4xl md:text-5xl font-bold mb-4">
+                  Entryway
+                </h1>
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  First impressions matter. Create an inviting entryway that sets
+                  the tone for your entire home.
+                </p>
+              </div>
+              <div className="relative h-64 md:h-80 rounded-lg overflow-hidden bg-secondary/30">
+                <Image
+                  src="/images/entryway.webp"
+                  alt="Entryway"
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="container mx-auto px-4 py-12">
+        <main className="space-y-8">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">Lighting</h1>
+            <h2 className="text-3xl font-bold">Entryway Collection</h2>
             <select
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value as SortOption)}
@@ -98,6 +123,7 @@ export default function LightingClient({ products }: LightingClientProps) {
             </select>
           </div>
 
+          {/* Card Style Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {displayedProducts.map((product) => {
               const isShopifyProduct = "handle" in product;
@@ -106,7 +132,9 @@ export default function LightingClient({ products }: LightingClientProps) {
                 : product.price;
               const compareAtPrice = isShopifyProduct
                 ? product.compareAtPriceRange?.minVariantPrice
-                  ? parseFloat(product.compareAtPriceRange.minVariantPrice.amount)
+                  ? parseFloat(
+                      product.compareAtPriceRange.minVariantPrice.amount
+                    )
                   : null
                 : null;
               const hasSale = compareAtPrice && compareAtPrice > price;
@@ -124,56 +152,62 @@ export default function LightingClient({ products }: LightingClientProps) {
                   href={`/products/${slug}`}
                   className="group block"
                 >
-                  <div className="relative aspect-square overflow-hidden rounded-lg bg-secondary/30 mb-3">
-                    <Image
-                      src={image}
-                      alt={title}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    />
-                    {hasSale && (
-                      <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
-                        SALE
-                      </div>
-                    )}
-                    {/* カラースウォッチ */}
-                    {isShopifyProduct && product.variants.edges.length > 0 && (
-                      <div className="absolute bottom-2 left-2 flex gap-1">
-                        {product.variants.edges.slice(0, 3).map(({ node }) => {
-                          const colorOption = node.selectedOptions.find(
-                            (opt) => opt.name.toLowerCase() === "color"
-                          );
-                          if (colorOption) {
-                            const colorKey = colorOption.value.toLowerCase();
-                            const colorValue = colorMap[colorKey] || "#808080";
-                            return (
-                              <div
-                                key={node.id}
-                                className="w-4 h-4 rounded-full border border-white shadow-sm"
-                                style={{ backgroundColor: colorValue }}
-                              />
-                            );
-                          }
-                          return null;
-                        })}
-                      </div>
-                    )}
+                  <div className="bg-card border border-border rounded-lg p-4 hover:shadow-lg transition-all">
+                    <div className="relative aspect-square overflow-hidden rounded-lg bg-secondary/30 mb-4">
+                      <Image
+                        src={image}
+                        alt={title}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      />
+                      {hasSale && (
+                        <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
+                          SALE
+                        </div>
+                      )}
+                      {isShopifyProduct &&
+                        product.variants.edges.length > 0 && (
+                          <div className="absolute bottom-2 left-2 flex gap-1">
+                            {product.variants.edges
+                              .slice(0, 3)
+                              .map(({ node }) => {
+                                const colorOption = node.selectedOptions.find(
+                                  (opt) => opt.name.toLowerCase() === "color"
+                                );
+                                if (colorOption) {
+                                  const colorKey =
+                                    colorOption.value.toLowerCase();
+                                  const colorValue =
+                                    colorMap[colorKey] || "#808080";
+                                  return (
+                                    <div
+                                      key={node.id}
+                                      className="w-4 h-4 rounded-full border border-white shadow-sm"
+                                      style={{ backgroundColor: colorValue }}
+                                    />
+                                  );
+                                }
+                                return null;
+                              })}
+                          </div>
+                        )}
+                    </div>
+                    <h3 className="text-base font-semibold mb-2 group-hover:text-primary transition-colors">
+                      {title}
+                    </h3>
+                    <p className="text-lg font-bold">{formatPrice(price)}</p>
                   </div>
-                  <h3 className="text-base font-medium mb-1 group-hover:text-primary transition-colors">
-                    {title}
-                  </h3>
-                  <p className="text-base font-bold">{formatPrice(price)}</p>
                 </Link>
               );
             })}
           </div>
 
-          {/* Load More */}
           {hasMore && (
             <div className="text-center py-8">
               <p className="text-sm text-muted-foreground mb-4">
-                Showing {displayedProducts.length} of {filteredAndSortedProducts.length}
+                Showing {displayedProducts.length} of{" "}
+                {filteredAndSortedProducts.length}
               </p>
               <Button
                 onClick={() => setShowCount((prev) => prev + ITEMS_PER_LOAD)}
