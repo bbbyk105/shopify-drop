@@ -14,7 +14,8 @@ export default async function ClothingPage() {
   // Shopifyから商品を取得（フォールバックとしてローカル商品も使用）
   let shopifyProducts: ShopifyProduct[] = [];
   try {
-    shopifyProducts = await getAllProducts(100);
+    // Storefront APIの`first`は最大250。新規商品が取得上限外になるのを防ぐため増やす
+    shopifyProducts = await getAllProducts(250);
   } catch (error) {
     console.error("Failed to fetch Shopify products:", error);
   }

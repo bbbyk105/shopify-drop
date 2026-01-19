@@ -27,11 +27,24 @@ export default function ProductCard({
   const description = isShopifyProduct
     ? product.description
     : product.description;
-  const image = isShopifyProduct
+  
+  // 1枚目の画像
+  const firstImage = isShopifyProduct
     ? product.featuredImage?.url ||
       product.images.edges[0]?.node.url ||
       "/placeholder.png"
     : product.image;
+  
+  // 2枚目の画像（ホバー時に表示）
+  const secondImage = isShopifyProduct
+    ? product.images.edges[1]?.node.url ||
+      product.images.edges[0]?.node.url ||
+      "/placeholder.png"
+    : (product.images && product.images.length > 1 ? product.images[1] : product.image);
+  
+  // 表示する画像（ホバー時は2枚目、通常時は1枚目）
+  const displayImage = isHovered && secondImage ? secondImage : firstImage;
+  
   const price = isShopifyProduct
     ? parseFloat(product.priceRange.minVariantPrice.amount)
     : product.price;
@@ -49,13 +62,30 @@ export default function ProductCard({
           onMouseLeave={() => setIsHovered(false)}
         >
           <div className="relative aspect-square overflow-hidden rounded-lg bg-secondary/30 mb-3 shadow-sm group-hover:shadow-md transition-all">
+            {/* 1枚目の画像（通常時） */}
             <Image
-              src={image}
+              src={firstImage}
               alt={title}
               fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              className={`object-cover transition-opacity duration-300 ${
+                isHovered && secondImage && secondImage !== firstImage
+                  ? "opacity-0"
+                  : "opacity-100"
+              }`}
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
+            {/* 2枚目の画像（ホバー時） */}
+            {secondImage && secondImage !== firstImage && (
+              <Image
+                src={secondImage}
+                alt={title}
+                fill
+                className={`object-cover transition-opacity duration-300 ${
+                  isHovered ? "opacity-100" : "opacity-0"
+                }`}
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              />
+            )}
             <div
               className={`absolute inset-0 bg-black/10 transition-opacity duration-300 ${
                 isHovered ? "opacity-100" : "opacity-0"
@@ -72,7 +102,7 @@ export default function ProductCard({
               <AddToFavoritesButton
                 productId={productId}
                 productName={title}
-                productImage={image}
+                productImage={firstImage}
                 variant="icon"
                 size="sm"
                 className="bg-background/80 hover:bg-background"

@@ -220,7 +220,7 @@ export default function MineLightProductClient({
           onClick={handleAddToCart}
           disabled={!isAvailable || isAdding || isAdded}
           size="lg"
-          className="w-full h-16 text-xl font-bold bg-[#5CB85C] hover:bg-[#4A9B4A] disabled:bg-gray-600 text-white border-4 border-black shadow-[6px_6px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:translate-x-[3px] hover:translate-y-[3px] transition-all disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full h-16 text-xl font-bold bg-slate-900 hover:bg-slate-800 disabled:bg-gray-600 text-white border-4 border-black shadow-[6px_6px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:translate-x-[3px] hover:translate-y-[3px] transition-all disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isAdded ? (
             <>

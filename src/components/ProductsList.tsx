@@ -66,6 +66,7 @@ export default function ProductsList({
 }: ProductsListProps) {
   const [sortOption, setSortOption] = useState<SortOption>("popularity");
   const [currentPage, setCurrentPage] = useState(1);
+  const [hoveredProductId, setHoveredProductId] = useState<string | null>(null);
   const [expandedFilters, setExpandedFilters] = useState<Record<string, boolean>>({
     sort: true,
     product: true,
@@ -1130,11 +1131,24 @@ export default function ProductsList({
                     : null
                   : null;
                 const hasSale = compareAtPrice && compareAtPrice > price;
-                const image = isShopifyProduct
+                
+                // 1枚目の画像
+                const firstImage = isShopifyProduct
                   ? product.featuredImage?.url ||
                     product.images.edges[0]?.node.url ||
                     "/placeholder.png"
                   : product.image;
+                
+                // 2枚目の画像（ホバー時に表示）
+                const secondImage = isShopifyProduct
+                  ? product.images.edges[1]?.node.url ||
+                    product.images.edges[0]?.node.url ||
+                    "/placeholder.png"
+                  : (product.images && product.images.length > 1 ? product.images[1] : product.image);
+                
+                const isHovered = hoveredProductId === product.id;
+                const showSecondImage = isHovered && secondImage && secondImage !== firstImage;
+                
                 const title = isShopifyProduct ? product.title : product.name;
                 const slug = isShopifyProduct ? product.handle : product.slug;
 
@@ -1143,15 +1157,32 @@ export default function ProductsList({
                     key={product.id}
                     href={`/products/${slug}`}
                     className="group block"
+                    onMouseEnter={() => setHoveredProductId(product.id)}
+                    onMouseLeave={() => setHoveredProductId(null)}
                   >
                     <div className="relative aspect-square overflow-hidden rounded-lg bg-secondary/30 mb-3">
+                      {/* 1枚目の画像（通常時） */}
                       <Image
-                        src={image}
+                        src={firstImage}
                         alt={title}
                         fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        className={`object-cover transition-opacity duration-300 ${
+                          showSecondImage ? "opacity-0" : "opacity-100"
+                        }`}
                         sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
                       />
+                      {/* 2枚目の画像（ホバー時） */}
+                      {secondImage && secondImage !== firstImage && (
+                        <Image
+                          src={secondImage}
+                          alt={title}
+                          fill
+                          className={`object-cover transition-opacity duration-300 ${
+                            isHovered ? "opacity-100" : "opacity-0"
+                          }`}
+                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        />
+                      )}
                       {hasSale && (
                         <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
                           SALE
