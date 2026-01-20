@@ -69,6 +69,11 @@ export default function ProductClient({
     altText?: string | null;
   } | null>(null);
   const [quantity, setQuantity] = useState(1);
+  
+  // スワイプジェスチャー用のrefとstate
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
 
   // クライアントマウント後に詳細（Accordion）を表示
   useEffect(() => {
@@ -519,6 +524,36 @@ export default function ProductClient({
     setQuantity(validQuantity);
   };
 
+  // スワイプジェスチャーハンドラー（モバイルのみ）
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchEndX.current = null;
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    
+    const distance = touchStartX.current - touchEndX.current;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe && images.length > 1) {
+      // 左にスワイプ = 次の画像
+      setVariantImageOverride(null);
+      setSelectedImage((prev) => (prev + 1) % images.length);
+    } else if (isRightSwipe && images.length > 1) {
+      // 右にスワイプ = 前の画像
+      setVariantImageOverride(null);
+      setSelectedImage((prev) => (prev - 1 + images.length) % images.length);
+    }
+  };
+
   return (
     <div className="bg-background">
       {/* Product Section */}
@@ -526,7 +561,13 @@ export default function ProductClient({
         {/* Images - Left Side */}
         <div className="space-y-4 w-full max-w-[760px] mx-auto lg:mx-0">
           {/* Main Image */}
-          <div className="relative w-full aspect-[4/3] rounded-lg bg-secondary/30 group flex items-center justify-center overflow-hidden">
+          <div
+            ref={imageContainerRef}
+            className="relative w-full aspect-4/3 rounded-lg bg-secondary/30 group flex items-center justify-center overflow-hidden touch-pan-y lg:touch-none"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+          >
             <Image
               src={
                 variantImageOverride?.url ||
@@ -540,9 +581,10 @@ export default function ProductClient({
                 product.title
               }
               fill
-              className="object-contain"
+              className="object-contain select-none"
               priority
               sizes="(max-width: 1024px) 100vw, 55vw"
+              draggable={false}
             />
 
             {/* セールバッジ */}
@@ -563,7 +605,7 @@ export default function ProductClient({
               </div>
             )}
 
-            {/* 画像ナビゲーション */}
+            {/* 画像ナビゲーション - デスクトップのみ表示 */}
             {images.length > 1 && (
               <>
                 <button
@@ -573,7 +615,7 @@ export default function ProductClient({
                       (prev) => (prev - 1 + images.length) % images.length
                     );
                   }}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all z-10"
+                  className="hidden lg:flex absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all z-10"
                   aria-label="Previous image"
                 >
                   <ChevronLeft className="w-5 h-5 text-foreground" />
@@ -583,18 +625,39 @@ export default function ProductClient({
                     setVariantImageOverride(null);
                     setSelectedImage((prev) => (prev + 1) % images.length);
                   }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all z-10"
+                  className="hidden lg:flex absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all z-10"
                   aria-label="Next image"
                 >
                   <ChevronRight className="w-5 h-5 text-foreground" />
                 </button>
               </>
             )}
+            
+            {/* モバイル用の画像インジケーター */}
+            {images.length > 1 && (
+              <div className="lg:hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                {images.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setVariantImageOverride(null);
+                      setSelectedImage(index);
+                    }}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      selectedImage === index
+                        ? "bg-white w-6"
+                        : "bg-white/50 hover:bg-white/75"
+                    }`}
+                    aria-label={`Go to image ${index + 1}`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Thumbnail Gallery */}
+          {/* Thumbnail Gallery - デスクトップのみ表示 */}
           {images.length > 1 && (
-            <div className="flex gap-3 overflow-x-auto pb-2">
+            <div className="hidden lg:flex gap-3 overflow-x-auto pb-2">
               {images.map((image, index) => (
                 <button
                   key={image.id}

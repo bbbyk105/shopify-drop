@@ -209,3 +209,13 @@
 .animate-accordion-up {
   animation: accordion-up 0.15s ease-out;
 }
+
+/* スクロールバーを非表示にするユーティリティ */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Minus, Plus, ChevronLeft, ChevronRight } from "lucide-react";
@@ -65,15 +66,15 @@ export default function ProductsList({
   const [sortOption, setSortOption] = useState<SortOption>("popularity");
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedFilters, setExpandedFilters] = useState<Record<string, boolean>>({
-    sort: true,
-    product: true,
-    price: true,
-    room: true,
-    color: true,
-    material: true,
-    size: true,
-    type: true,
-    style: true,
+    sort: false,
+    product: false,
+    price: false,
+    room: false,
+    color: false,
+    material: false,
+    size: false,
+    type: false,
+    style: false,
   });
 
   // フィルター状態
@@ -545,6 +546,20 @@ export default function ProductsList({
     setCurrentPage(1);
   };
 
+  // カテゴリーフィルター用のデータ
+  const categoryFilters = [
+    { name: "All Products", href: "/products" },
+    { name: "New Arrivals", href: "/new-arrivals" },
+    { name: "Lighting", href: "/lighting" },
+    { name: "Clothing", href: "/clothing" },
+    { name: "Living Room", href: "/rooms/living-room" },
+    { name: "Bedroom", href: "/rooms/bedroom" },
+    { name: "Dining Room & Kitchen", href: "/rooms/dining-room-kitchen" },
+    { name: "Outdoor", href: "/rooms/outdoor" },
+    { name: "Home Office", href: "/rooms/home-office" },
+    { name: "Entryway", href: "/rooms/entryway" },
+  ];
+
   return (
     <div className="bg-background min-h-screen">
       <div className="container mx-auto px-4 py-8">
@@ -557,6 +572,30 @@ export default function ProductsList({
           <p className="text-sm text-muted-foreground mt-2">
             {filteredAndSortedProducts.length} items
           </p>
+        </div>
+
+        {/* Mobile Category Filter - モバイルのみ表示 */}
+        <div className="lg:hidden mb-8">
+          <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide">
+            <div className="flex gap-2.5 min-w-max py-2">
+              {categoryFilters.map((category) => {
+                const isActive = currentCategory === category.href;
+                return (
+                  <Link
+                    key={category.href}
+                    href={category.href}
+                    className={`relative px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-200 ${
+                      isActive
+                        ? "bg-zinc-900 text-white shadow-lg shadow-zinc-900/20"
+                        : "bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-50 hover:border-zinc-300 hover:shadow-sm active:scale-[0.98]"
+                    }`}
+                  >
+                    {category.name}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
