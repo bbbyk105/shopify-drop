@@ -1,14 +1,12 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Image from "next/image";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Minus, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Product as ShopifyProduct } from "@/lib/shopify/types";
 import { Product as LocalProduct } from "@/types";
-import { formatPrice } from "@/lib/utils";
+import ProductCard from "@/components/ProductCard";
 
 type Product = ShopifyProduct | LocalProduct;
 
@@ -1119,74 +1117,9 @@ export default function ProductsList({
           {/* Main Content - Product Grid */}
           <main className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {displayedProducts.map((product) => {
-                const isShopifyProduct = "handle" in product;
-                const price = isShopifyProduct
-                  ? parseFloat(product.priceRange.minVariantPrice.amount)
-                  : product.price;
-                const compareAtPrice = isShopifyProduct
-                  ? product.compareAtPriceRange?.minVariantPrice
-                    ? parseFloat(product.compareAtPriceRange.minVariantPrice.amount)
-                    : null
-                  : null;
-                const hasSale = compareAtPrice && compareAtPrice > price;
-                const image = isShopifyProduct
-                  ? product.featuredImage?.url ||
-                    product.images.edges[0]?.node.url ||
-                    "/placeholder.png"
-                  : product.image;
-                const title = isShopifyProduct ? product.title : product.name;
-                const slug = isShopifyProduct ? product.handle : product.slug;
-
-                return (
-                  <Link
-                    key={product.id}
-                    href={`/products/${slug}`}
-                    className="group block"
-                  >
-                    <div className="relative aspect-square overflow-hidden rounded-lg bg-secondary/30 mb-3">
-                      <Image
-                        src={image}
-                        alt={title}
-                        fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                      />
-                      {hasSale && (
-                        <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
-                          SALE
-                        </div>
-                      )}
-                      {/* カラースウォッチ */}
-                      {isShopifyProduct && product.variants.edges.length > 0 && (
-                        <div className="absolute bottom-2 left-2 flex gap-1">
-                          {product.variants.edges.slice(0, 3).map(({ node }) => {
-                            const colorOption = node.selectedOptions.find(
-                              (opt) => opt.name.toLowerCase() === "color"
-                            );
-                            if (colorOption) {
-                              const colorKey = colorOption.value.toLowerCase();
-                              const colorValue = colorMap[colorKey] || "#808080";
-                              return (
-                                <div
-                                  key={node.id}
-                                  className="w-4 h-4 rounded-full border border-white shadow-sm"
-                                  style={{ backgroundColor: colorValue }}
-                                />
-                              );
-                            }
-                            return null;
-                          })}
-                        </div>
-                      )}
-                    </div>
-                    <h3 className="text-base font-medium mb-1 group-hover:text-primary transition-colors">
-                      {title}
-                    </h3>
-                    <p className="text-base font-bold">{formatPrice(price)}</p>
-                  </Link>
-                );
-              })}
+              {displayedProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
             </div>
 
             {/* Pagination */}

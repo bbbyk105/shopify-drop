@@ -52,7 +52,9 @@ const roomTagMap: Record<string, string[]> = {
   ],
   clothing: [
     "Clothing", // Shopifyで使用する正確なタグ名
+    "Clothes", // Shopifyで使用する正確なタグ名
     "clothing",
+    "clothes",
     "apparel",
     "wear",
     "tshirt",

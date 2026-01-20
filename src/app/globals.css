@@ -142,17 +142,17 @@
 }
 
 /* Toast state animations */
-[data-state="open"] {
+[data-toast][data-state="open"] {
   animation: slide-in-from-top 0.3s ease-out;
 }
 
 @media (min-width: 640px) {
-  [data-state="open"] {
+  [data-toast][data-state="open"] {
     animation: slide-in-from-bottom 0.3s ease-out;
   }
 }
 
-[data-state="closed"] {
+[data-toast][data-state="closed"] {
   animation: slide-out-to-right 0.3s ease-in, fade-out 0.3s ease-in;
 }
 
@@ -181,4 +181,31 @@
 
 .animate-pixel-glow {
   animation: pixel-glow 2s ease-in-out infinite;
+}
+
+/* シンプルなアコーディオンアニメーション */
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+.animate-accordion-down {
+  animation: accordion-down 0.15s ease-out;
+}
+
+.animate-accordion-up {
+  animation: accordion-up 0.15s ease-out;
 }

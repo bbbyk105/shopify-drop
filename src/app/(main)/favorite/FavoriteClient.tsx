@@ -156,9 +156,11 @@ export default function FavoriteClient() {
                     src={image}
                     alt={title}
                     fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="object-cover transition-opacity duration-300"
                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   />
+                  {/* ホバー時の暗いオーバーレイ */}
+                  <div className="absolute inset-0 bg-black/20 transition-opacity duration-300 group-hover:opacity-100 opacity-0" />
                 </div>
                 <div className="p-4">
                   <h3 className="font-semibold mb-2 line-clamp-2 group-hover:text-primary transition-colors">

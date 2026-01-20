@@ -74,6 +74,12 @@ const PRODUCT_FRAGMENT = /* GraphQL */ `
       title
       description
     }
+    deliveryMin: metafield(namespace: "custom", key: "delivery_min_days") {
+      value
+    }
+    deliveryMax: metafield(namespace: "custom", key: "delivery_max_days") {
+      value
+    }
   }
 `;
 
@@ -186,6 +192,49 @@ export async function getAllProducts(first: number = 50): Promise<Product[]> {
     return data.products?.edges.map((e) => e.node) ?? [];
   } catch (error) {
     console.error("Error fetching all products:", error);
+    return [];
+  }
+}
+
+// 類似商品を取得（同じタグを持つ商品、現在の商品を除く）
+export async function getRelatedProducts(
+  currentProductId: string,
+  tags: string[],
+  limit: number = 4
+): Promise<Product[]> {
+  if (tags.length === 0) {
+    return [];
+  }
+
+  // 最初のタグを使用して類似商品を検索
+  const tag = tags[0];
+  const query = /* GraphQL */ `
+    ${PRODUCT_FRAGMENT}
+    query getRelatedProducts($query: String!, $first: Int!) {
+      products(first: $first, query: $query) {
+        edges {
+          node {
+            ...ProductFields
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const data = await shopifyFetch<{
+      products: { edges: { node: Product }[] };
+    }>(query, { query: `tag:${tag}`, first: limit + 1 });
+
+    // 現在の商品を除外
+    const relatedProducts = data.products?.edges
+      .map((e) => e.node)
+      .filter((p) => p.id !== currentProductId)
+      .slice(0, limit) ?? [];
+
+    return relatedProducts;
+  } catch (error) {
+    console.error("Error fetching related products:", error);
     return [];
   }
 }
