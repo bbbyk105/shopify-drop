@@ -79,6 +79,28 @@ export default function ProductClient({
   const optionTypes = Array.from(optionTypesMap.keys());
   const hasMultipleOptionTypes = optionTypes.length >= 2;
 
+  // オプション値をソートする関数（数値の場合は数値順、それ以外は文字列順）
+  const sortOptionValues = (values: string[]): string[] => {
+    // 全ての値が数値かどうかをチェック
+    const allNumeric = values.every((value) => {
+      const trimmed = value.trim();
+      // 数値（整数または小数）かどうかをチェック
+      return /^-?\d+(\.\d+)?$/.test(trimmed);
+    });
+
+    if (allNumeric && values.length > 0) {
+      // 数値としてソート
+      return [...values].sort((a, b) => {
+        const numA = parseFloat(a.trim());
+        const numB = parseFloat(b.trim());
+        return numA - numB;
+      });
+    } else {
+      // 文字列としてソート
+      return [...values].sort((a, b) => a.localeCompare(b));
+    }
+  };
+
   // 初期選択状態を計算（useStateの初期値として使用）
   const getInitialSelectedOptions = (): Record<string, string> => {
     if (firstVariant && hasMultipleOptionTypes) {
@@ -554,7 +576,7 @@ export default function ProductClient({
                           {optionType}
                         </label>
                         <div className="flex flex-wrap gap-2">
-                          {Array.from(optionTypesMap.get(optionType) || []).map(
+                          {sortOptionValues(Array.from(optionTypesMap.get(optionType) || [])).map(
                             (value) => {
                               const isSelected = selectedOptions[optionType] === value;
                               const isAvailable = availableValues.has(value);
@@ -634,14 +656,30 @@ export default function ProductClient({
               ) : (
                 /* 1つのオプションタイプのみ、またはその他のバリエーション */
                 <div className="flex flex-wrap gap-2">
-                  {product.variants.edges.map(({ node: variant }) => {
-                    const isSelected = selectedVariant?.id === variant.id;
-                    // 最初のオプションの値を表示（色があれば色、なければ最初のオプション）
-                    const firstOption = variant.selectedOptions?.[0];
-                    const buttonLabel =
-                      firstOption?.value ||
-                      variant.title.split(" / ").pop() ||
-                      variant.title;
+                  {[...product.variants.edges]
+                    .map(({ node: variant }) => {
+                      const firstOption = variant.selectedOptions?.[0];
+                      const buttonLabel =
+                        firstOption?.value ||
+                        variant.title.split(" / ").pop() ||
+                        variant.title;
+                      return { variant, buttonLabel };
+                    })
+                    .sort((a, b) => {
+                      // 数値としてソートできるかチェック
+                      const aNum = parseFloat(a.buttonLabel.trim());
+                      const bNum = parseFloat(b.buttonLabel.trim());
+                      const aIsNumeric = !isNaN(aNum) && /^-?\d+(\.\d+)?$/.test(a.buttonLabel.trim());
+                      const bIsNumeric = !isNaN(bNum) && /^-?\d+(\.\d+)?$/.test(b.buttonLabel.trim());
+                      
+                      if (aIsNumeric && bIsNumeric) {
+                        return aNum - bNum;
+                      } else {
+                        return a.buttonLabel.localeCompare(b.buttonLabel);
+                      }
+                    })
+                    .map(({ variant, buttonLabel }) => {
+                      const isSelected = selectedVariant?.id === variant.id;
 
                     return (
                       <button
@@ -766,28 +804,46 @@ export default function ProductClient({
 
           {/* 商品説明（右下） */}
           <div className="pt-2 border-t">
-            <Accordion
-              type="single"
-              collapsible
-              defaultValue="right-description"
-              className="w-full space-y-0"
-            >
-              <AccordionItem value="right-description" className="border-b-0">
-                <AccordionTrigger className="text-sm font-medium py-4 hover:no-underline">
+            {mounted ? (
+              <Accordion
+                type="single"
+                collapsible
+                defaultValue="right-description"
+                className="w-full space-y-0"
+              >
+                <AccordionItem value="right-description" className="border-b-0">
+                  <AccordionTrigger className="text-sm font-medium py-4 hover:no-underline">
+                    <span>Description</span>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-4">
+                    {product.descriptionHtml ? (
+                      <div
+                        className="rte text-sm text-foreground [&_p]:mb-4 [&_p]:leading-relaxed [&_p:last-child]:mb-0 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mb-4 [&_h1]:mt-6 [&_h1:first-child]:mt-0 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mb-3 [&_h2]:mt-5 [&_h2:first-child]:mt-0 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mb-2 [&_h3]:mt-4 [&_h3:first-child]:mt-0 [&_h4]:text-base [&_h4]:font-semibold [&_h4]:mb-2 [&_h4]:mt-3 [&_h4:first-child]:mt-0 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4 [&_ol]:space-y-2 [&_li]:mb-1 [&_a]:text-primary [&_a]:underline [&_a:hover]:opacity-80 [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-4 [&_strong]:font-bold [&_em]:italic [&_blockquote]:border-l-4 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_hr]:my-6 [&_hr]:border-t [&_hr]:border-border"
+                        dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
+                      />
+                    ) : (
+                      <p className="text-sm text-foreground leading-relaxed">{product.description || "No description available."}</p>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            ) : (
+              <div className="space-y-0">
+                <div className="text-sm font-medium py-4">
                   <span>Description</span>
-                </AccordionTrigger>
-                <AccordionContent className="text-sm text-muted-foreground pb-4">
+                </div>
+                <div className="pb-4">
                   {product.descriptionHtml ? (
                     <div
-                      className="prose prose-sm max-w-none text-muted-foreground [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-2 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:space-y-2 [&>p]:leading-relaxed"
+                      className="rte text-sm text-foreground [&_p]:mb-4 [&_p]:leading-relaxed [&_p:last-child]:mb-0 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mb-4 [&_h1]:mt-6 [&_h1:first-child]:mt-0 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mb-3 [&_h2]:mt-5 [&_h2:first-child]:mt-0 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mb-2 [&_h3]:mt-4 [&_h3:first-child]:mt-0 [&_h4]:text-base [&_h4]:font-semibold [&_h4]:mb-2 [&_h4]:mt-3 [&_h4:first-child]:mt-0 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4 [&_ol]:space-y-2 [&_li]:mb-1 [&_a]:text-primary [&_a]:underline [&_a:hover]:opacity-80 [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-4 [&_strong]:font-bold [&_em]:italic [&_blockquote]:border-l-4 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_hr]:my-6 [&_hr]:border-t [&_hr]:border-border"
                       dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
                     />
                   ) : (
-                    <p>{product.description || "No description available."}</p>
+                    <p className="text-sm text-foreground leading-relaxed">{product.description || "No description available."}</p>
                   )}
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Made to go with セクション */}
