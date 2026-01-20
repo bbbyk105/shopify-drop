@@ -1,9 +1,10 @@
-import { getProductByHandle } from "@/lib/shopify/queries/products";
+import { getProductByHandle, getRelatedProducts } from "@/lib/shopify/queries/products";
 import { getProductInventory } from "@/lib/shopify/queries/inventory";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
 import ProductClient from "./ProductClient";
+import type { Product as ShopifyProduct } from "@/lib/shopify/types";
 
 interface ProductPageProps {
   params: Promise<{
@@ -75,6 +76,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
       ["furniture", "lighting", "decor"].includes(tag.toLowerCase())
     ) || "products";
 
+  // 類似商品を取得
+  let relatedProducts: ShopifyProduct[] = [];
+  try {
+    relatedProducts = await getRelatedProducts(product.id, product.tags, 1);
+  } catch (error) {
+    console.error("Failed to fetch related products:", error);
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Breadcrumb */}
@@ -105,6 +114,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         images={images}
         firstVariant={firstVariant}
         inventory={inventory}
+        relatedProducts={relatedProducts}
       />
     </div>
   );

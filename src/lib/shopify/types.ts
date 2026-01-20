@@ -44,6 +44,12 @@ export type Product = {
     title?: string | null;
     description?: string | null;
   };
+  deliveryMin?: {
+    value?: string | null;
+  } | null;
+  deliveryMax?: {
+    value?: string | null;
+  } | null;
 };
 
 export type Variant = {
