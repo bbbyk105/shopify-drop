@@ -266,7 +266,7 @@ export default function ProductCard({
             {/* バリエーションオプションスウォッチ */}
             {variantOptions.length > 0 && (
               <div 
-                className="mb-3 min-h-8 shrink-0 overflow-x-auto"
+                className="mb-3 min-h-8 shrink-0 overflow-x-auto pt-1"
                 onMouseEnter={() => setIsSwatchAreaHovered(true)}
                 onMouseLeave={() => setIsSwatchAreaHovered(false)}
                 onClick={(e) => {
