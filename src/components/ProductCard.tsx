@@ -13,8 +13,9 @@ interface ProductCardProps {
   variant?: "default" | "titleOnly";
 }
 
-interface ColorVariant {
-  color: string;
+interface VariantOption {
+  optionName: string;
+  optionValue: string;
   imageUrl: string;
   variantId: string;
 }
@@ -24,8 +25,8 @@ export default function ProductCard({
   variant = "default",
 }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const [hoveredColor, setHoveredColor] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [hoveredOption, setHoveredOption] = useState<string | null>(null);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isSwatchAreaHovered, setIsSwatchAreaHovered] = useState(false);
 
   // ローカル商品とShopify商品の両方に対応
@@ -37,41 +38,69 @@ export default function ProductCard({
     ? product.description
     : product.description;
   
-  // カラーバリエーションを抽出（Shopify商品のみ）
-  const colorVariants: ColorVariant[] = [];
+  // バリエーションオプションを抽出（Shopify商品のみ）
+  // Colorを優先、Colorがない場合は最初に見つかったオプションタイプを使用
+  const variantOptions: VariantOption[] = [];
+  let targetOptionName: string | null = null;
+  
   if (isShopifyProduct) {
-    const colorMap = new Map<string, { imageUrl: string; variantId: string }>();
-    
-    product.variants.edges.forEach(({ node }) => {
+    // まずColorオプションを探す
+    for (const { node } of product.variants.edges) {
       const colorOption = node.selectedOptions?.find(
         (opt) =>
           opt.name.toLowerCase() === "color" ||
-          opt.name.toLowerCase() === "colour"
+          opt.name.toLowerCase() === "colour" ||
+          opt.name.toLowerCase() === "カラー" ||
+          opt.name.toLowerCase() === "色"
       );
-      
       if (colorOption) {
-        const color = colorOption.value;
-        // まだこの色が登録されていない、または画像がある場合は更新
-        if (!colorMap.has(color) || node.image?.url) {
-          colorMap.set(color, {
-            imageUrl:
-              node.image?.url ||
-              product.featuredImage?.url ||
-              product.images.edges[0]?.node.url ||
-              "/placeholder.png",
-            variantId: node.id,
-          });
-        }
+        targetOptionName = colorOption.name;
+        break;
       }
-    });
+    }
     
-    colorMap.forEach((value, color) => {
-      colorVariants.push({
-        color,
-        imageUrl: value.imageUrl,
-        variantId: value.variantId,
+    // Colorが見つからない場合は、最初のオプションタイプを使用
+    if (!targetOptionName && product.variants.edges.length > 0) {
+      const firstOption = product.variants.edges[0]?.node.selectedOptions?.[0];
+      if (firstOption) {
+        targetOptionName = firstOption.name;
+      }
+    }
+    
+    // 対象オプションタイプのバリエーションを抽出
+    if (targetOptionName) {
+      const optionMap = new Map<string, { imageUrl: string; variantId: string }>();
+      
+      product.variants.edges.forEach(({ node }) => {
+        const option = node.selectedOptions?.find(
+          (opt) => opt.name === targetOptionName
+        );
+        
+        if (option) {
+          const optionValue = option.value;
+          // まだこの値が登録されていない、または画像がある場合は更新
+          if (!optionMap.has(optionValue) || node.image?.url) {
+            optionMap.set(optionValue, {
+              imageUrl:
+                node.image?.url ||
+                product.featuredImage?.url ||
+                product.images.edges[0]?.node.url ||
+                "/placeholder.png",
+              variantId: node.id,
+            });
+          }
+        }
       });
-    });
+      
+      optionMap.forEach((value, optionValue) => {
+        variantOptions.push({
+          optionName: targetOptionName!,
+          optionValue,
+          imageUrl: value.imageUrl,
+          variantId: value.variantId,
+        });
+      });
+    }
   }
   
   // 1枚目の画像
@@ -90,21 +119,21 @@ export default function ProductCard({
   
   // 表示する画像を決定
   let displayImage = firstImage;
-  const activeColor = hoveredColor ?? selectedColor;
+  const activeOption = hoveredOption ?? selectedOption;
   const suppressSecondImage =
-    colorVariants.length > 0 &&
-    (isSwatchAreaHovered || hoveredColor !== null || selectedColor !== null);
+    variantOptions.length > 0 &&
+    (isSwatchAreaHovered || hoveredOption !== null || selectedOption !== null);
 
-  // ホバーされた色の画像を優先表示
-  if (hoveredColor && colorVariants.length > 0) {
-    const hoveredVariant = colorVariants.find((cv) => cv.color === hoveredColor);
+  // ホバーされたオプションの画像を優先表示
+  if (hoveredOption && variantOptions.length > 0) {
+    const hoveredVariant = variantOptions.find((vo) => vo.optionValue === hoveredOption);
     if (hoveredVariant) {
       displayImage = hoveredVariant.imageUrl;
     }
   } 
-  // 選択された色の画像を表示
-  else if (selectedColor && colorVariants.length > 0) {
-    const selectedVariant = colorVariants.find((cv) => cv.color === selectedColor);
+  // 選択されたオプションの画像を表示
+  else if (selectedOption && variantOptions.length > 0) {
+    const selectedVariant = variantOptions.find((vo) => vo.optionValue === selectedOption);
     if (selectedVariant) {
       displayImage = selectedVariant.imageUrl;
     }
@@ -183,8 +212,8 @@ export default function ProductCard({
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   };
 
-  const imageBgColor = activeColor
-    ? hexToRgba(getColorValue(activeColor), 0.10)
+  const imageBgColor = activeOption && targetOptionName?.toLowerCase().includes("color")
+    ? hexToRgba(getColorValue(activeOption), 0.10)
     : undefined;
 
   return (
@@ -234,8 +263,8 @@ export default function ProductCard({
             <h3 className="text-base md:text-lg font-semibold group-hover:text-primary transition-colors leading-tight line-clamp-2 mb-2 shrink-0">
               {title}
             </h3>
-            {/* カラーバリエーションスウォッチ */}
-            {colorVariants.length > 0 && (
+            {/* バリエーションオプションスウォッチ */}
+            {variantOptions.length > 0 && (
               <div 
                 className="mb-3 min-h-8 shrink-0 overflow-x-auto"
                 onMouseEnter={() => setIsSwatchAreaHovered(true)}
@@ -246,13 +275,17 @@ export default function ProductCard({
                 }}
               >
                 <div className="flex gap-2 items-center justify-start px-1">
-                  {colorVariants.map((colorVariant) => {
-                    const isSelected = selectedColor === colorVariant.color;
-                    const isHovered = hoveredColor === colorVariant.color;
+                  {variantOptions.map((variantOption) => {
+                    const isSelected = selectedOption === variantOption.optionValue;
+                    const isHovered = hoveredOption === variantOption.optionValue;
+                    const isColorOption = targetOptionName?.toLowerCase().includes("color") || 
+                                        targetOptionName?.toLowerCase().includes("colour") ||
+                                        targetOptionName?.toLowerCase().includes("カラー") ||
+                                        targetOptionName?.toLowerCase().includes("色");
                     
                     return (
                       <button
-                        key={colorVariant.variantId}
+                        key={variantOption.variantId}
                         className={`relative w-6 h-6 rounded-full border-2 transition-all shrink-0 overflow-hidden ${
                           isSelected
                             ? "border-red-500 scale-110 ring-2 ring-red-500 ring-offset-1"
@@ -260,26 +293,27 @@ export default function ProductCard({
                             ? "border-foreground scale-110"
                             : "border-border hover:border-foreground/50"
                         }`}
-                        onMouseEnter={() => setHoveredColor(colorVariant.color)}
-                        onMouseLeave={() => setHoveredColor(null)}
+                        onMouseEnter={() => setHoveredOption(variantOption.optionValue)}
+                        onMouseLeave={() => setHoveredOption(null)}
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          // 色を選択
-                          setSelectedColor(colorVariant.color);
+                          // オプション値を選択
+                          setSelectedOption(variantOption.optionValue);
                         }}
-                        title={colorVariant.color}
+                        title={variantOption.optionValue}
                       >
-                        {/* 色名→色コード推測だとズレるため、バリエーション画像をスウォッチとして表示 */}
-                        {/* 画像が読み込めない場合のフォールバック背景（背面） */}
-                        <span
-                          aria-hidden
-                          className="absolute inset-0"
-                          style={{ backgroundColor: getColorValue(colorVariant.color) }}
-                        />
+                        {/* 色オプションの場合は背景色を設定、それ以外は画像のみ */}
+                        {isColorOption && (
+                          <span
+                            aria-hidden
+                            className="absolute inset-0"
+                            style={{ backgroundColor: getColorValue(variantOption.optionValue) }}
+                          />
+                        )}
                         <Image
-                          src={colorVariant.imageUrl}
-                          alt={colorVariant.color}
+                          src={variantOption.imageUrl}
+                          alt={variantOption.optionValue}
                           fill
                           className="object-cover z-10"
                           sizes="24px"
