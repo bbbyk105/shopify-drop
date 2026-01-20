@@ -237,7 +237,7 @@ export default function ProductCard({
             {/* カラーバリエーションスウォッチ */}
             {colorVariants.length > 0 && (
               <div 
-                className="flex gap-2 justify-center mb-2 shrink-0"
+                className="mb-3 min-h-8 shrink-0 overflow-x-auto"
                 onMouseEnter={() => setIsSwatchAreaHovered(true)}
                 onMouseLeave={() => setIsSwatchAreaHovered(false)}
                 onClick={(e) => {
@@ -245,47 +245,49 @@ export default function ProductCard({
                   e.stopPropagation();
                 }}
               >
-                {colorVariants.map((colorVariant) => {
-                  const isSelected = selectedColor === colorVariant.color;
-                  const isHovered = hoveredColor === colorVariant.color;
-                  
-                  return (
-                    <button
-                      key={colorVariant.variantId}
-                      className={`relative w-6 h-6 rounded-full border-2 transition-all shrink-0 overflow-hidden ${
-                        isSelected
-                          ? "border-red-500 scale-110 ring-2 ring-red-500 ring-offset-1"
-                          : isHovered
-                          ? "border-foreground scale-110"
-                          : "border-border hover:border-foreground/50"
-                      }`}
-                      onMouseEnter={() => setHoveredColor(colorVariant.color)}
-                      onMouseLeave={() => setHoveredColor(null)}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        // 色を選択
-                        setSelectedColor(colorVariant.color);
-                      }}
-                      title={colorVariant.color}
-                    >
-                      {/* 色名→色コード推測だとズレるため、バリエーション画像をスウォッチとして表示 */}
-                      {/* 画像が読み込めない場合のフォールバック背景（背面） */}
-                      <span
-                        aria-hidden
-                        className="absolute inset-0"
-                        style={{ backgroundColor: getColorValue(colorVariant.color) }}
-                      />
-                      <Image
-                        src={colorVariant.imageUrl}
-                        alt={colorVariant.color}
-                        fill
-                        className="object-cover z-10"
-                        sizes="24px"
-                      />
-                    </button>
-                  );
-                })}
+                <div className="flex gap-2 items-center justify-start px-1">
+                  {colorVariants.map((colorVariant) => {
+                    const isSelected = selectedColor === colorVariant.color;
+                    const isHovered = hoveredColor === colorVariant.color;
+                    
+                    return (
+                      <button
+                        key={colorVariant.variantId}
+                        className={`relative w-6 h-6 rounded-full border-2 transition-all shrink-0 overflow-hidden ${
+                          isSelected
+                            ? "border-red-500 scale-110 ring-2 ring-red-500 ring-offset-1"
+                            : isHovered
+                            ? "border-foreground scale-110"
+                            : "border-border hover:border-foreground/50"
+                        }`}
+                        onMouseEnter={() => setHoveredColor(colorVariant.color)}
+                        onMouseLeave={() => setHoveredColor(null)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          // 色を選択
+                          setSelectedColor(colorVariant.color);
+                        }}
+                        title={colorVariant.color}
+                      >
+                        {/* 色名→色コード推測だとズレるため、バリエーション画像をスウォッチとして表示 */}
+                        {/* 画像が読み込めない場合のフォールバック背景（背面） */}
+                        <span
+                          aria-hidden
+                          className="absolute inset-0"
+                          style={{ backgroundColor: getColorValue(colorVariant.color) }}
+                        />
+                        <Image
+                          src={colorVariant.imageUrl}
+                          alt={colorVariant.color}
+                          fill
+                          className="object-cover z-10"
+                          sizes="24px"
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
             <p className="text-base md:text-lg font-bold mt-auto shrink-0">
