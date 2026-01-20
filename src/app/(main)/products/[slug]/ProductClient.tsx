@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -12,10 +12,7 @@ import type { Product, Variant } from "@/lib/shopify/types";
 import {
   ChevronLeft,
   ChevronRight,
-  Truck,
-  Shield,
   Star,
-  Plus,
 } from "lucide-react";
 import {
   Accordion,
@@ -38,6 +35,26 @@ interface ProductClientProps {
   relatedProducts?: Product[];
 }
 
+// Option名の揺れ対応: 実際のproduct.optionsから検出
+const COLOR_NAME_CANDIDATES = ["Color", "Colour", "カラー", "色"];
+const SIZE_NAME_CANDIDATES = ["Size", "サイズ"];
+
+// 共通ユーティリティ関数
+const getOptionValue = (variant: Variant, optionName: string): string | undefined => {
+  return variant.selectedOptions?.find((opt) => opt.name === optionName)?.value;
+};
+
+const isPurchasable = (variant: Variant, inventory: Record<string, number>): boolean => {
+  if (!variant.availableForSale) return false;
+  // inventoryが取得できた場合は、在庫数もチェック（undefinedは0扱いしない）
+  const inv = inventory[variant.id];
+  if (inv !== undefined) {
+    return inv > 0;
+  }
+  // inventoryが取得できない場合は availableForSale のみで判定
+  return true;
+};
+
 export default function ProductClient({
   product,
   images,
@@ -51,9 +68,6 @@ export default function ProductClient({
     url: string;
     altText?: string | null;
   } | null>(null);
-  const [selectedVariant, setSelectedVariant] = useState<Variant | undefined>(
-    firstVariant
-  );
   const [quantity, setQuantity] = useState(1);
 
   // クライアントマウント後に詳細（Accordion）を表示
@@ -61,51 +75,100 @@ export default function ProductClient({
     setMounted(true);
   }, []);
 
-  // バリエーションからオプションタイプとその値を動的に抽出
-  type OptionType = string;
-  type OptionValue = string;
-  const optionTypesMap = new Map<OptionType, Set<OptionValue>>();
-
-  product.variants.edges.forEach(({ node }) => {
-    node.selectedOptions?.forEach((opt) => {
-      const optionType = opt.name; // 元の大文字小文字を保持
-      if (!optionTypesMap.has(optionType)) {
-        optionTypesMap.set(optionType, new Set());
-      }
-      optionTypesMap.get(optionType)!.add(opt.value);
-    });
-  });
-
-  const optionTypes = Array.from(optionTypesMap.keys());
-  const hasMultipleOptionTypes = optionTypes.length >= 2;
-
-  // オプション値をソートする関数（数値の場合は数値順、それ以外は文字列順）
-  const sortOptionValues = (values: string[]): string[] => {
-    // 全ての値が数値かどうかをチェック
-    const allNumeric = values.every((value) => {
-      const trimmed = value.trim();
-      // 数値（整数または小数）かどうかをチェック
-      return /^-?\d+(\.\d+)?$/.test(trimmed);
-    });
-
-    if (allNumeric && values.length > 0) {
-      // 数値としてソート
-      return [...values].sort((a, b) => {
-        const numA = parseFloat(a.trim());
-        const numB = parseFloat(b.trim());
-        return numA - numB;
-      });
-    } else {
-      // 文字列としてソート
-      return [...values].sort((a, b) => a.localeCompare(b));
+  // Option名の検出（Color/Sizeの揺れ対応）
+  const detectedColorName = useMemo(() => {
+    // 実際のvariantsから存在するColor名を検出
+    for (const variant of product.variants.edges.map(e => e.node)) {
+      const colorOption = variant.selectedOptions?.find(opt => 
+        COLOR_NAME_CANDIDATES.some(candidate => 
+          opt.name.toLowerCase() === candidate.toLowerCase()
+        )
+      );
+      if (colorOption) return colorOption.name; // 実名を返す
     }
-  };
+    return null;
+  }, [product.variants.edges]);
 
-  // 初期選択状態を計算（useStateの初期値として使用）
+  const detectedSizeName = useMemo(() => {
+    for (const variant of product.variants.edges.map(e => e.node)) {
+      const sizeOption = variant.selectedOptions?.find(opt => 
+        SIZE_NAME_CANDIDATES.some(candidate => 
+          opt.name.toLowerCase() === candidate.toLowerCase()
+        )
+      );
+      if (sizeOption) return sizeOption.name;
+    }
+    return null;
+  }, [product.variants.edges]);
+
+  // オプションタイプとその値を抽出
+  const optionTypesMap = useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    product.variants.edges.forEach(({ node }) => {
+      node.selectedOptions?.forEach((opt) => {
+        const optionType = opt.name;
+        if (!map.has(optionType)) {
+          map.set(optionType, new Set());
+        }
+        map.get(optionType)!.add(opt.value);
+      });
+    });
+    return map;
+  }, [product.variants.edges]);
+
+  // optionTypes の順序を固定: Color+Size商品の場合は [Color, Size, ...rest] の順
+  const optionTypes = useMemo(() => {
+    const allTypes = Array.from(optionTypesMap.keys());
+    
+    if (detectedColorName && detectedSizeName) {
+      // Color+Size商品の場合、順序を固定
+      const ordered: string[] = [];
+      const rest: string[] = [];
+      
+      // Colorを最初に
+      if (allTypes.includes(detectedColorName)) {
+        ordered.push(detectedColorName);
+      }
+      
+      // Sizeを2番目に
+      if (allTypes.includes(detectedSizeName)) {
+        ordered.push(detectedSizeName);
+      }
+      
+      // 残りを追加
+      allTypes.forEach(type => {
+        if (type !== detectedColorName && type !== detectedSizeName) {
+          rest.push(type);
+        }
+      });
+      
+      return [...ordered, ...rest];
+    }
+    
+    // Color+Size商品でない場合は元の順序
+    return allTypes;
+  }, [optionTypesMap, detectedColorName, detectedSizeName]);
+
+  const hasMultipleOptionTypes = optionTypes.length >= 2;
+  const isColorSizeProduct = detectedColorName !== null && detectedSizeName !== null && hasMultipleOptionTypes;
+
+  // State管理: selectedOptionsのみを保持（最小化）
+  // 修正1: lazy initializer にする
   const getInitialSelectedOptions = (): Record<string, string> => {
-    if (firstVariant && hasMultipleOptionTypes) {
+    // Color+Size商品の場合は必ず未選択から開始
+    if (isColorSizeProduct) {
+      return {};
+    }
+    
+    // 非2階層商品は従来通り初期選択OK
+    // 購入可能な最初のvariantを探す
+    const firstAvailableVariant = product.variants.edges.find(
+      ({ node }) => node.availableForSale
+    )?.node || firstVariant;
+
+    if (firstAvailableVariant && hasMultipleOptionTypes) {
       const initialOptions: Record<string, string> = {};
-      firstVariant.selectedOptions?.forEach((opt) => {
+      firstAvailableVariant.selectedOptions?.forEach((opt) => {
         initialOptions[opt.name] = opt.value;
       });
       return initialOptions;
@@ -113,77 +176,78 @@ export default function ProductClient({
     return {};
   };
 
-  // オプションタイプごとの選択状態を管理（例: { "Color": "Black", "Size": "M" }）
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(
-    getInitialSelectedOptions
+    () => getInitialSelectedOptions()
   );
 
-  // 価格計算
-  const price = selectedVariant
-    ? parseFloat(selectedVariant.price.amount)
-    : parseFloat(product.priceRange.minVariantPrice.amount);
+  // 初期化補正を「一度だけ」にするガード
+  const didNormalizeInitial = useRef(false);
 
-  // 割引価格の計算
-  const compareAtPriceValue = selectedVariant?.compareAtPrice
-    ? parseFloat(selectedVariant.compareAtPrice.amount)
-    : product.compareAtPriceRange?.minVariantPrice
-    ? parseFloat(product.compareAtPriceRange.minVariantPrice.amount)
-    : null;
+  // 修正2: isColorSizeProduct が true になった時に、selectedOptions が紛れ込んでいたら {} に矯正する（1回補正）
+  useEffect(() => {
+    if (!isColorSizeProduct) return;
+    if (didNormalizeInitial.current) return;
 
-  // 割引があるかチェック
-  const hasDiscount =
-    compareAtPriceValue !== null &&
-    compareAtPriceValue > 0 &&
-    compareAtPriceValue > price;
+    // 初期状態で「勝手にselectedが入ってしまっている」ケースだけを1回だけ補正
+    if (Object.keys(selectedOptions).length > 0) {
+      setSelectedOptions({});
+      setQuantity(1);
+    }
 
-  // 在庫数を取得
-  const maxQuantity = selectedVariant ? inventory[selectedVariant.id] ?? 10 : 5;
+    didNormalizeInitial.current = true;
+  }, [isColorSizeProduct]);
 
-  // 選択されたオプションの組み合わせに基づいてバリエーションを決定
-  const findVariantByOptions = (
-    options: Record<string, string>
-  ): Variant | undefined => {
-    if (Object.keys(options).length === 0) return undefined;
+  // Derived state: selectedVariantはselectedOptionsから計算
+  const selectedVariant = useMemo(() => {
+    if (Object.keys(selectedOptions).length === 0) {
+      // 2階層商品で未選択の場合は undefined
+      if (hasMultipleOptionTypes) return undefined;
+      // 単一オプション商品の場合は firstVariant を返す
+      return firstVariant;
+    }
     
     return product.variants.edges.find(({ node }) => {
-      // 全ての選択されたオプションが一致するバリエーションを探す
-      return Object.entries(options).every(([optionType, optionValue]) => {
-        const variantOption = node.selectedOptions?.find(
-          (opt) => opt.name === optionType
-        );
+      return Object.entries(selectedOptions).every(([optionType, optionValue]) => {
+        const variantOption = node.selectedOptions?.find((opt) => opt.name === optionType);
         return variantOption?.value === optionValue;
       });
     })?.node;
-  };
+  }, [selectedOptions, product.variants.edges, hasMultipleOptionTypes, firstVariant]);
 
-  // 選択されたオプションに基づいて利用可能な値をフィルタリング
-  const getAvailableValuesForOption = (
-    optionType: string,
-    currentSelections: Record<string, string>
-  ): Set<string> => {
-    const availableValues = new Set<string>();
-    
-    product.variants.edges.forEach(({ node }) => {
-      // 他の選択されたオプションと一致するバリエーションのみを考慮
-      const matchesOtherSelections = Object.entries(currentSelections)
-        .filter(([type]) => type !== optionType)
-        .every(([optionType, optionValue]) => {
-          const variantOption = node.selectedOptions?.find(
-            (opt) => opt.name === optionType
-          );
-          return variantOption?.value === optionValue;
-        });
+  // 価格計算
+  const price = useMemo(() => {
+    if (selectedVariant) {
+      return parseFloat(selectedVariant.price.amount);
+    }
+    return parseFloat(product.priceRange.minVariantPrice.amount);
+  }, [selectedVariant, product.priceRange.minVariantPrice.amount]);
 
-      if (matchesOtherSelections && node.availableForSale) {
-        const option = node.selectedOptions?.find((opt) => opt.name === optionType);
-        if (option) {
-          availableValues.add(option.value);
-        }
-      }
-    });
+  // 割引価格の計算
+  const compareAtPriceValue = useMemo(() => {
+    if (selectedVariant?.compareAtPrice) {
+      return parseFloat(selectedVariant.compareAtPrice.amount);
+    }
+    if (product.compareAtPriceRange?.minVariantPrice) {
+      return parseFloat(product.compareAtPriceRange.minVariantPrice.amount);
+    }
+    return null;
+  }, [selectedVariant, product.compareAtPriceRange]);
 
-    return availableValues;
-  };
+  const hasDiscount = useMemo(() => {
+    return compareAtPriceValue !== null && compareAtPriceValue > 0 && compareAtPriceValue > price;
+  }, [compareAtPriceValue, price]);
+
+  // 在庫数の取得（inventoryがundefinedの場合はnullを返す）
+  const maxQuantity = useMemo(() => {
+    if (!selectedVariant) return null;
+    const inv = inventory[selectedVariant.id];
+    return inv !== undefined ? inv : null;
+  }, [selectedVariant, inventory]);
+
+  // 全バリアントが売り切れかチェック
+  const productAllSoldOut = useMemo(() => {
+    return product.variants.edges.every(({ node }) => !node.availableForSale);
+  }, [product.variants.edges]);
 
   // URL正規化関数
   const normalizeUrl = (url: string): string => {
@@ -199,19 +263,15 @@ export default function ProductClient({
   const switchToVariantImage = (variant: Variant) => {
     if (variant.image?.url) {
       const variantImageUrl = normalizeUrl(variant.image.url);
-      
-      // images配列内で一致する画像を探す
       const imageIndex = images.findIndex((img) => {
         const normalizedImgUrl = normalizeUrl(img.url);
         return normalizedImgUrl === variantImageUrl;
       });
       
       if (imageIndex !== -1) {
-        // images配列内に見つかった場合
         setVariantImageOverride(null);
         setSelectedImage(imageIndex);
       } else {
-        // images配列内に見つからない場合、直接表示
         setVariantImageOverride({
           url: variant.image.url,
           altText: variant.image.altText ?? null,
@@ -222,85 +282,192 @@ export default function ProductClient({
     }
   };
 
-  // オプションが選択されたらバリエーションを更新
-  useEffect(() => {
-    if (hasMultipleOptionTypes && optionTypes.length > 0) {
-      const selectedOptionsEntries = Object.entries(selectedOptions);
-      
-      if (selectedOptionsEntries.length > 0) {
-        // 完全一致するバリエーションを探す
-        const exactMatch = product.variants.edges.find(({ node }) => {
-          return selectedOptionsEntries.every(([optionType, optionValue]) => {
-            const variantOption = node.selectedOptions?.find(
-              (opt) => opt.name === optionType
-            );
-            return variantOption?.value === optionValue;
-          });
-        })?.node;
+  // オプション値をソートする関数
+  const sortOptionValues = (values: string[]): string[] => {
+    const allNumeric = values.every((value) => {
+      const trimmed = value.trim();
+      return /^-?\d+(\.\d+)?$/.test(trimmed);
+    });
 
-        if (exactMatch) {
-          // 完全一致するバリエーションが見つかった場合
-          if (exactMatch.id !== selectedVariant?.id) {
-            setSelectedVariant(exactMatch);
-            setQuantity(1);
-            // 画像を切り替え
-            switchToVariantImage(exactMatch);
-          }
-        } else {
-          // 完全一致しない場合、選択されているオプションに一致する最初のバリエーションを探す
-          // これにより、色だけ選択した時点で画像を切り替えることができる
-          const partialMatch = product.variants.edges.find(({ node }) => {
-            return selectedOptionsEntries.some(([optionType, optionValue]) => {
-              const variantOption = node.selectedOptions?.find(
-                (opt) => opt.name === optionType
-              );
-              return variantOption?.value === optionValue && node.availableForSale;
-            });
-          })?.node;
+    if (allNumeric && values.length > 0) {
+      return [...values].sort((a, b) => {
+        const numA = parseFloat(a.trim());
+        const numB = parseFloat(b.trim());
+        return numA - numB;
+      });
+    } else {
+      return [...values].sort((a, b) => a.localeCompare(b));
+    }
+  };
 
-          if (partialMatch && partialMatch.image?.url) {
-            // バリエーションは更新せず、画像だけ切り替え
-            switchToVariantImage(partialMatch);
-          }
+  // 利用可能な値を取得（availableForSaleを基本に）
+  const getAvailableValuesForOption = (
+    optionType: string,
+    currentSelections: Record<string, string>
+  ): Set<string> => {
+    const availableValues = new Set<string>();
+    
+    product.variants.edges.forEach(({ node }) => {
+      const matchesOtherSelections = Object.entries(currentSelections)
+        .filter(([type]) => type !== optionType)
+        .every(([type, value]) => {
+          const variantOption = node.selectedOptions?.find((opt) => opt.name === type);
+          return variantOption?.value === value;
+        });
+
+      if (matchesOtherSelections && node.availableForSale) {
+        const option = node.selectedOptions?.find((opt) => opt.name === optionType);
+        if (option) {
+          availableValues.add(option.value);
         }
       }
+    });
+
+    return availableValues;
+  };
+
+  // Color+Size商品用: 指定されたColorで利用可能なSizeを取得
+  const getAvailableSizesForColor = (color: string): Set<string> => {
+    if (!detectedColorName || !detectedSizeName) return new Set();
+    
+    const availableSizes = new Set<string>();
+    product.variants.edges.forEach(({ node }) => {
+      const colorValue = getOptionValue(node, detectedColorName);
+      if (colorValue === color && node.availableForSale) {
+        const sizeValue = getOptionValue(node, detectedSizeName);
+        if (sizeValue) {
+          availableSizes.add(sizeValue);
+        }
+      }
+    });
+    return availableSizes;
+  };
+
+  // Color+Size商品用: 指定されたColorに購入可能variantが1つでもあるか
+  const hasAnyAvailableVariantForColor = (color: string): boolean => {
+    if (!detectedColorName) return false;
+    
+    return product.variants.edges.some(({ node }) => {
+      const colorValue = getOptionValue(node, detectedColorName);
+      return colorValue === color && node.availableForSale;
+    });
+  };
+
+  // 選択されたColor/Sizeを取得
+  const selectedColor = detectedColorName ? selectedOptions[detectedColorName] : undefined;
+  const selectedSize = detectedSizeName ? selectedOptions[detectedSizeName] : undefined;
+
+  // useEffect: 画像切り替えのみ（stateの自動リセットはしない）
+  useEffect(() => {
+    if (selectedVariant && selectedVariant.image?.url) {
+      switchToVariantImage(selectedVariant);
     }
-  }, [
-    hasMultipleOptionTypes,
-    selectedOptions,
-    selectedVariant?.id,
-    images,
-    optionTypes,
-    product.variants.edges,
-  ]);
+  }, [selectedVariant?.id]);
+
+  // オプション選択ハンドラ（色変更でサイズリセットはここで行う）
+  // 修正3: 同じ値をクリックしたら解除できるようにする
+  const handleOptionSelect = (optionType: string, value: string) => {
+    const newSelectedOptions: Record<string, string> = { ...selectedOptions };
+    const currentValue = selectedOptions[optionType];
+    
+    // 同じ値がクリックされた場合は解除
+    if (currentValue === value) {
+      delete newSelectedOptions[optionType];
+      
+      // 選択したオプション以降をクリア
+      const currentIndex = optionTypes.indexOf(optionType);
+      if (currentIndex !== -1) {
+        optionTypes.slice(currentIndex).forEach((type) => {
+          delete newSelectedOptions[type];
+        });
+      }
+      
+      // Color解除時はSizeも当然消える（Color+Size商品の場合）
+      if (isColorSizeProduct && optionType === detectedColorName && detectedSizeName) {
+        delete newSelectedOptions[detectedSizeName];
+      }
+      
+      setSelectedOptions(newSelectedOptions);
+      setQuantity(1);
+      return;
+    }
+    
+    // 新しい選択を設定
+    newSelectedOptions[optionType] = value;
+    
+    // Color+Size商品の場合、Color変更時にSizeをリセット
+    if (isColorSizeProduct && optionType === detectedColorName && selectedColor !== value) {
+      if (detectedSizeName) {
+        delete newSelectedOptions[detectedSizeName];
+      }
+    }
+    
+    // 選択したオプション以降をクリア
+    const currentIndex = optionTypes.indexOf(optionType);
+    if (currentIndex !== -1) {
+      optionTypes.slice(currentIndex + 1).forEach((type) => {
+        delete newSelectedOptions[type];
+      });
+    }
+    
+    setSelectedOptions(newSelectedOptions);
+    setQuantity(1);
+  };
+
+  // CTAボタンの状態を決定
+  const getCTAState = () => {
+    if (productAllSoldOut) {
+      return { type: "sold_out" as const, message: "Sold Out" };
+    }
+
+    if (isColorSizeProduct) {
+      if (!selectedColor) {
+        return { type: "select_option" as const, message: "Select a color" };
+      }
+      if (!selectedSize) {
+        return { type: "select_option" as const, message: "Select a size" };
+      }
+      if (selectedVariant) {
+        if (isPurchasable(selectedVariant, inventory)) {
+          return { type: "add_to_cart" as const };
+        } else {
+          return { type: "sold_out" as const, message: "Sold Out" };
+        }
+      }
+      return { type: "select_option" as const, message: "Select options" };
+    } else {
+      // 単一オプション/variant商品
+      if (!selectedVariant) {
+        return { type: "select_option" as const, message: "Select options" };
+      }
+      if (isPurchasable(selectedVariant, inventory)) {
+        return { type: "add_to_cart" as const };
+      } else {
+        return { type: "sold_out" as const, message: "Sold Out" };
+      }
+    }
+  };
+
+  const ctaState = getCTAState();
 
   // 配送日付レンジを計算
   const getDeliveryDateRange = (): string => {
-    const minDays = product.deliveryMin?.value
-      ? Number(product.deliveryMin.value)
-      : null;
-    const maxDays = product.deliveryMax?.value
-      ? Number(product.deliveryMax.value)
-      : null;
+    const minDays = product.deliveryMin?.value ? Number(product.deliveryMin.value) : null;
+    const maxDays = product.deliveryMax?.value ? Number(product.deliveryMax.value) : null;
 
-    // 両方の値が有効な数値かチェック
-    const isValidMin =
-      minDays !== null && !isNaN(minDays) && minDays >= 0;
-    const isValidMax =
-      maxDays !== null && !isNaN(maxDays) && maxDays >= 0;
+    const isValidMin = minDays !== null && !isNaN(minDays) && minDays >= 0;
+    const isValidMax = maxDays !== null && !isNaN(maxDays) && maxDays >= 0;
 
     if (!isValidMin || !isValidMax) {
       return "Shipping time varies";
     }
 
-    // minとmaxを正規化（max < minの場合は入れ替え）
     let finalMin = minDays;
     let finalMax = maxDays;
     if (finalMax < finalMin) {
       [finalMin, finalMax] = [finalMax, finalMin];
     }
 
-    // UTC基準で今日の日付を取得（時刻を00:00:00に設定）
     const today = new Date();
     const todayUTC = Date.UTC(
       today.getUTCFullYear(),
@@ -308,15 +475,9 @@ export default function ProductClient({
       today.getUTCDate()
     );
 
-    // 日付を計算
-    const minDate = new Date(
-      todayUTC + finalMin * 24 * 60 * 60 * 1000
-    );
-    const maxDate = new Date(
-      todayUTC + finalMax * 24 * 60 * 60 * 1000
-    );
+    const minDate = new Date(todayUTC + finalMin * 24 * 60 * 60 * 1000);
+    const maxDate = new Date(todayUTC + finalMax * 24 * 60 * 60 * 1000);
 
-    // en-US形式で日付をフォーマット（例: Jan 21 - Feb 3）
     const formatDate = (date: Date) => {
       return new Intl.DateTimeFormat("en-US", {
         month: "short",
@@ -327,33 +488,24 @@ export default function ProductClient({
     return `${formatDate(minDate)} - ${formatDate(maxDate)}`;
   };
 
-  // 配送日数を取得（例: "5-7 days"）
+  // 配送日数を取得
   const getDeliveryDays = (): string | null => {
-    const minDays = product.deliveryMin?.value
-      ? Number(product.deliveryMin.value)
-      : null;
-    const maxDays = product.deliveryMax?.value
-      ? Number(product.deliveryMax.value)
-      : null;
+    const minDays = product.deliveryMin?.value ? Number(product.deliveryMin.value) : null;
+    const maxDays = product.deliveryMax?.value ? Number(product.deliveryMax.value) : null;
 
-    // 両方の値が有効な数値かチェック
-    const isValidMin =
-      minDays !== null && !isNaN(minDays) && minDays >= 0;
-    const isValidMax =
-      maxDays !== null && !isNaN(maxDays) && maxDays >= 0;
+    const isValidMin = minDays !== null && !isNaN(minDays) && minDays >= 0;
+    const isValidMax = maxDays !== null && !isNaN(maxDays) && maxDays >= 0;
 
     if (!isValidMin || !isValidMax) {
       return null;
     }
 
-    // minとmaxを正規化（max < minの場合は入れ替え）
     let finalMin = minDays;
     let finalMax = maxDays;
     if (finalMax < finalMin) {
       [finalMin, finalMax] = [finalMax, finalMin];
     }
 
-    // 同じ値の場合は "5 days"、異なる場合は "5-7 days"
     if (finalMin === finalMax) {
       return `${finalMin} day${finalMin !== 1 ? "s" : ""}`;
     } else {
@@ -361,44 +513,9 @@ export default function ProductClient({
     }
   };
 
-  // バリエーションをグループ化（Seating、Material、Colorなど）
-  const variantGroups: Record<string, Variant[]> = {};
-  const colorVariants: Variant[] = [];
-  const processedVariantIds = new Set<string>();
-  
-  product.variants.edges.forEach(({ node }) => {
-    const title = node.title;
-    // selectedOptionsからColorを探す
-    const colorOption = node.selectedOptions?.find(opt => 
-      opt.name.toLowerCase() === 'color' || opt.name.toLowerCase() === 'colour'
-    );
-    
-    // 色オプションがある場合は、Colorグループにのみ追加
-    if (colorOption) {
-      colorVariants.push(node);
-      processedVariantIds.add(node.id);
-      return; // 他のグループには追加しない
-    }
-    
-    // バリエーションタイトルからグループを抽出（例: "Sofa / Leather / Charme Tan"）
-    const parts = title.split(" / ");
-    if (parts.length > 0) {
-      const group = parts[0]; // 最初の部分をグループとして使用
-      if (!variantGroups[group]) {
-        variantGroups[group] = [];
-      }
-      variantGroups[group].push(node);
-      processedVariantIds.add(node.id);
-    }
-  });
-  
-  // Colorバリエーションを別途管理（重複を避ける）
-  if (colorVariants.length > 0) {
-    variantGroups["Color"] = colorVariants;
-  }
-
   const handleQuantityChange = (newQuantity: number) => {
-    const validQuantity = Math.max(1, Math.min(maxQuantity, newQuantity));
+    const maxQty = maxQuantity ?? 10;
+    const validQuantity = Math.max(1, Math.min(maxQty, newQuantity));
     setQuantity(validQuantity);
   };
 
@@ -436,7 +553,7 @@ export default function ProductClient({
             )}
 
             {/* 在庫切れバッジ */}
-            {!product.availableForSale && (
+            {productAllSoldOut && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm">
                 <div className="text-center">
                   <span className="text-white font-bold text-3xl block mb-2">
@@ -445,8 +562,6 @@ export default function ProductClient({
                 </div>
               </div>
             )}
-
-            
 
             {/* 画像ナビゲーション */}
             {images.length > 1 && (
@@ -525,7 +640,6 @@ export default function ProductClient({
                 </span>
               )}
             </div>
-            
           </div>
 
           {/* 評価（星） */}
@@ -551,24 +665,112 @@ export default function ProductClient({
           {/* バリエーション選択 */}
           {product.variants.edges.length > 1 && (
             <div className="space-y-4">
-              {hasMultipleOptionTypes ? (
-                /* 2つ以上のオプションタイプがある場合は2段階選択 */
+              {isColorSizeProduct ? (
+                /* Color+Size商品の専用UI */
+                <>
+                  {/* Color選択 */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      {detectedColorName}
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {sortOptionValues(
+                        Array.from(optionTypesMap.get(detectedColorName!) || [])
+                      ).map((colorValue) => {
+                        const isSelected = selectedColor === colorValue;
+                        const hasAvailable = hasAnyAvailableVariantForColor(colorValue);
+                        const isDisabled = !hasAvailable;
+
+                        return (
+                          <button
+                            key={colorValue}
+                            onClick={() => handleOptionSelect(detectedColorName!, colorValue)}
+                            disabled={isDisabled}
+                            className={cn(
+                              "px-4 py-2 rounded-full text-sm font-medium transition-all border relative",
+                              isSelected
+                                ? "bg-zinc-800 text-white border-zinc-800"
+                                : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200 hover:border-zinc-300",
+                              isDisabled && "opacity-50 cursor-not-allowed"
+                            )}
+                          >
+                            {colorValue}
+                            {isDisabled && (
+                              <span className="ml-1 text-xs">(Sold out)</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Size選択 */}
+                  {selectedColor ? (
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        {detectedSizeName}
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {(() => {
+                          const availableSizes = getAvailableSizesForColor(selectedColor);
+
+                          if (availableSizes.size === 0) {
+                            return (
+                              <p className="text-sm text-muted-foreground">
+                                No sizes available for this color
+                              </p>
+                            );
+                          }
+
+                          // 修正3: 選べるものだけ表示（availableSizes を直接 map）
+                          return sortOptionValues(Array.from(availableSizes)).map((sizeValue) => {
+                            const isSelected = selectedSize === sizeValue;
+
+                            return (
+                              <button
+                                key={sizeValue}
+                                onClick={() => handleOptionSelect(detectedSizeName!, sizeValue)}
+                                className={cn(
+                                  "px-4 py-2 rounded-full text-sm font-medium transition-all border",
+                                  isSelected
+                                    ? "bg-zinc-800 text-white border-zinc-800"
+                                    : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200 hover:border-zinc-300"
+                                )}
+                              >
+                                {sizeValue}
+                              </button>
+                            );
+                          });
+                        })()}
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        {detectedSizeName}
+                      </label>
+                      <p className="text-sm text-muted-foreground">
+                        Select a color to see sizes
+                      </p>
+                    </div>
+                  )}
+                </>
+              ) : hasMultipleOptionTypes ? (
+                /* 2階層商品（Color+Size以外） */
                 <>
                   {optionTypes.map((optionType, index) => {
-                    // 前のオプションタイプが全て選択されているかチェック
                     const previousOptionsSelected = optionTypes
                       .slice(0, index)
                       .every((type) => selectedOptions[type] !== undefined);
 
-                    // このオプションタイプの利用可能な値を取得
+                    if (!previousOptionsSelected && index > 0) {
+                      return null;
+                    }
+
                     const availableValues = getAvailableValuesForOption(
                       optionType,
                       selectedOptions
                     );
-
-                    if (!previousOptionsSelected && index > 0) {
-                      return null; // 前のオプションが選択されていない場合は表示しない
-                    }
 
                     return (
                       <div key={optionType}>
@@ -576,78 +778,29 @@ export default function ProductClient({
                           {optionType}
                         </label>
                         <div className="flex flex-wrap gap-2">
-                          {sortOptionValues(Array.from(optionTypesMap.get(optionType) || [])).map(
-                            (value) => {
-                              const isSelected = selectedOptions[optionType] === value;
-                              const isAvailable = availableValues.has(value);
+                          {sortOptionValues(
+                            Array.from(optionTypesMap.get(optionType) || [])
+                          ).map((value) => {
+                            const isSelected = selectedOptions[optionType] === value;
+                            const isAvailable = availableValues.has(value);
 
-                              return (
-                                <button
-                                  key={value}
-                                  onClick={() => {
-                                    // このオプションタイプ以降の選択をクリア
-                                    const newSelectedOptions: Record<string, string> = {
-                                      ...selectedOptions,
-                                    };
-                                    // 現在のオプションタイプまでの選択を保持
-                                    optionTypes.slice(0, index).forEach((type) => {
-                                      if (selectedOptions[type]) {
-                                        newSelectedOptions[type] = selectedOptions[type];
-                                      }
-                                    });
-                                    // 新しい選択を追加
-                                    newSelectedOptions[optionType] = value;
-                                    // 以降のオプションタイプの選択をクリア
-                                    optionTypes.slice(index + 1).forEach((type) => {
-                                      delete newSelectedOptions[type];
-                                    });
-                                    setSelectedOptions(newSelectedOptions);
-
-                                    // 選択されたオプションに基づいて画像を切り替え
-                                    // 完全一致するバリエーションを探す
-                                    const exactMatch = product.variants.edges.find(({ node }) => {
-                                      return Object.entries(newSelectedOptions).every(([optType, optValue]) => {
-                                        const variantOption = node.selectedOptions?.find(
-                                          (opt) => opt.name === optType
-                                        );
-                                        return variantOption?.value === optValue;
-                                      });
-                                    })?.node;
-
-                                    if (exactMatch && exactMatch.image?.url) {
-                                      // 完全一致するバリエーションの画像を表示
-                                      switchToVariantImage(exactMatch);
-                                    } else {
-                                      // 完全一致しない場合、選択されたオプションに一致する最初のバリエーションを探す
-                                      const partialMatch = product.variants.edges.find(({ node }) => {
-                                        return Object.entries(newSelectedOptions).some(([optType, optValue]) => {
-                                          const variantOption = node.selectedOptions?.find(
-                                            (opt) => opt.name === optType
-                                          );
-                                          return variantOption?.value === optValue && node.availableForSale;
-                                        });
-                                      })?.node;
-
-                                      if (partialMatch && partialMatch.image?.url) {
-                                        // 部分一致するバリエーションの画像を表示
-                                        switchToVariantImage(partialMatch);
-                                      }
-                                    }
-                                  }}
-                                  disabled={!isAvailable}
-                                  className={cn(
-                                    "px-4 py-2 rounded-full text-sm font-medium transition-all border",
-                                    isSelected
-                                      ? "bg-zinc-800 text-white border-zinc-800"
-                                      : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200 hover:border-zinc-300",
-                                    !isAvailable && "opacity-50 cursor-not-allowed"
-                                  )}
-                                >
-                                  {value}
-                                </button>
-                              );
-                            }
-                          )}
+                            return (
+                              <button
+                                key={value}
+                                onClick={() => handleOptionSelect(optionType, value)}
+                                disabled={!isAvailable}
+                                className={cn(
+                                  "px-4 py-2 rounded-full text-sm font-medium transition-all border",
+                                  isSelected
+                                    ? "bg-zinc-800 text-white border-zinc-800"
+                                    : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200 hover:border-zinc-300",
+                                  !isAvailable && "opacity-50 cursor-not-allowed"
+                                )}
+                              >
+                                {value}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     );
@@ -666,7 +819,6 @@ export default function ProductClient({
                       return { variant, buttonLabel };
                     })
                     .sort((a, b) => {
-                      // 数値としてソートできるかチェック
                       const aNum = parseFloat(a.buttonLabel.trim());
                       const bNum = parseFloat(b.buttonLabel.trim());
                       const aIsNumeric = !isNaN(aNum) && /^-?\d+(\.\d+)?$/.test(a.buttonLabel.trim());
@@ -681,58 +833,39 @@ export default function ProductClient({
                     .map(({ variant, buttonLabel }) => {
                       const isSelected = selectedVariant?.id === variant.id;
 
-                    return (
-                      <button
-                        key={variant.id}
-                        onClick={() => {
-                          setSelectedVariant(variant);
-                          setQuantity(1);
-                          // バリアントに画像があれば、その画像を表示
-                          if (variant.image?.url) {
-                            const normalizeUrl = (url: string) => {
-                              // URLを正規化（クエリパラメータとハッシュを除去）
-                              try {
-                                const urlObj = new URL(url);
-                                return `${urlObj.origin}${urlObj.pathname}`;
-                              } catch {
-                                return url.split("?")[0].split("#")[0];
-                              }
-                            };
-                            
-                            const variantImageUrl = normalizeUrl(variant.image.url);
-                            const imageIndex = images.findIndex((img) => {
-                              const normalizedImgUrl = normalizeUrl(img.url);
-                              return normalizedImgUrl === variantImageUrl;
-                            });
-                            
-                            if (imageIndex !== -1) {
-                              setVariantImageOverride(null);
-                              setSelectedImage(imageIndex);
-                            } else {
-                              // images配列に無い場合でも、バリアント画像を直接表示
-                              setVariantImageOverride({
-                                url: variant.image.url,
-                                altText: variant.image.altText ?? null,
-                              });
+                      return (
+                        <button
+                          key={variant.id}
+                          onClick={() => {
+                            setSelectedOptions(
+                              variant.selectedOptions?.reduce(
+                                (acc, opt) => {
+                                  acc[opt.name] = opt.value;
+                                  return acc;
+                                },
+                                {} as Record<string, string>
+                              ) || {}
+                            );
+                            setQuantity(1);
+                            if (variant.image?.url) {
+                              switchToVariantImage(variant);
                             }
-                          } else {
-                            setVariantImageOverride(null);
-                          }
-                        }}
-                        disabled={!variant.availableForSale}
-                        className={cn(
-                          "px-4 py-2 rounded-full text-sm font-medium transition-all border",
-                          isSelected
-                            ? "bg-zinc-800 text-white border-zinc-800"
-                            : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200 hover:border-zinc-300",
-                          !variant.availableForSale &&
-                            "opacity-50 cursor-not-allowed"
-                        )}
-                      >
-                        {buttonLabel}
-                      </button>
-                    );
-                  })}
+                          }}
+                          // 修正4: disabled 判定を isPurchasable に統一
+                          disabled={!isPurchasable(variant, inventory)}
+                          className={cn(
+                            "px-4 py-2 rounded-full text-sm font-medium transition-all border",
+                            isSelected
+                              ? "bg-zinc-800 text-white border-zinc-800"
+                              : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200 hover:border-zinc-300",
+                            !isPurchasable(variant, inventory) &&
+                              "opacity-50 cursor-not-allowed"
+                          )}
+                        >
+                          {buttonLabel}
+                        </button>
+                      );
+                    })}
                 </div>
               )}
             </div>
@@ -740,7 +873,7 @@ export default function ProductClient({
 
           {/* カートに追加ボタン */}
           <div className="flex items-center gap-3">
-            {product.availableForSale && selectedVariant && maxQuantity > 0 ? (
+            {ctaState.type === "add_to_cart" && selectedVariant ? (
               <>
                 <AddToCartButton
                   variantId={selectedVariant.id}
@@ -767,7 +900,7 @@ export default function ProductClient({
                   size="lg"
                   className="flex-1 h-12 font-semibold uppercase"
                 >
-                  Sold Out
+                  {ctaState.message || "Select options"}
                 </Button>
                 <AddToFavoritesButton
                   productId={product.id}
@@ -785,9 +918,7 @@ export default function ProductClient({
           <div className="space-y-3 pt-4 border-t">
             <div className="text-sm">
               <div className="text-muted-foreground">
-                <span>
-                  Within the US: {getDeliveryDateRange()}
-                </span>
+                <span>Within the US: {getDeliveryDateRange()}</span>
                 {getDeliveryDays() && (
                   <span className="block text-xs mt-1 opacity-75">
                     ({getDeliveryDays()})
@@ -822,7 +953,9 @@ export default function ProductClient({
                         dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
                       />
                     ) : (
-                      <p className="text-sm text-foreground leading-relaxed">{product.description || "No description available."}</p>
+                      <p className="text-sm text-foreground leading-relaxed">
+                        {product.description || "No description available."}
+                      </p>
                     )}
                   </AccordionContent>
                 </AccordionItem>
@@ -839,7 +972,9 @@ export default function ProductClient({
                       dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
                     />
                   ) : (
-                    <p className="text-sm text-foreground leading-relaxed">{product.description || "No description available."}</p>
+                    <p className="text-sm text-foreground leading-relaxed">
+                      {product.description || "No description available."}
+                    </p>
                   )}
                 </div>
               </div>
@@ -889,10 +1024,8 @@ export default function ProductClient({
               })}
             </div>
           )}
-
         </div>
       </div>
-
     </div>
   );
 }
