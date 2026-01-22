@@ -627,11 +627,11 @@ export default function ProductsList({
                       href={category.href}
                       className={`relative flex items-center gap-3 min-w-[200px] rounded-2xl overflow-hidden transition-all duration-200 ${
                         isActive
-                          ? "ring-2 ring-zinc-900 shadow-lg"
-                          : "bg-white border border-zinc-200 hover:shadow-md active:scale-[0.98]"
+                          ? "ring-2 ring-zinc-900 dark:ring-zinc-100 shadow-lg"
+                          : "bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:shadow-md active:scale-[0.98]"
                       }`}
                     >
-                      <div className="relative w-20 h-20 shrink-0 bg-zinc-100 overflow-hidden rounded-l-2xl">
+                      <div className="relative w-20 h-20 shrink-0 bg-zinc-100 dark:bg-zinc-700 overflow-hidden rounded-l-2xl">
                         {category.image && category.image.startsWith("http") ? (
                           <img
                             src={category.image}
@@ -648,7 +648,7 @@ export default function ProductsList({
                           />
                         ) : null}
                       </div>
-                      <span className={`text-sm font-semibold pr-4 ${isActive ? "text-zinc-900" : "text-zinc-700"}`}>
+                      <span className={`text-sm font-semibold pr-4 ${isActive ? "text-zinc-900 dark:text-white" : "text-zinc-700 dark:text-zinc-200"}`}>
                         {category.name}
                       </span>
                     </Link>
@@ -661,8 +661,8 @@ export default function ProductsList({
                     href={category.href}
                     className={`relative px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-200 ${
                       isActive
-                        ? "bg-zinc-900 text-white shadow-lg shadow-zinc-900/20"
-                        : "bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-50 hover:border-zinc-300 hover:shadow-sm active:scale-[0.98]"
+                        ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-lg shadow-zinc-900/20 dark:shadow-zinc-100/20"
+                        : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-sm active:scale-[0.98]"
                     }`}
                   >
                     {category.name}
