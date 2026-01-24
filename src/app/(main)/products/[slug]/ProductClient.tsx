@@ -539,13 +539,13 @@ export default function ProductClient({
   return (
     <div className="bg-background">
       {/* Product Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-8 lg:gap-12 mb-12 lg:mb-16">
+      <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_1fr] gap-8 xl:gap-12 mb-12 xl:mb-16">
         {/* Images - Left Side */}
-        <div className="space-y-4 w-full max-w-[760px] mx-auto lg:mx-0">
+        <div className="space-y-4 w-full max-w-[760px] mx-auto xl:mx-0">
           {/* Main Image */}
           <div
             ref={imageContainerRef}
-            className="relative w-full aspect-4/3 rounded-lg bg-secondary/30 group flex items-center justify-center overflow-hidden touch-pan-y lg:touch-none"
+            className="relative w-full aspect-4/3 rounded-lg bg-secondary/30 group flex items-center justify-center overflow-hidden touch-pan-y xl:touch-none"
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
@@ -597,7 +597,7 @@ export default function ProductClient({
                       (prev) => (prev - 1 + images.length) % images.length
                     );
                   }}
-                  className="hidden lg:flex absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all z-10"
+                  className="hidden xl:flex absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all z-10"
                   aria-label="Previous image"
                 >
                   <ChevronLeft className="w-5 h-5 text-foreground" />
@@ -607,7 +607,7 @@ export default function ProductClient({
                     setVariantImageOverride(null);
                     setSelectedImage((prev) => (prev + 1) % images.length);
                   }}
-                  className="hidden lg:flex absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all z-10"
+                  className="hidden xl:flex absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all z-10"
                   aria-label="Next image"
                 >
                   <ChevronRight className="w-5 h-5 text-foreground" />
@@ -617,7 +617,7 @@ export default function ProductClient({
             
             {/* モバイル用の画像インジケーター */}
             {images.length > 1 && (
-              <div className="lg:hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+              <div className="xl:hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
                 {images.map((_, index) => (
                   <button
                     key={index}
@@ -639,7 +639,7 @@ export default function ProductClient({
 
           {/* Thumbnail Gallery - デスクトップのみ表示 */}
           {images.length > 1 && (
-            <div className="hidden lg:flex gap-3 overflow-x-auto pb-2">
+            <div className="hidden xl:flex gap-3 overflow-x-auto pb-2">
               {images.map((image, index) => (
                 <button
                   key={image.id}
@@ -667,10 +667,10 @@ export default function ProductClient({
         </div>
 
         {/* Product Info - Right Side */}
-        <div className="space-y-6">
+        <div className="space-y-6 w-full max-w-[760px] mx-auto xl:mx-0">
           {/* タイトル */}
           <div>
-            <h1 className="text-3xl lg:text-4xl font-bold mb-2 leading-tight">
+            <h1 className="text-3xl xl:text-4xl font-bold mb-2 leading-tight">
               {product.title}
             </h1>
           </div>
