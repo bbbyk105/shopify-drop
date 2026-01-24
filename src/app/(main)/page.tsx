@@ -71,7 +71,7 @@ export default async function HomePage() {
 
       {/* (5) Promotional Two Column - 統合されたプロモーションバナー */}
       <div className="container mx-auto px-4 py-12 lg:py-16">
-        <PromotionalTwoColumn videoUrl="/videos/top2.mp4" />
+        <PromotionalTwoColumn videoUrl="/videos/top2.webm" />
       </div>
 
       {/* (6) New Arrivals - 商品密度の山2 */}
