@@ -61,7 +61,11 @@ export default async function HomePage() {
       )}
 
       {/* (4) Featured Collections - 回遊の次の一手 */}
-      <Section title="Featured Collection" subtitle="Discover our special curated collections" showDivider>
+      <Section
+        title="Featured Collection"
+        subtitle="Discover our special curated collections"
+        showDivider
+      >
         <FeaturedCollections />
       </Section>
 
@@ -76,8 +80,6 @@ export default async function HomePage() {
           <ProductSlider products={newArrivals} variant="titleOnly" />
         </Section>
       )}
-
-      
     </div>
   );
 }
