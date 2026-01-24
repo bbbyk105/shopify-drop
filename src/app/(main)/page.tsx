@@ -48,9 +48,7 @@ export default async function HomePage() {
   return (
     <div>
       {/* (1) Hero */}
-      <div className="container mx-auto px-4 pt-8 pb-0">
-        <Hero />
-      </div>
+      <Hero />
 
       {/* (2) Shop By Room - 回遊導線 */}
       <ShopByRoom />
@@ -63,13 +61,17 @@ export default async function HomePage() {
       )}
 
       {/* (4) Featured Collections - 回遊の次の一手 */}
-      <Section title="Featured Collection" subtitle="Discover our special curated collections" showDivider>
+      <Section
+        title="Featured Collection"
+        subtitle="Discover our special curated collections"
+        showDivider
+      >
         <FeaturedCollections />
       </Section>
 
       {/* (5) Promotional Two Column - 統合されたプロモーションバナー */}
       <div className="container mx-auto px-4 py-12 lg:py-16">
-        <PromotionalTwoColumn />
+        <PromotionalTwoColumn videoUrl="/videos/top2.webm" />
       </div>
 
       {/* (6) New Arrivals - 商品密度の山2 */}
@@ -78,8 +80,6 @@ export default async function HomePage() {
           <ProductSlider products={newArrivals} variant="titleOnly" />
         </Section>
       )}
-
-      
     </div>
   );
 }
