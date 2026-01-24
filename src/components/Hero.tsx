@@ -122,8 +122,7 @@ export default function Hero() {
         >
           <source src="/videos/top4.webm" type="video/webm" />
         </video>
-        {/* オーバーレイ（動画を見やすくしつつテキストも見やすく） */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-black/10" />
+        <div className="absolute inset-0 bg-gradient-to-r" />
       </div>
 
       {/* テキストブロック（PC: 左寄り、SP: 中央） */}

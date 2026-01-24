@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useCart } from "@/hooks/useCart";
 import Image from "next/image";
 import Link from "next/link";
@@ -23,10 +23,46 @@ import {
 export default function CartPage() {
   const { cart, init, setQty, remove, loading } = useCart();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null);
+  const [inventory, setInventory] = useState<Record<string, number>>({});
+  const [inventoryLoading, setInventoryLoading] = useState(false);
 
   useEffect(() => {
     init();
   }, [init]);
+
+  // カート内のバリアントIDを取得して在庫情報を取得
+  useEffect(() => {
+    if (!cart || cart.lines.edges.length === 0) {
+      setInventory({});
+      return;
+    }
+
+    const fetchInventory = async () => {
+      setInventoryLoading(true);
+      try {
+        const variantIds = cart.lines.edges.map(
+          (edge) => edge.node.merchandise.id
+        );
+
+        const response = await fetch("/api/shopify/inventory", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ variantIds }),
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch inventory");
+        const data = await response.json();
+        setInventory(data.inventory || {});
+      } catch (error) {
+        console.error("Error fetching inventory:", error);
+        setInventory({});
+      } finally {
+        setInventoryLoading(false);
+      }
+    };
+
+    fetchInventory();
+  }, [cart]);
 
   if (loading && !cart) {
     return (
@@ -120,31 +156,80 @@ export default function CartPage() {
                 {/* 下部: 数量コントロールと小計 */}
                 <div className="flex items-center justify-between mt-3">
                   {/* 数量コントロール */}
-                  <div className="flex items-center border rounded-lg">
-                    <button
-                      onClick={() => {
-                        if (node.quantity > 1) {
-                          setQty(node.id, node.quantity - 1);
-                        }
-                      }}
-                      disabled={node.quantity <= 1}
-                      className="p-1.5 md:p-2 hover:bg-secondary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      aria-label="Decrease quantity"
-                    >
-                      <Minus className="w-3 h-3 md:w-4 md:h-4" />
-                    </button>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center border rounded-lg">
+                      <button
+                        onClick={() => {
+                          if (node.quantity > 1) {
+                            setQty(node.id, node.quantity - 1);
+                          }
+                        }}
+                        disabled={node.quantity <= 1}
+                        className="p-1.5 md:p-2 hover:bg-secondary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        aria-label="Decrease quantity"
+                      >
+                        <Minus className="w-3 h-3 md:w-4 md:h-4" />
+                      </button>
 
-                    <span className="w-8 md:w-10 text-center text-sm md:text-base font-medium">
-                      {node.quantity}
-                    </span>
+                      <span className="w-8 md:w-10 text-center text-sm md:text-base font-medium">
+                        {node.quantity}
+                      </span>
 
-                    <button
-                      onClick={() => setQty(node.id, node.quantity + 1)}
-                      className="p-1.5 md:p-2 hover:bg-secondary transition-colors cursor-pointer"
-                      aria-label="Increase quantity"
-                    >
-                      <Plus className="w-3 h-3 md:w-4 md:h-4" />
-                    </button>
+                      {(() => {
+                        const variantId = node.merchandise.id;
+                        const availableStock = inventory[variantId];
+                        const maxQuantity =
+                          availableStock !== undefined
+                            ? availableStock
+                            : null;
+                        const canIncrease =
+                          maxQuantity === null || node.quantity < maxQuantity;
+
+                        return (
+                          <button
+                            onClick={() => {
+                              if (canIncrease) {
+                                const newQty = node.quantity + 1;
+                                if (
+                                  maxQuantity === null ||
+                                  newQty <= maxQuantity
+                                ) {
+                                  setQty(node.id, newQty);
+                                }
+                              }
+                            }}
+                            disabled={!canIncrease}
+                            className="p-1.5 md:p-2 hover:bg-secondary transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            aria-label="Increase quantity"
+                            title={
+                              maxQuantity !== null && node.quantity >= maxQuantity
+                                ? `Stock: ${maxQuantity}`
+                                : "Increase quantity"
+                            }
+                          >
+                            <Plus className="w-3 h-3 md:w-4 md:h-4" />
+                          </button>
+                        );
+                      })()}
+                    </div>
+                    {/* 在庫情報の表示 */}
+                    {(() => {
+                      const variantId = node.merchandise.id;
+                      const availableStock = inventory[variantId];
+                      if (availableStock !== undefined) {
+                        return (
+                          <p className="text-xs text-muted-foreground">
+                            Stock: {availableStock}
+                            {node.quantity >= availableStock && (
+                              <span className="text-destructive ml-1">
+                                (Max stock)
+                              </span>
+                            )}
+                          </p>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
 
                   {/* 小計 */}
