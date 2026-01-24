@@ -32,12 +32,12 @@ export default function Hero() {
             of style and comfort.
           </p>
           <div className="mt-8">
-            <Link href="/rooms/bedroom">
+            <Link href="/products">
               <Button
                 size="lg"
                 className="bg-[#8B6F47] hover:bg-[#7A5F3A] text-white rounded-full px-6 py-3 text-sm font-semibold"
               >
-                SHOP BEDROOM
+                SHOP ALL PRODUCTS
               </Button>
             </Link>
           </div>
