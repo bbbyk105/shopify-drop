@@ -106,6 +106,17 @@ export default function ProductsList({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  // カテゴリスクロール位置を復元
+  useEffect(() => {
+    const container = document.getElementById('category-scroll-container');
+    if (container) {
+      const savedPosition = sessionStorage.getItem('categoryScrollPosition');
+      if (savedPosition) {
+        container.scrollLeft = parseInt(savedPosition, 10);
+      }
+    }
+  }, [currentCategory]);
+
   // フィルターパネルが開いている時は背景のスクロールを無効化
   useEffect(() => {
     if (isFilterOpen) {
@@ -515,6 +526,11 @@ export default function ProductsList({
     setCurrentPage(1);
   };
 
+  // ページネーション時にページトップにスクロール
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
+
   const toggleFilter = (filterName: string) => {
     setExpandedFilters((prev) => ({
       ...prev,
@@ -615,7 +631,7 @@ export default function ProductsList({
 
         {/* Category Filter - カード形式 */}
         <div className="mb-8">
-          <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide">
+          <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide" id="category-scroll-container">
             <div className="flex gap-3 min-w-max py-2">
               {categoryFilters.map((category) => {
                 const isActive = currentCategory === category.href;
@@ -625,6 +641,16 @@ export default function ProductsList({
                     <Link
                       key={category.href}
                       href={category.href}
+                      scroll={false}
+                      onClick={(e) => {
+                        // カテゴリ選択時に水平スクロール位置を保持
+                        const container = document.getElementById('category-scroll-container');
+                        if (container) {
+                          const scrollLeft = container.scrollLeft;
+                          // スクロール位置をsessionStorageに保存
+                          sessionStorage.setItem('categoryScrollPosition', scrollLeft.toString());
+                        }
+                      }}
                       className={`relative flex items-center gap-3 min-w-[200px] rounded-2xl overflow-hidden transition-all duration-200 ${
                         isActive
                           ? "ring-2 ring-zinc-900 dark:ring-zinc-100 shadow-lg"
@@ -659,6 +685,16 @@ export default function ProductsList({
                   <Link
                     key={category.href}
                     href={category.href}
+                    scroll={false}
+                    onClick={(e) => {
+                      // カテゴリ選択時に水平スクロール位置を保持
+                      const container = document.getElementById('category-scroll-container');
+                      if (container) {
+                        const scrollLeft = container.scrollLeft;
+                        // スクロール位置をsessionStorageに保存
+                        sessionStorage.setItem('categoryScrollPosition', scrollLeft.toString());
+                      }
+                    }}
                     className={`relative px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-200 ${
                       isActive
                         ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-lg shadow-zinc-900/20 dark:shadow-zinc-100/20"
@@ -1843,7 +1879,9 @@ export default function ProductsList({
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  onClick={() => {
+                    setCurrentPage((prev) => Math.max(1, prev - 1));
+                  }}
                   disabled={currentPage === 1}
                   className="h-10 w-10"
                 >
@@ -1863,7 +1901,9 @@ export default function ProductsList({
                             key={page}
                             variant={currentPage === page ? "default" : "outline"}
                             size="sm"
-                            onClick={() => setCurrentPage(page)}
+                            onClick={() => {
+                              setCurrentPage(page);
+                            }}
                             className="h-10 w-10"
                           >
                             {page}
@@ -1896,9 +1936,9 @@ export default function ProductsList({
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
-                  }
+                  onClick={() => {
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+                  }}
                   disabled={currentPage === totalPages}
                   className="h-10 w-10"
                 >
