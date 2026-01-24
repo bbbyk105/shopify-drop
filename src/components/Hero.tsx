@@ -5,44 +5,42 @@ import { Button } from "@/components/ui/button";
 
 export default function Hero() {
   return (
-    <section className="relative h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden rounded-2xl mb-8 lg:mb-12 shadow-xl">
+    <section className="relative w-full overflow-hidden min-h-[420px] sm:min-h-[480px] md:min-h-[620px]">
+      {/* 背景メディア */}
       <div className="absolute inset-0">
         <video
           autoPlay
           loop
           muted
           playsInline
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover"
         >
           <source src="/videos/top.mp4" type="video/mp4" />
         </video>
+        {/* オーバーレイ（既存の色を維持） */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30" />
       </div>
 
-      <div className="container relative mx-auto px-4 h-full flex items-center">
-        <div className="max-w-2xl space-y-6">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight">
+      {/* テキストブロック（中央配置） */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="mx-auto w-full max-w-3xl px-6 text-center">
+          <h1 className="text-4xl md:text-6xl font-semibold tracking-tight text-white">
             Create your perfect space.
           </h1>
-          <p className="text-base md:text-lg lg:text-xl text-white/90 max-w-xl">
+          <p className="mt-4 text-base md:text-lg leading-relaxed text-white/90">
             Discover timeless designs that transform your home into a sanctuary
             of style and comfort.
           </p>
-          <Link href="/rooms/bedroom">
-            <Button
-              size="lg"
-              className="bg-[#8B6F47] hover:bg-[#7A5F3A] text-white px-8 py-6 text-base md:text-lg font-semibold rounded-none"
-            >
-              SHOP BEDROOM
-            </Button>
-          </Link>
-        </div>
-      </div>
-      
-      {/* 下方向の視覚ヒント */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-        <div className="w-6 h-10 border-2 border-white/50 rounded-full flex items-start justify-center p-2">
-          <div className="w-1.5 h-1.5 bg-white/70 rounded-full animate-pulse" />
+          <div className="mt-8">
+            <Link href="/rooms/bedroom">
+              <Button
+                size="lg"
+                className="bg-[#8B6F47] hover:bg-[#7A5F3A] text-white rounded-full px-6 py-3 text-sm font-semibold"
+              >
+                SHOP BEDROOM
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </section>

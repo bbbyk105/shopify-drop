@@ -48,9 +48,7 @@ export default async function HomePage() {
   return (
     <div>
       {/* (1) Hero */}
-      <div className="container mx-auto px-4 pt-8 pb-0">
-        <Hero />
-      </div>
+      <Hero />
 
       {/* (2) Shop By Room - 回遊導線 */}
       <ShopByRoom />
