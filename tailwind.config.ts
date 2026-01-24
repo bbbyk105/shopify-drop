@@ -8,17 +8,7 @@ const config: Config = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {
-      fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
-        serif: ["var(--font-playfair)", "serif"],
-        display: ["var(--font-playfair)", "serif"],
-      },
-      letterSpacing: {
-        tighter: "-0.02em",
-        tight: "-0.01em",
-      },
-    },
+    extend: {},
   },
   plugins: [],
 };

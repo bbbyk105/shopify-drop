@@ -40,6 +40,9 @@ export default function Header({ hasSale = true }: HeaderProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cart?.totalQuantity]);
 
+  // カート数量を常に最新の状態に保つ
+  const currentCartCount = cart?.totalQuantity || 0;
+
   // スクロール検知でheaderを表示/非表示
   useEffect(() => {
     const handleScroll = () => {
@@ -140,15 +143,13 @@ export default function Header({ hasSale = true }: HeaderProps) {
               <Link href={"/cart"} className="relative">
                 <Button variant="ghost" size="icon" className="relative">
                   <ShoppingCart className="h-5 w-5" />
-                  {cartCount > 0 && (
-                    <span
-                      className={`absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground ${
-                        isAnimating ? "animate-bounce scale-125" : "scale-100"
-                      } transition-transform duration-300`}
-                    >
-                      {cartCount > 99 ? "99+" : cartCount}
-                    </span>
-                  )}
+                  <span
+                    className={`absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground ${
+                      isAnimating ? "animate-bounce scale-125" : "scale-100"
+                    } transition-transform duration-300 ${currentCartCount === 0 ? "opacity-50" : ""}`}
+                  >
+                    {currentCartCount > 99 ? "99+" : currentCartCount}
+                  </span>
                 </Button>
               </Link>
             </div>
@@ -203,15 +204,13 @@ export default function Header({ hasSale = true }: HeaderProps) {
               <Link href={"/cart"} className="relative">
                 <Button variant="ghost" size="icon" className="h-7 w-7 p-0 min-w-0 relative">
                   <ShoppingCart className="h-4 w-4 text-foreground" />
-                  {cartCount > 0 && (
-                    <span
-                      className={`absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground ${
-                        isAnimating ? "animate-bounce scale-125" : "scale-100"
-                      } transition-transform duration-300`}
-                    >
-                      {cartCount > 99 ? "99+" : cartCount}
-                    </span>
-                  )}
+                  <span
+                    className={`absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground ${
+                      isAnimating ? "animate-bounce scale-125" : "scale-100"
+                    } transition-transform duration-300 ${currentCartCount === 0 ? "opacity-50" : ""}`}
+                  >
+                    {currentCartCount > 99 ? "99+" : currentCartCount}
+                  </span>
                 </Button>
               </Link>
             </div>
@@ -342,11 +341,9 @@ export default function Header({ hasSale = true }: HeaderProps) {
                 <Link href={"/cart"} className="relative" onClick={() => setIsMobileMenuOpen(false)}>
                   <Button variant="ghost" size="icon" className="h-9 w-9 relative">
                     <ShoppingCart className="h-5 w-5 text-foreground" />
-                    {cartCount > 0 && (
-                      <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                        {cartCount > 99 ? "99+" : cartCount}
-                      </span>
-                    )}
+                    <span className={`absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground ${currentCartCount === 0 ? "opacity-50" : ""}`}>
+                      {currentCartCount > 99 ? "99+" : currentCartCount}
+                    </span>
                   </Button>
                 </Link>
               </div>
