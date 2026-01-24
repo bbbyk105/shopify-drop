@@ -236,6 +236,12 @@ export default function Header({ hasSale = true }: HeaderProps) {
           {/* Secondary Navigation Bar: All Links (Desktop) */}
           <nav className="hidden md:flex items-center h-12 border-t border-border/40 space-x-6 overflow-x-auto">
             <Link
+              href="/"
+              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+            >
+              Home
+            </Link>
+            <Link
               href="/products"
               className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
             >
@@ -348,6 +354,13 @@ export default function Header({ hasSale = true }: HeaderProps) {
 
             {/* Navigation Links */}
             <nav className="py-4">
+              <Link
+                href="/"
+                className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <span>Home</span>
+              </Link>
               <Link
                 href="/products"
                 className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"

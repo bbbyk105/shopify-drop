@@ -70,11 +70,42 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const images = product.images.edges.map((edge) => edge.node);
   const firstVariant = product.variants.edges[0]?.node;
 
-  // カテゴリーをタグから推測
-  const category =
-    product.tags.find((tag) =>
-      ["furniture", "lighting", "decor"].includes(tag.toLowerCase())
-    ) || "products";
+  // Headerのナビゲーション項目に完全に合わせてカテゴリーを決定
+  // 優先順位: 1. ルームカテゴリー > 2. 商品タイプ > 3. 特別カテゴリー
+  const getCategoryFromTags = (tags: string[]): { path: string; label: string } | null => {
+    const normalizedTags = tags.map(tag => tag.toLowerCase().trim());
+    
+    // Headerのナビゲーション項目と完全一致するマッピング
+    // 優先順位順に定義（先に見つかったものが優先される）
+    const categoryMappings: Array<{ tags: string[]; path: string; label: string }> = [
+      // ルームカテゴリー（最優先）
+      { tags: ["living-room", "livingroom"], path: "/rooms/living-room", label: "Living Room" },
+      { tags: ["bedroom"], path: "/rooms/bedroom", label: "Bedroom" },
+      { tags: ["dining-room-kitchen", "dining-room", "diningroom", "kitchen"], path: "/rooms/dining-room-kitchen", label: "Dining Room & Kitchen" },
+      { tags: ["outdoor"], path: "/rooms/outdoor", label: "Outdoor" },
+      { tags: ["home-office", "homeoffice"], path: "/rooms/home-office", label: "Home Office" },
+      { tags: ["entryway"], path: "/rooms/entryway", label: "Entryway" },
+      // 商品タイプカテゴリー
+      { tags: ["lighting"], path: "/lighting", label: "Lighting" },
+      { tags: ["clothing"], path: "/clothing", label: "Clothing" },
+      // 特別カテゴリー
+      { tags: ["new-arrivals", "newarrivals"], path: "/new-arrivals", label: "New Arrivals" },
+      { tags: ["sale"], path: "/sale", label: "Sale" },
+    ];
+
+    // 優先順位に従って検索（最初に見つかったものを返す）
+    for (const mapping of categoryMappings) {
+      for (const tag of normalizedTags) {
+        if (mapping.tags.includes(tag)) {
+          return { path: mapping.path, label: mapping.label };
+        }
+      }
+    }
+
+    return null;
+  };
+
+  const category = getCategoryFromTags(product.tags);
 
   // 類似商品を取得
   let relatedProducts: ShopifyProduct[] = [];
@@ -96,13 +127,23 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </li>
           <li>/</li>
           <li>
-            <Link
-              href={`/${category}`}
-              className="hover:text-foreground transition-colors capitalize"
-            >
-              {category}
+            <Link href="/products" className="hover:text-foreground transition-colors">
+              Products
             </Link>
           </li>
+          {category && (
+            <>
+              <li>/</li>
+              <li>
+                <Link
+                  href={category.path}
+                  className="hover:text-foreground transition-colors"
+                >
+                  {category.label}
+                </Link>
+              </li>
+            </>
+          )}
           <li>/</li>
           <li className="text-foreground">{product.title}</li>
         </ol>

@@ -29,6 +29,9 @@ export default function AddToCartButton({
   const { toast } = useToast();
 
   const handleAddToCart = async () => {
+    // すでにdisabledならreturn
+    if (isAdding || justAdded) return;
+
     setIsAdding(true);
     try {
       await add(variantId, quantity);
@@ -52,7 +55,7 @@ export default function AddToCartButton({
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to add item to cart. Please try again.",
+        description: "This item may have just sold out. Please reselect options.",
         productImage,
         productName,
       });

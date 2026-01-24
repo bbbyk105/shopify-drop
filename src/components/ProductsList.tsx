@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Minus, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Minus, Plus, ChevronLeft, ChevronRight, ChevronRight as ChevronRightIcon, X } from "lucide-react";
+import Image from "next/image";
 import type { Product as ShopifyProduct } from "@/lib/shopify/types";
 import { Product as LocalProduct } from "@/types";
 import ProductCard from "@/components/ProductCard";
@@ -64,17 +66,69 @@ export default function ProductsList({
 }: ProductsListProps) {
   const [sortOption, setSortOption] = useState<SortOption>("popularity");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [expandedFilters, setExpandedFilters] = useState<Record<string, boolean>>({
-    sort: true,
-    product: true,
-    price: true,
-    room: true,
-    color: true,
-    material: true,
-    size: true,
-    type: true,
-    style: true,
+    sort: false,
+    product: false,
+    price: false,
+    room: false,
+    color: false,
+    material: false,
+    size: false,
+    type: false,
+    style: false,
   });
+
+  // モバイル画面でフィルターを初期状態で閉じる
+  useEffect(() => {
+    const checkMobile = () => {
+      const isMobile = window.innerWidth < 1024; // lg breakpoint (1024px)
+      if (isMobile) {
+        setExpandedFilters({
+          sort: false,
+          product: false,
+          price: false,
+          room: false,
+          color: false,
+          material: false,
+          size: false,
+          type: false,
+          style: false,
+        });
+      }
+    };
+
+    // 初回チェック
+    checkMobile();
+
+    // リサイズ時にチェック
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // カテゴリスクロール位置を復元
+  useEffect(() => {
+    const container = document.getElementById('category-scroll-container');
+    if (container) {
+      const savedPosition = sessionStorage.getItem('categoryScrollPosition');
+      if (savedPosition) {
+        container.scrollLeft = parseInt(savedPosition, 10);
+      }
+    }
+  }, [currentCategory]);
+
+  // フィルターパネルが開いている時は背景のスクロールを無効化
+  useEffect(() => {
+    if (isFilterOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isFilterOpen]);
 
   // フィルター状態
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
@@ -472,6 +526,11 @@ export default function ProductsList({
     setCurrentPage(1);
   };
 
+  // ページネーション時にページトップにスクロール
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
+
   const toggleFilter = (filterName: string) => {
     setExpandedFilters((prev) => ({
       ...prev,
@@ -545,6 +604,20 @@ export default function ProductsList({
     setCurrentPage(1);
   };
 
+  // カテゴリーフィルター用のデータ（画像付き）
+  const categoryFilters = useMemo(() => [
+    { name: "All Products", href: "/products", image: "/images/all_products.webp" },
+    { name: "New Arrivals", href: "/new-arrivals", image: "/images/newarrivals.webp" },
+    { name: "Lighting", href: "/lighting", image: "/images/lightning.webp" },
+    { name: "Clothing", href: "/clothing", image: "/images/clothing.webp" },
+    { name: "Living Room", href: "/rooms/living-room", image: "/images/living_room.webp" },
+    { name: "Bedroom", href: "/rooms/bedroom", image: "/images/bed_room.webp" },
+    { name: "Dining Room & Kitchen", href: "/rooms/dining-room-kitchen", image: "/images/dining.webp" },
+    { name: "Outdoor", href: "/rooms/outdoor", image: "/images/outdoor.webp" },
+    { name: "Home Office", href: "/rooms/home-office", image: "/images/home_office.webp" },
+    { name: "Entryway", href: "/rooms/entryway", image: "/images/entryway.webp" },
+  ], []);
+
   return (
     <div className="bg-background min-h-screen">
       <div className="container mx-auto px-4 py-8">
@@ -554,14 +627,692 @@ export default function ProductsList({
           {description && (
             <p className="text-lg text-muted-foreground">{description}</p>
           )}
-          <p className="text-sm text-muted-foreground mt-2">
-            {filteredAndSortedProducts.length} items
-          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
-          {/* Left Sidebar - Filters */}
-          <aside className="lg:sticky lg:top-24 lg:self-start">
+        {/* Category Filter - カード形式 */}
+        <div className="mb-8">
+          <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide" id="category-scroll-container">
+            <div className="flex gap-3 min-w-max py-2">
+              {categoryFilters.map((category) => {
+                const isActive = currentCategory === category.href;
+                if (category.image) {
+                  // 画像付きカード形式（1枚目の画像スタイル）
+                  return (
+                    <Link
+                      key={category.href}
+                      href={category.href}
+                      scroll={false}
+                      onClick={(e) => {
+                        // カテゴリ選択時に水平スクロール位置を保持
+                        const container = document.getElementById('category-scroll-container');
+                        if (container) {
+                          const scrollLeft = container.scrollLeft;
+                          // スクロール位置をsessionStorageに保存
+                          sessionStorage.setItem('categoryScrollPosition', scrollLeft.toString());
+                        }
+                      }}
+                      className={`relative flex items-center gap-3 min-w-[200px] rounded-2xl overflow-hidden transition-all duration-200 ${
+                        isActive
+                          ? "ring-2 ring-zinc-900 dark:ring-zinc-100 shadow-lg"
+                          : "bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:shadow-md active:scale-[0.98]"
+                      }`}
+                    >
+                      <div className="relative w-20 h-20 shrink-0 bg-zinc-100 dark:bg-zinc-700 overflow-hidden rounded-l-2xl">
+                        {category.image && category.image.startsWith("http") ? (
+                          <img
+                            src={category.image}
+                            alt={category.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : category.image ? (
+                          <Image
+                            src={category.image}
+                            alt={category.name}
+                            fill
+                            className="object-cover"
+                            unoptimized={category.image.startsWith("http")}
+                          />
+                        ) : null}
+                      </div>
+                      <span className={`text-sm font-semibold pr-4 ${isActive ? "text-zinc-900 dark:text-white" : "text-zinc-700 dark:text-zinc-200"}`}>
+                        {category.name}
+                      </span>
+                    </Link>
+                  );
+                } else {
+                  // 画像なしの場合は丸いボタン形式（3枚目の画像スタイル）
+                return (
+                  <Link
+                    key={category.href}
+                    href={category.href}
+                    scroll={false}
+                    onClick={(e) => {
+                      // カテゴリ選択時に水平スクロール位置を保持
+                      const container = document.getElementById('category-scroll-container');
+                      if (container) {
+                        const scrollLeft = container.scrollLeft;
+                        // スクロール位置をsessionStorageに保存
+                        sessionStorage.setItem('categoryScrollPosition', scrollLeft.toString());
+                      }
+                    }}
+                    className={`relative px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-200 ${
+                      isActive
+                        ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-lg shadow-zinc-900/20 dark:shadow-zinc-100/20"
+                        : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-sm active:scale-[0.98]"
+                    }`}
+                  >
+                    {category.name}
+                  </Link>
+                );
+                }
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Filter Button - モバイルのみ */}
+        <div className="mb-6 flex items-center justify-between lg:hidden">
+          <p className="text-sm text-muted-foreground">
+            {filteredAndSortedProducts.length} items
+          </p>
+          <Button
+            onClick={() => setIsFilterOpen(true)}
+            className="flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm shadow-md"
+          >
+            FILTERS
+            <ChevronRightIcon className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Filter Side Panel - モバイル用 */}
+        {isFilterOpen && (
+          <>
+            {/* Overlay */}
+            <div
+              className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+              onClick={() => setIsFilterOpen(false)}
+            />
+            {/* Side Panel */}
+            <aside
+              className={`fixed top-0 right-0 h-full w-full max-w-md bg-white z-50 shadow-2xl transform transition-transform duration-300 ease-in-out overflow-y-auto translate-x-0`}
+            >
+              <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
+                <div>
+                  <h2 className="text-xl font-semibold">Sort & Filter</h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {filteredAndSortedProducts.length} items
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsFilterOpen(false)}
+                  className="lg:hidden p-2 hover:bg-zinc-100 rounded-full transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => setIsFilterOpen(false)}
+                  className="hidden lg:block px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100 rounded-md transition-colors"
+                >
+                  DONE
+                </button>
+              </div>
+              <div className="p-6 space-y-6">
+
+              {/* Sort By */}
+              <div className="border-b pb-4">
+                <button
+                  onClick={() => toggleFilter("sort")}
+                  className="flex items-center justify-between w-full text-base font-medium mb-4"
+                >
+                  <span>Sort By</span>
+                  {expandedFilters.sort ? (
+                    <Minus className="h-4 w-4" />
+                  ) : (
+                    <Plus className="h-4 w-4" />
+                  )}
+                </button>
+                {expandedFilters.sort && (
+                  <div className="space-y-2">
+                    {(["popularity", "price-high", "price-low", "newest"] as SortOption[]).map(
+                      (option) => (
+                        <label
+                          key={option}
+                          className="flex items-center gap-2 cursor-pointer"
+                        >
+                          <input
+                            type="radio"
+                            name="sort"
+                            value={option}
+                            checked={sortOption === option}
+                            onChange={() => handleSortChange(option)}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-sm">
+                            {option === "popularity"
+                              ? "Popularity"
+                              : option === "price-high"
+                              ? "High - Low Price"
+                              : option === "price-low"
+                              ? "Low - High Price"
+                              : "Newest"}
+                          </span>
+                        </label>
+                      )
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Product Category */}
+              {filterConfig.showProduct && categories.length > 0 && (
+                <div className="border-b pb-4">
+                  <button
+                    onClick={() => toggleFilter("product")}
+                    className="flex items-center justify-between w-full text-base font-medium mb-4"
+                  >
+                    <span>Product</span>
+                    {expandedFilters.product ? (
+                      <Minus className="h-4 w-4" />
+                    ) : (
+                      <Plus className="h-4 w-4" />
+                    )}
+                  </button>
+                  {expandedFilters.product && (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {categories.map((cat) => {
+                        const count = products.filter((p) =>
+                          "tags" in p && Array.isArray(p.tags) && p.tags.includes(cat)
+                        ).length;
+                        return (
+                          <label
+                            key={cat}
+                            className="flex items-center gap-2 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedProducts.includes(cat)}
+                              onChange={() => toggleProduct(cat)}
+                              className="w-4 h-4"
+                            />
+                            <span className="text-sm">
+                              {cat} ({count})
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Price */}
+              <div className="border-b pb-4">
+                <button
+                  onClick={() => toggleFilter("price")}
+                  className="flex items-center justify-between w-full text-base font-medium mb-4"
+                >
+                  <span>Price</span>
+                  {expandedFilters.price ? (
+                    <Minus className="h-4 w-4" />
+                  ) : (
+                    <Plus className="h-4 w-4" />
+                  )}
+                </button>
+                {expandedFilters.price && (
+                  <div className="space-y-3">
+                    <div className="relative h-2">
+                      <div className="absolute top-0 left-0 w-full h-2 bg-gray-200 rounded-full"></div>
+                      <div
+                        className="absolute top-0 h-2 bg-gray-400 rounded-full"
+                        style={{
+                          left: `${(minPrice / 10000) * 100}%`,
+                          width: `${((maxPrice - minPrice) / 10000) * 100}%`,
+                        }}
+                      ></div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="10000"
+                        value={minPrice}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          if (val <= maxPrice) setMinPrice(val);
+                        }}
+                        className="absolute top-0 w-full h-2 bg-transparent appearance-none cursor-pointer z-10 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-gray-600 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer"
+                        style={{ background: "transparent" }}
+                      />
+                      <input
+                        type="range"
+                        min="0"
+                        max="10000"
+                        value={maxPrice}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          if (val >= minPrice) setMaxPrice(val);
+                        }}
+                        className="absolute top-0 w-full h-2 bg-transparent appearance-none cursor-pointer z-20 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-gray-600 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer"
+                        style={{ background: "transparent" }}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">
+                          $
+                        </span>
+                        <Input
+                          type="text"
+                          inputMode="numeric"
+                          value={minPrice === 0 ? "" : minPrice.toString()}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9]/g, "");
+                            if (value === "") {
+                              setMinPrice(0);
+                            } else {
+                              const num = Number(value);
+                              if (num <= maxPrice && num <= 10000) {
+                                setMinPrice(num);
+                              }
+                            }
+                          }}
+                          onBlur={(e) => {
+                            if (e.target.value === "") {
+                              setMinPrice(0);
+                            }
+                          }}
+                          placeholder="0"
+                          className="pl-7 w-full"
+                        />
+                      </div>
+                      <span className="text-sm text-muted-foreground">-</span>
+                      <div className="relative flex-1">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none">
+                          $
+                        </span>
+                        <Input
+                          type="text"
+                          inputMode="numeric"
+                          value={maxPrice === 10000 ? "" : maxPrice.toString()}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9]/g, "");
+                            if (value === "") {
+                              setMaxPrice(10000);
+                            } else {
+                              const num = Number(value);
+                              if (num >= minPrice && num <= 10000) {
+                                setMaxPrice(num);
+                              }
+                            }
+                          }}
+                          onBlur={(e) => {
+                            if (e.target.value === "") {
+                              setMaxPrice(10000);
+                            }
+                          }}
+                          placeholder="8000"
+                          className="pl-7 w-full"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Room */}
+              {filterConfig.showRoom && rooms.length > 0 && (
+                <div className="border-b pb-4">
+                  <button
+                    onClick={() => toggleFilter("room")}
+                    className="flex items-center justify-between w-full text-base font-medium mb-4"
+                  >
+                    <span>Room</span>
+                    {expandedFilters.room ? (
+                      <Minus className="h-4 w-4" />
+                    ) : (
+                      <Plus className="h-4 w-4" />
+                    )}
+                  </button>
+                  {expandedFilters.room && (
+                    <div className="space-y-2">
+                      {rooms.map((room) => {
+                        const count = products.filter((p) =>
+                          "tags" in p && Array.isArray(p.tags) && p.tags.includes(room)
+                        ).length;
+                        return (
+                          <label
+                            key={room}
+                            className="flex items-center gap-2 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedRooms.includes(room)}
+                              onChange={() => toggleRoom(room)}
+                              className="w-4 h-4"
+                            />
+                            <span className="text-sm">
+                              {room} ({count})
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Color */}
+              {filterConfig.showColor && colors.length > 0 && (
+                <div className="border-b pb-4">
+                  <button
+                    onClick={() => toggleFilter("color")}
+                    className="flex items-center justify-between w-full text-base font-medium mb-4"
+                  >
+                    <span>Color</span>
+                    {expandedFilters.color ? (
+                      <Minus className="h-4 w-4" />
+                    ) : (
+                      <Plus className="h-4 w-4" />
+                    )}
+                  </button>
+                  {expandedFilters.color && (
+                    <div className="space-y-2">
+                      {colors.map((color) => {
+                        const count = products.filter((p) => {
+                          if ("tags" in p && Array.isArray(p.tags) && p.tags.includes(color)) {
+                            return true;
+                          }
+                          if ("variants" in p && p.variants?.edges) {
+                            return p.variants.edges.some(({ node }) => {
+                              const colorOption = node.selectedOptions?.find(
+                                (opt) => opt.name.toLowerCase() === "color"
+                              );
+                              return colorOption && colorOption.value === color;
+                            });
+                          }
+                          return false;
+                        }).length;
+                        const colorKey = color.toLowerCase();
+                        const colorValue = colorMap[colorKey] || "#808080";
+                        return (
+                          <label
+                            key={color}
+                            className="flex items-center gap-2 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedColors.includes(color)}
+                              onChange={() => toggleColor(color)}
+                              className="w-4 h-4"
+                            />
+                            <div
+                              className="w-4 h-4 rounded-full border border-border"
+                              style={{ backgroundColor: colorValue }}
+                            />
+                            <span className="text-sm">
+                              {color} ({count})
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Material */}
+              {filterConfig.showMaterial && materials.length > 0 && (
+                <div className="border-b pb-4">
+                  <button
+                    onClick={() => toggleFilter("material")}
+                    className="flex items-center justify-between w-full text-base font-medium mb-4"
+                  >
+                    <span>Material</span>
+                    {expandedFilters.material ? (
+                      <Minus className="h-4 w-4" />
+                    ) : (
+                      <Plus className="h-4 w-4" />
+                    )}
+                  </button>
+                  {expandedFilters.material && (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {materials.map((material) => {
+                        const count = products.filter((p) =>
+                          "tags" in p && Array.isArray(p.tags) && p.tags.includes(material)
+                        ).length;
+                        return (
+                          <label
+                            key={material}
+                            className="flex items-center gap-2 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedMaterials.includes(material)}
+                              onChange={() => toggleMaterial(material)}
+                              className="w-4 h-4"
+                            />
+                            <span className="text-sm">
+                              {material} ({count})
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Size (for clothing) */}
+              {filterConfig.showSize && sizes.length > 0 && (
+                <div className="border-b pb-4">
+                  <button
+                    onClick={() => toggleFilter("size")}
+                    className="flex items-center justify-between w-full text-base font-medium mb-4"
+                  >
+                    <span>Size</span>
+                    {expandedFilters.size ? (
+                      <Minus className="h-4 w-4" />
+                    ) : (
+                      <Plus className="h-4 w-4" />
+                    )}
+                  </button>
+                  {expandedFilters.size && (
+                    <div className="space-y-2">
+                      {sizes.map((size) => {
+                        const count = products.filter((p) => {
+                          if ("variants" in p && p.variants?.edges) {
+                            return p.variants.edges.some(({ node }) => {
+                              const sizeOption = node.selectedOptions?.find(
+                                (opt) => opt.name.toLowerCase() === "size"
+                              );
+                              return sizeOption && sizeOption.value === size;
+                            });
+                          }
+                          if ("tags" in p && Array.isArray(p.tags) && p.tags.includes(size)) {
+                            return true;
+                          }
+                          return false;
+                        }).length;
+                        return (
+                          <label
+                            key={size}
+                            className="flex items-center gap-2 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedSizes.includes(size)}
+                              onChange={() => toggleSize(size)}
+                              className="w-4 h-4"
+                            />
+                            <span className="text-sm">
+                              {size} ({count})
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Type (for clothing) */}
+              {filterConfig.showType && types.length > 0 && (
+                <div className="border-b pb-4">
+                  <button
+                    onClick={() => toggleFilter("type")}
+                    className="flex items-center justify-between w-full text-base font-medium mb-4"
+                  >
+                    <span>Type</span>
+                    {expandedFilters.type ? (
+                      <Minus className="h-4 w-4" />
+                    ) : (
+                      <Plus className="h-4 w-4" />
+                    )}
+                  </button>
+                  {expandedFilters.type && (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {types.map((type) => {
+                        const count = products.filter((p) =>
+                          "tags" in p && Array.isArray(p.tags) && p.tags.includes(type)
+                        ).length;
+                        return (
+                          <label
+                            key={type}
+                            className="flex items-center gap-2 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedTypes.includes(type)}
+                              onChange={() => toggleType(type)}
+                              className="w-4 h-4"
+                            />
+                            <span className="text-sm">
+                              {type} ({count})
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Style (for clothing) */}
+              {filterConfig.showStyle && styles.length > 0 && (
+                <div className="border-b pb-4">
+                  <button
+                    onClick={() => toggleFilter("style")}
+                    className="flex items-center justify-between w-full text-base font-medium mb-4"
+                  >
+                    <span>Style</span>
+                    {expandedFilters.style ? (
+                      <Minus className="h-4 w-4" />
+                    ) : (
+                      <Plus className="h-4 w-4" />
+                    )}
+                  </button>
+                  {expandedFilters.style && (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {styles.map((style) => {
+                        const count = products.filter((p) =>
+                          "tags" in p && Array.isArray(p.tags) && p.tags.includes(style)
+                        ).length;
+                        return (
+                          <label
+                            key={style}
+                            className="flex items-center gap-2 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedStyles.includes(style)}
+                              onChange={() => toggleStyle(style)}
+                              className="w-4 h-4"
+                            />
+                            <span className="text-sm">
+                              {style} ({count})
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Custom Filters */}
+              {filterConfig.customFilters?.map((customFilter) => (
+                <div key={customFilter.key} className="border-b pb-4">
+                  <button
+                    onClick={() => toggleFilter(customFilter.key)}
+                    className="flex items-center justify-between w-full text-base font-medium mb-4"
+                  >
+                    <span>{customFilter.label}</span>
+                    {expandedFilters[customFilter.key] ? (
+                      <Minus className="h-4 w-4" />
+                    ) : (
+                      <Plus className="h-4 w-4" />
+                    )}
+                  </button>
+                  {expandedFilters[customFilter.key] && (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {customFilter.options.map((option) => {
+                        const count = customFilter.getCount(option);
+                        return (
+                          <label
+                            key={option}
+                            className="flex items-center gap-2 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={(customFilterStates[customFilter.key] || []).includes(option)}
+                              onChange={() => toggleCustomFilter(customFilter.key, option)}
+                              className="w-4 h-4"
+                            />
+                            <span className="text-sm">
+                              {option} ({count})
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {/* Sale */}
+              <div className="border-b pb-4">
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={onSale}
+                      onChange={(e) => setOnSale(e.target.checked)}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm">On Sale</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Availability */}
+              <div className="border-b pb-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={inStock}
+                    onChange={(e) => setInStock(e.target.checked)}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm">In Stock</span>
+                </label>
+              </div>
+              </div>
+            </aside>
+          </>
+        )}
+
+        {/* Main Content - Product Grid */}
+        <div className="lg:grid lg:grid-cols-[280px_1fr] lg:gap-8">
+          {/* Desktop Sidebar - 常に表示（モバイルでは非表示） */}
+          <aside className="hidden lg:block lg:sticky lg:top-24 lg:self-start">
             <div className="space-y-6">
               <h2 className="text-lg font-semibold mb-4">Sort & Filter</h2>
 
@@ -1128,7 +1879,9 @@ export default function ProductsList({
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  onClick={() => {
+                    setCurrentPage((prev) => Math.max(1, prev - 1));
+                  }}
                   disabled={currentPage === 1}
                   className="h-10 w-10"
                 >
@@ -1148,7 +1901,9 @@ export default function ProductsList({
                             key={page}
                             variant={currentPage === page ? "default" : "outline"}
                             size="sm"
-                            onClick={() => setCurrentPage(page)}
+                            onClick={() => {
+                              setCurrentPage(page);
+                            }}
                             className="h-10 w-10"
                           >
                             {page}
@@ -1181,9 +1936,9 @@ export default function ProductsList({
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.min(totalPages, prev + 1))
-                  }
+                  onClick={() => {
+                    setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+                  }}
                   disabled={currentPage === totalPages}
                   className="h-10 w-10"
                 >
