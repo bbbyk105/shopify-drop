@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Star,
+  X,
 } from "lucide-react";
 import {
   Accordion,
@@ -20,6 +21,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  normalizeSelectedOptions,
+  findVariantBySelectedOptions,
+  isOptionValueSelectable,
+  applyOptionChangeWithReset,
+} from "@/lib/variants";
 
 interface ProductClientProps {
   product: Product;
@@ -121,6 +128,27 @@ export default function ProductClient({
     return map;
   }, [product.variants.edges]);
 
+  // options配列を構築（normalizeSelectedOptions用）
+  const productOptions = useMemo(() => {
+    return Array.from(optionTypesMap.entries()).map(([name, values]) => ({
+      name,
+      values: Array.from(values),
+    }));
+  }, [optionTypesMap]);
+
+  // 単一variant商品（Default Title）かどうかを判定
+  const isSingleVariantProduct = useMemo(() => {
+    // optionsが空、または options.length === 1 && options[0].values.length === 1 の場合
+    if (productOptions.length === 0) {
+      return product.variants.edges.length === 1;
+    }
+    return (
+      productOptions.length === 1 &&
+      productOptions[0].values.length === 1 &&
+      product.variants.edges.length === 1
+    );
+  }, [productOptions, product.variants.edges.length]);
+
   // optionTypes の順序を固定: Color+Size商品の場合は [Color, Size, ...rest] の順
   const optionTypes = useMemo(() => {
     const allTypes = Array.from(optionTypesMap.keys());
@@ -157,67 +185,38 @@ export default function ProductClient({
   const hasMultipleOptionTypes = optionTypes.length >= 2;
   const isColorSizeProduct = detectedColorName !== null && detectedSizeName !== null && hasMultipleOptionTypes;
 
-  // State管理: selectedOptionsのみを保持（最小化）
-  // 修正1: lazy initializer にする
-  const getInitialSelectedOptions = (): Record<string, string> => {
-    // Color+Size商品の場合は必ず未選択から開始
-    if (isColorSizeProduct) {
-      return {};
-    }
-    
-    // 非2階層商品は従来通り初期選択OK
-    // 購入可能な最初のvariantを探す
-    const firstAvailableVariant = product.variants.edges.find(
-      ({ node }) => node.availableForSale
-    )?.node || firstVariant;
+  // Primary / Secondary の定義
+  const primaryOptionName = optionTypes[0] || null;
+  const secondaryOptionName = optionTypes[1] || null;
 
-    if (firstAvailableVariant && hasMultipleOptionTypes) {
-      const initialOptions: Record<string, string> = {};
-      firstAvailableVariant.selectedOptions?.forEach((opt) => {
-        initialOptions[opt.name] = opt.value;
-      });
-      return initialOptions;
-    }
-    return {};
-  };
-
-  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(
-    () => getInitialSelectedOptions()
+  // State管理: selectedOptions（すべてnullで初期化）
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string | null>>(
+    () => normalizeSelectedOptions(productOptions)
   );
 
-  // 初期化補正を「一度だけ」にするガード
-  const didNormalizeInitial = useRef(false);
+  // secondaryリセット通知の表示フラグ
+  const [secondaryResetNotice, setSecondaryResetNotice] = useState(false);
 
-  // 修正2: isColorSizeProduct が true になった時に、selectedOptions が紛れ込んでいたら {} に矯正する（1回補正）
-  useEffect(() => {
-    if (!isColorSizeProduct) return;
-    if (didNormalizeInitial.current) return;
-
-    // 初期状態で「勝手にselectedが入ってしまっている」ケースだけを1回だけ補正
-    if (Object.keys(selectedOptions).length > 0) {
-      setSelectedOptions({});
-      setQuantity(1);
-    }
-
-    didNormalizeInitial.current = true;
-  }, [isColorSizeProduct]);
+  // すべてのvariantsを配列として取得
+  const allVariants = useMemo(() => {
+    return product.variants.edges.map(({ node }) => node);
+  }, [product.variants.edges]);
 
   // Derived state: selectedVariantはselectedOptionsから計算
   const selectedVariant = useMemo(() => {
-    if (Object.keys(selectedOptions).length === 0) {
-      // 2階層商品で未選択の場合は undefined
-      if (hasMultipleOptionTypes) return undefined;
-      // 単一オプション商品の場合は firstVariant を返す
+    // 単一variant商品の場合は常にfirstVariantを返す
+    if (isSingleVariantProduct) {
       return firstVariant;
     }
     
-    return product.variants.edges.find(({ node }) => {
-      return Object.entries(selectedOptions).every(([optionType, optionValue]) => {
-        const variantOption = node.selectedOptions?.find((opt) => opt.name === optionType);
-        return variantOption?.value === optionValue;
-      });
-    })?.node;
-  }, [selectedOptions, product.variants.edges, hasMultipleOptionTypes, firstVariant]);
+    return findVariantBySelectedOptions(allVariants, selectedOptions);
+  }, [selectedOptions, allVariants, isSingleVariantProduct, firstVariant]);
+
+  // すべてのオプションが選択されているか
+  const allChosen = useMemo(() => {
+    if (isSingleVariantProduct) return true;
+    return Object.values(selectedOptions).every((value) => value !== null);
+  }, [selectedOptions, isSingleVariantProduct]);
 
   // 価格計算
   const price = useMemo(() => {
@@ -305,62 +304,10 @@ export default function ProductClient({
     }
   };
 
-  // 利用可能な値を取得（availableForSaleを基本に）
-  const getAvailableValuesForOption = (
-    optionType: string,
-    currentSelections: Record<string, string>
-  ): Set<string> => {
-    const availableValues = new Set<string>();
-    
-    product.variants.edges.forEach(({ node }) => {
-      const matchesOtherSelections = Object.entries(currentSelections)
-        .filter(([type]) => type !== optionType)
-        .every(([type, value]) => {
-          const variantOption = node.selectedOptions?.find((opt) => opt.name === type);
-          return variantOption?.value === value;
-        });
 
-      if (matchesOtherSelections && node.availableForSale) {
-        const option = node.selectedOptions?.find((opt) => opt.name === optionType);
-        if (option) {
-          availableValues.add(option.value);
-        }
-      }
-    });
-
-    return availableValues;
-  };
-
-  // Color+Size商品用: 指定されたColorで利用可能なSizeを取得
-  const getAvailableSizesForColor = (color: string): Set<string> => {
-    if (!detectedColorName || !detectedSizeName) return new Set();
-    
-    const availableSizes = new Set<string>();
-    product.variants.edges.forEach(({ node }) => {
-      const colorValue = getOptionValue(node, detectedColorName);
-      if (colorValue === color && node.availableForSale) {
-        const sizeValue = getOptionValue(node, detectedSizeName);
-        if (sizeValue) {
-          availableSizes.add(sizeValue);
-        }
-      }
-    });
-    return availableSizes;
-  };
-
-  // Color+Size商品用: 指定されたColorに購入可能variantが1つでもあるか
-  const hasAnyAvailableVariantForColor = (color: string): boolean => {
-    if (!detectedColorName) return false;
-    
-    return product.variants.edges.some(({ node }) => {
-      const colorValue = getOptionValue(node, detectedColorName);
-      return colorValue === color && node.availableForSale;
-    });
-  };
-
-  // 選択されたColor/Sizeを取得
-  const selectedColor = detectedColorName ? selectedOptions[detectedColorName] : undefined;
-  const selectedSize = detectedSizeName ? selectedOptions[detectedSizeName] : undefined;
+  // 選択されたColor/Sizeを取得（nullを許容）
+  const selectedColor = detectedColorName ? selectedOptions[detectedColorName] : null;
+  const selectedSize = detectedSizeName ? selectedOptions[detectedSizeName] : null;
 
   // useEffect: 画像切り替えのみ（stateの自動リセットはしない）
   useEffect(() => {
@@ -369,91 +316,126 @@ export default function ProductClient({
     }
   }, [selectedVariant?.id]);
 
-  // オプション選択ハンドラ（色変更でサイズリセットはここで行う）
-  // 修正3: 同じ値をクリックしたら解除できるようにする
+  // すべての選択を解除するハンドラ
+  const handleClearAllSelections = () => {
+    setSelectedOptions(normalizeSelectedOptions(productOptions));
+    setQuantity(1);
+    setSecondaryResetNotice(false);
+  };
+
+  // 選択があるかどうかを判定
+  const hasAnySelection = useMemo(() => {
+    return Object.values(selectedOptions).some((value) => value !== null);
+  }, [selectedOptions]);
+
+  // オプション選択ハンドラ
   const handleOptionSelect = (optionType: string, value: string) => {
-    const newSelectedOptions: Record<string, string> = { ...selectedOptions };
     const currentValue = selectedOptions[optionType];
     
-    // 同じ値がクリックされた場合は解除
+    // 同じ値がクリックされた場合は解除（nullに戻す）
     if (currentValue === value) {
-      delete newSelectedOptions[optionType];
+      const newSelectedOptions: Record<string, string | null> = {
+        ...selectedOptions,
+        [optionType]: null,
+      };
       
       // 選択したオプション以降をクリア
       const currentIndex = optionTypes.indexOf(optionType);
       if (currentIndex !== -1) {
-        optionTypes.slice(currentIndex).forEach((type) => {
-          delete newSelectedOptions[type];
+        optionTypes.slice(currentIndex + 1).forEach((type) => {
+          newSelectedOptions[type] = null;
         });
-      }
-      
-      // Color解除時はSizeも当然消える（Color+Size商品の場合）
-      if (isColorSizeProduct && optionType === detectedColorName && detectedSizeName) {
-        delete newSelectedOptions[detectedSizeName];
       }
       
       setSelectedOptions(newSelectedOptions);
       setQuantity(1);
+      setSecondaryResetNotice(false);
       return;
     }
     
-    // 新しい選択を設定
-    newSelectedOptions[optionType] = value;
-    
-    // Color+Size商品の場合、Color変更時にSizeをリセット
-    if (isColorSizeProduct && optionType === detectedColorName && selectedColor !== value) {
-      if (detectedSizeName) {
-        delete newSelectedOptions[detectedSizeName];
-      }
-    }
-    
-    // 選択したオプション以降をクリア
-    const currentIndex = optionTypes.indexOf(optionType);
-    if (currentIndex !== -1) {
-      optionTypes.slice(currentIndex + 1).forEach((type) => {
-        delete newSelectedOptions[type];
+    // 新しい選択を適用（primary変更時のsecondaryリセット処理を含む）
+    // オプションが2つ以上ある場合、primary変更時にsecondaryをチェック
+    if (hasMultipleOptionTypes && primaryOptionName && secondaryOptionName) {
+      const result = applyOptionChangeWithReset({
+        selectedOptions,
+        variants: allVariants,
+        primaryName: primaryOptionName,
+        secondaryName: secondaryOptionName,
+        changedName: optionType,
+        nextValue: value,
       });
+      
+      // 選択したオプション以降をクリア（primary変更時以外も含む）
+      const currentIndex = optionTypes.indexOf(optionType);
+      if (currentIndex !== -1) {
+        optionTypes.slice(currentIndex + 1).forEach((type) => {
+          if (type !== secondaryOptionName || !result.didResetSecondary) {
+            result.nextSelectedOptions[type] = null;
+          }
+        });
+      }
+      
+      setSelectedOptions(result.nextSelectedOptions);
+      setSecondaryResetNotice(result.didResetSecondary);
+    } else {
+      // primary/secondaryが定義されていない場合は通常変更
+      const newSelectedOptions: Record<string, string | null> = {
+        ...selectedOptions,
+        [optionType]: value,
+      };
+      
+      // 選択したオプション以降をクリア
+      const currentIndex = optionTypes.indexOf(optionType);
+      if (currentIndex !== -1) {
+        optionTypes.slice(currentIndex + 1).forEach((type) => {
+          newSelectedOptions[type] = null;
+        });
+      }
+      
+      setSelectedOptions(newSelectedOptions);
+      setSecondaryResetNotice(false);
     }
     
-    setSelectedOptions(newSelectedOptions);
     setQuantity(1);
   };
 
   // CTAボタンの状態を決定
-  const getCTAState = () => {
-    if (productAllSoldOut) {
-      return { type: "sold_out" as const, message: "Sold Out" };
-    }
-
-    if (isColorSizeProduct) {
-      if (!selectedColor) {
-        return { type: "select_option" as const, message: "Select a color" };
-      }
-      if (!selectedSize) {
-        return { type: "select_option" as const, message: "Select a size" };
-      }
-      if (selectedVariant) {
-        if (isPurchasable(selectedVariant, inventory)) {
-          return { type: "add_to_cart" as const };
-        } else {
-          return { type: "sold_out" as const, message: "Sold Out" };
-        }
-      }
-      return { type: "select_option" as const, message: "Select options" };
-    } else {
-      // 単一オプション/variant商品
-      if (!selectedVariant) {
-        return { type: "select_option" as const, message: "Select options" };
-      }
-      if (isPurchasable(selectedVariant, inventory)) {
-        return { type: "add_to_cart" as const };
+  const ctaState = useMemo(() => {
+    // 単一variant商品の場合は常にADD TO CART（在庫チェック付き）
+    if (isSingleVariantProduct) {
+      if (selectedVariant && isPurchasable(selectedVariant, inventory)) {
+        return { type: "add_to_cart" as const, disabled: false };
+      } else if (selectedVariant && !selectedVariant.availableForSale) {
+        return { type: "sold_out" as const, disabled: true };
       } else {
-        return { type: "sold_out" as const, message: "Sold Out" };
+        return { type: "unavailable" as const, disabled: true };
       }
     }
-  };
 
-  const ctaState = getCTAState();
+    // 全オプションが選択されていない場合
+    if (!allChosen) {
+      return { type: "select_options" as const, disabled: true };
+    }
+
+    // 全オプションが選択されている場合
+    if (!selectedVariant) {
+      // variantが存在しない
+      return { type: "unavailable" as const, disabled: true };
+    }
+
+    if (!selectedVariant.availableForSale) {
+      // availableForSale=false
+      return { type: "sold_out" as const, disabled: true };
+    }
+
+    if (isPurchasable(selectedVariant, inventory)) {
+      // availableForSale=true かつ在庫あり
+      return { type: "add_to_cart" as const, disabled: false };
+    } else {
+      // 在庫なし
+      return { type: "sold_out" as const, disabled: true };
+    }
+  }, [allChosen, selectedVariant, inventory, isSingleVariantProduct]);
 
   // 配送日付レンジを計算
   const getDeliveryDateRange = (): string => {
@@ -726,211 +708,78 @@ export default function ProductClient({
           </div>
 
           {/* バリエーション選択 */}
-          {product.variants.edges.length > 1 && (
+          {!isSingleVariantProduct && product.variants.edges.length > 1 && (
             <div className="space-y-4">
-              {isColorSizeProduct ? (
-                /* Color+Size商品の専用UI */
-                <>
-                  {/* Color選択 */}
-                  <div>
+              {/* 選択解除ボタン */}
+              {hasAnySelection && (
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleClearAllSelections}
+                    className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Clear all selections"
+                  >
+                    <X className="w-4 h-4" />
+                    <span>Clear selections</span>
+                  </button>
+                </div>
+              )}
+              {optionTypes.map((optionType, index) => {
+                // 前のオプションが選択されていない場合は表示しない（順次選択）
+                const previousOptionsSelected = optionTypes
+                  .slice(0, index)
+                  .every((type) => selectedOptions[type] !== null);
+
+                if (!previousOptionsSelected && index > 0) {
+                  return null;
+                }
+
+                const isSecondary = optionType === secondaryOptionName;
+                const isSelected = selectedOptions[optionType] !== null;
+
+                return (
+                  <div key={optionType}>
                     <label className="block text-sm font-medium mb-2">
-                      {detectedColorName}
+                      {optionType}
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {sortOptionValues(
-                        Array.from(optionTypesMap.get(detectedColorName!) || [])
-                      ).map((colorValue) => {
-                        const isSelected = selectedColor === colorValue;
-                        const hasAvailable = hasAnyAvailableVariantForColor(colorValue);
-                        const isDisabled = !hasAvailable;
+                        Array.from(optionTypesMap.get(optionType) || [])
+                      ).map((value) => {
+                        const isValueSelected = selectedOptions[optionType] === value;
+                        const isSelectable = isOptionValueSelectable(
+                          allVariants,
+                          selectedOptions,
+                          optionType,
+                          value
+                        );
 
                         return (
                           <button
-                            key={colorValue}
-                            onClick={() => handleOptionSelect(detectedColorName!, colorValue)}
-                            disabled={isDisabled}
+                            key={value}
+                            onClick={() => handleOptionSelect(optionType, value)}
+                            disabled={!isSelectable}
                             className={cn(
-                              "px-4 py-2 rounded-full text-sm font-medium transition-all border relative",
-                              isSelected
+                              "px-4 py-2 rounded-full text-sm font-medium transition-all border",
+                              isValueSelected
                                 ? "bg-zinc-800 text-white border-zinc-800"
                                 : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200 hover:border-zinc-300",
-                              isDisabled && "opacity-50 cursor-not-allowed"
+                              !isSelectable && "opacity-50 cursor-not-allowed"
                             )}
                           >
-                            {colorValue}
-                            {isDisabled && (
-                              <span className="ml-1 text-xs">(Sold out)</span>
-                            )}
+                            {value}
                           </button>
                         );
                       })}
                     </div>
-                  </div>
-
-                  {/* Size選択 */}
-                  {selectedColor ? (
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        {detectedSizeName}
-                      </label>
-                      <div className="flex flex-wrap gap-2">
-                        {(() => {
-                          const availableSizes = getAvailableSizesForColor(selectedColor);
-
-                          if (availableSizes.size === 0) {
-                            return (
-                              <p className="text-sm text-muted-foreground">
-                                No sizes available for this color
-                              </p>
-                            );
-                          }
-
-                          // 修正3: 選べるものだけ表示（availableSizes を直接 map）
-                          return sortOptionValues(Array.from(availableSizes)).map((sizeValue) => {
-                            const isSelected = selectedSize === sizeValue;
-
-                            return (
-                              <button
-                                key={sizeValue}
-                                onClick={() => handleOptionSelect(detectedSizeName!, sizeValue)}
-                                className={cn(
-                                  "px-4 py-2 rounded-full text-sm font-medium transition-all border",
-                                  isSelected
-                                    ? "bg-zinc-800 text-white border-zinc-800"
-                                    : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200 hover:border-zinc-300"
-                                )}
-                              >
-                                {sizeValue}
-                              </button>
-                            );
-                          });
-                        })()}
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
-                        {detectedSizeName}
-                      </label>
-                      <p className="text-sm text-muted-foreground">
-                        Select a color to see sizes
+                    {/* Secondaryリセット通知 */}
+                    {isSecondary && secondaryResetNotice && (
+                      <p className="text-xs text-amber-600 mt-2">
+                        Selected option isn't available for this selection. Please choose again.
                       </p>
-                    </div>
-                  )}
-                </>
-              ) : hasMultipleOptionTypes ? (
-                /* 2階層商品（Color+Size以外） */
-                <>
-                  {optionTypes.map((optionType, index) => {
-                    const previousOptionsSelected = optionTypes
-                      .slice(0, index)
-                      .every((type) => selectedOptions[type] !== undefined);
-
-                    if (!previousOptionsSelected && index > 0) {
-                      return null;
-                    }
-
-                    const availableValues = getAvailableValuesForOption(
-                      optionType,
-                      selectedOptions
-                    );
-
-                    return (
-                      <div key={optionType}>
-                        <label className="block text-sm font-medium mb-2">
-                          {optionType}
-                        </label>
-                        <div className="flex flex-wrap gap-2">
-                          {sortOptionValues(
-                            Array.from(optionTypesMap.get(optionType) || [])
-                          ).map((value) => {
-                            const isSelected = selectedOptions[optionType] === value;
-                            const isAvailable = availableValues.has(value);
-
-                            return (
-                              <button
-                                key={value}
-                                onClick={() => handleOptionSelect(optionType, value)}
-                                disabled={!isAvailable}
-                                className={cn(
-                                  "px-4 py-2 rounded-full text-sm font-medium transition-all border",
-                                  isSelected
-                                    ? "bg-zinc-800 text-white border-zinc-800"
-                                    : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200 hover:border-zinc-300",
-                                  !isAvailable && "opacity-50 cursor-not-allowed"
-                                )}
-                              >
-                                {value}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </>
-              ) : (
-                /* 1つのオプションタイプのみ、またはその他のバリエーション */
-                <div className="flex flex-wrap gap-2">
-                  {[...product.variants.edges]
-                    .map(({ node: variant }) => {
-                      const firstOption = variant.selectedOptions?.[0];
-                      const buttonLabel =
-                        firstOption?.value ||
-                        variant.title.split(" / ").pop() ||
-                        variant.title;
-                      return { variant, buttonLabel };
-                    })
-                    .sort((a, b) => {
-                      const aNum = parseFloat(a.buttonLabel.trim());
-                      const bNum = parseFloat(b.buttonLabel.trim());
-                      const aIsNumeric = !isNaN(aNum) && /^-?\d+(\.\d+)?$/.test(a.buttonLabel.trim());
-                      const bIsNumeric = !isNaN(bNum) && /^-?\d+(\.\d+)?$/.test(b.buttonLabel.trim());
-                      
-                      if (aIsNumeric && bIsNumeric) {
-                        return aNum - bNum;
-                      } else {
-                        return a.buttonLabel.localeCompare(b.buttonLabel);
-                      }
-                    })
-                    .map(({ variant, buttonLabel }) => {
-                      const isSelected = selectedVariant?.id === variant.id;
-
-                      return (
-                        <button
-                          key={variant.id}
-                          onClick={() => {
-                            setSelectedOptions(
-                              variant.selectedOptions?.reduce(
-                                (acc, opt) => {
-                                  acc[opt.name] = opt.value;
-                                  return acc;
-                                },
-                                {} as Record<string, string>
-                              ) || {}
-                            );
-                            setQuantity(1);
-                            if (variant.image?.url) {
-                              switchToVariantImage(variant);
-                            }
-                          }}
-                          // 修正4: disabled 判定を isPurchasable に統一
-                          disabled={!isPurchasable(variant, inventory)}
-                          className={cn(
-                            "px-4 py-2 rounded-full text-sm font-medium transition-all border",
-                            isSelected
-                              ? "bg-zinc-800 text-white border-zinc-800"
-                              : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200 hover:border-zinc-300",
-                            !isPurchasable(variant, inventory) &&
-                              "opacity-50 cursor-not-allowed"
-                          )}
-                        >
-                          {buttonLabel}
-                        </button>
-                      );
-                    })}
-                </div>
-              )}
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 
@@ -959,11 +808,17 @@ export default function ProductClient({
             ) : (
               <>
                 <Button
-                  disabled
+                  disabled={ctaState.disabled}
                   size="lg"
                   className="flex-1 h-12 font-semibold uppercase"
                 >
-                  {ctaState.message || "Select options"}
+                  {ctaState.type === "select_options"
+                    ? "SELECT OPTIONS"
+                    : ctaState.type === "unavailable"
+                    ? "UNAVAILABLE"
+                    : ctaState.type === "sold_out"
+                    ? "SOLD OUT"
+                    : "SELECT OPTIONS"}
                 </Button>
                 <AddToFavoritesButton
                   productId={product.id}
