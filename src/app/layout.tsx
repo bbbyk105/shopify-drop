@@ -17,6 +17,11 @@ export const metadata: Metadata = {
     "floor lamps",
   ],
   authors: [{ name: "Evimeria Home" }],
+  verification: {
+    other: {
+      "facebook-domain-verification": "adi79gxv3rvwt6vp6pqozm39unn6e3",
+    },
+  },
   openGraph: {
     title: "Evimeria Home - Illuminate Your World",
     description:
