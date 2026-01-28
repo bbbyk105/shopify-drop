@@ -14,6 +14,8 @@ import {
   ChevronRight,
   Star,
   X,
+  Plus,
+  Minus,
 } from "lucide-react";
 import {
   Accordion,
@@ -500,11 +502,14 @@ export default function ProductClient({
     }
   };
 
-  const handleQuantityChange = (newQuantity: number) => {
-    const maxQty = maxQuantity ?? 10;
-    const validQuantity = Math.max(1, Math.min(maxQty, newQuantity));
-    setQuantity(validQuantity);
-  };
+  // バリアント変更時に数量をリセット（在庫を超えないように）
+  useEffect(() => {
+    if (selectedVariant && maxQuantity !== null) {
+      if (quantity > maxQuantity) {
+        setQuantity(Math.max(1, maxQuantity));
+      }
+    }
+  }, [selectedVariant?.id, maxQuantity]);
 
   // スワイプジェスチャーハンドラー（モバイルのみ）
   const minSwipeDistance = 50;
@@ -783,53 +788,122 @@ export default function ProductClient({
             </div>
           )}
 
-          {/* カートに追加ボタン */}
-          <div className="flex items-center gap-3">
-            {ctaState.type === "add_to_cart" && selectedVariant ? (
-              <>
-                <AddToCartButton
-                  variantId={selectedVariant.id}
-                  quantity={quantity}
-                  className="flex-1 bg-slate-900 hover:bg-slate-800 text-white h-12 font-semibold uppercase"
-                  productName={product.title}
-                  productImage={images[selectedImage]?.url || images[0]?.url}
-                >
-                  ADD TO CART
-                </AddToCartButton>
-                <AddToFavoritesButton
-                  productId={product.id}
-                  productName={product.title}
-                  productImage={images[selectedImage]?.url || images[0]?.url}
-                  variant="icon"
-                  size="lg"
-                  className="h-12 w-12"
-                />
-              </>
-            ) : (
-              <>
-                <Button
-                  disabled={ctaState.disabled}
-                  size="lg"
-                  className="flex-1 h-12 font-semibold uppercase"
-                >
-                  {ctaState.type === "select_options"
-                    ? "SELECT OPTIONS"
-                    : ctaState.type === "unavailable"
-                    ? "UNAVAILABLE"
-                    : ctaState.type === "sold_out"
-                    ? "SOLD OUT"
-                    : "SELECT OPTIONS"}
-                </Button>
-                <AddToFavoritesButton
-                  productId={product.id}
-                  productName={product.title}
-                  productImage={images[selectedImage]?.url || images[0]?.url}
-                  variant="icon"
-                  size="lg"
-                  className="h-12 w-12"
-                />
-              </>
+          {/* 数量選択とカートに追加ボタン */}
+          <div className="space-y-3">
+            {/* 数量選択 */}
+            {ctaState.type === "add_to_cart" && selectedVariant && (
+              <div className="space-y-2">
+                <label className="block text-sm font-medium">Quantity</label>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center border rounded-lg">
+                    <button
+                      onClick={() => {
+                        if (quantity > 1) {
+                          setQuantity(quantity - 1);
+                        }
+                      }}
+                      disabled={quantity <= 1}
+                      className="p-2 hover:bg-secondary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      aria-label="Decrease quantity"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+
+                    <span className="w-12 text-center text-base font-medium">
+                      {quantity}
+                    </span>
+
+                    {(() => {
+                      const canIncrease =
+                        maxQuantity === null || quantity < maxQuantity;
+
+                      return (
+                        <button
+                          onClick={() => {
+                            if (canIncrease) {
+                              const newQty = quantity + 1;
+                              if (maxQuantity === null || newQty <= maxQuantity) {
+                                setQuantity(newQty);
+                              }
+                            }
+                          }}
+                          disabled={!canIncrease}
+                          className="p-2 hover:bg-secondary transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          aria-label="Increase quantity"
+                          title={
+                            maxQuantity !== null && quantity >= maxQuantity
+                              ? `Stock: ${maxQuantity}`
+                              : "Increase quantity"
+                          }
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      );
+                    })()}
+                  </div>
+                  {/* 在庫情報の表示 */}
+                  {maxQuantity !== null && (
+                    <p className="text-xs text-muted-foreground">
+                      Stock: {maxQuantity}
+                      {quantity >= maxQuantity && (
+                        <span className="text-destructive ml-1">
+                          (Max stock)
+                        </span>
+                      )}
+                    </p>
+                  )}
+                </div>
+              </div>
             )}
+
+            {/* カートに追加ボタン */}
+            <div className="flex items-center gap-3">
+              {ctaState.type === "add_to_cart" && selectedVariant ? (
+                <>
+                  <AddToCartButton
+                    variantId={selectedVariant.id}
+                    quantity={quantity}
+                    className="flex-1 bg-slate-900 hover:bg-slate-800 text-white h-12 font-semibold uppercase"
+                    productName={product.title}
+                    productImage={images[selectedImage]?.url || images[0]?.url}
+                  >
+                    ADD TO CART
+                  </AddToCartButton>
+                  <AddToFavoritesButton
+                    productId={product.id}
+                    productName={product.title}
+                    productImage={images[selectedImage]?.url || images[0]?.url}
+                    variant="icon"
+                    size="lg"
+                    className="h-12 w-12"
+                  />
+                </>
+              ) : (
+                <>
+                  <Button
+                    disabled={ctaState.disabled}
+                    size="lg"
+                    className="flex-1 h-12 font-semibold uppercase"
+                  >
+                    {ctaState.type === "select_options"
+                      ? "SELECT OPTIONS"
+                      : ctaState.type === "unavailable"
+                      ? "UNAVAILABLE"
+                      : ctaState.type === "sold_out"
+                      ? "SOLD OUT"
+                      : "SELECT OPTIONS"}
+                  </Button>
+                  <AddToFavoritesButton
+                    productId={product.id}
+                    productName={product.title}
+                    productImage={images[selectedImage]?.url || images[0]?.url}
+                    variant="icon"
+                    size="lg"
+                    className="h-12 w-12"
+                  />
+                </>
+              )}
+            </div>
           </div>
 
           {/* 配送情報 */}
