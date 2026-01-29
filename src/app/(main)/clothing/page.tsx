@@ -4,11 +4,13 @@ import { getAllProducts } from "@/lib/shopify/queries/products";
 import type { Product as ShopifyProduct } from "@/lib/shopify/types";
 import ClothingClient from "./ClothingClient";
 import { filterProductsByClothing } from "@/lib/utils/room-filters";
+import { buildPageMeta } from "@/lib/seo/meta";
 
-export const metadata: Metadata = {
-  title: "Clothing Collection - Evimeria Home",
-  description: "Browse our complete collection of premium clothing and apparel.",
-};
+export const metadata: Metadata = buildPageMeta(
+  "Clothing Collection - Evimeria Home",
+  "Browse our complete collection of premium clothing and apparel.",
+  "clothing",
+);
 
 export default async function ClothingPage() {
   // Shopifyから商品を取得（フォールバックとしてローカル商品も使用）
@@ -21,8 +23,7 @@ export default async function ClothingPage() {
   }
 
   // Shopify商品があればそれを使用、なければローカル商品を使用
-  const allProducts =
-    shopifyProducts.length > 0 ? shopifyProducts : products;
+  const allProducts = shopifyProducts.length > 0 ? shopifyProducts : products;
 
   // "Clothing"タグでフィルタリング
   const clothingProducts = filterProductsByClothing(allProducts);

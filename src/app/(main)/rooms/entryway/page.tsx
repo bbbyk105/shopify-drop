@@ -4,11 +4,13 @@ import type { Product as ShopifyProduct } from "@/lib/shopify/types";
 import { products } from "@/lib/products";
 import EntrywayClient from "./EntrywayClient";
 import { filterProductsByRoom } from "@/lib/utils/room-filters";
+import { buildPageMeta } from "@/lib/seo/meta";
 
-export const metadata: Metadata = {
-  title: "Entryway - Evimeria Home",
-  description: "Make a lasting first impression with our entryway collection.",
-};
+export const metadata: Metadata = buildPageMeta(
+  "Entryway - Evimeria Home",
+  "Make a lasting first impression with our entryway collection.",
+  "rooms/entryway",
+);
 
 export default async function EntrywayPage() {
   let shopifyProducts: ShopifyProduct[] = [];
@@ -18,8 +20,7 @@ export default async function EntrywayPage() {
     console.error("Failed to fetch Shopify products:", error);
   }
 
-  const allProducts =
-    shopifyProducts.length > 0 ? shopifyProducts : products;
+  const allProducts = shopifyProducts.length > 0 ? shopifyProducts : products;
   const entrywayProducts = filterProductsByRoom(allProducts, "entryway");
 
   return <EntrywayClient products={entrywayProducts} />;

@@ -4,11 +4,13 @@ import { getAllProducts } from "@/lib/shopify/queries/products";
 import type { Product as ShopifyProduct } from "@/lib/shopify/types";
 import { products } from "@/lib/products";
 import SaleClient from "./SaleClient";
+import { buildPageMeta } from "@/lib/seo/meta";
 
-export const metadata: Metadata = {
-  title: "Sale - Evimeria Home",
-  description: "Discover amazing deals on premium lighting and home decor.",
-};
+export const metadata: Metadata = buildPageMeta(
+  "Sale - Evimeria Home",
+  "Discover amazing deals on premium lighting and home decor.",
+  "sale",
+);
 
 export default async function SalePage() {
   // Shopifyから商品を取得（フォールバックとしてローカル商品も使用）
@@ -41,8 +43,9 @@ export default async function SalePage() {
         return false;
       });
 
-  return (
-        (compareAtPrice !== null && compareAtPrice > price) || hasVariantDiscount
+      return (
+        (compareAtPrice !== null && compareAtPrice > price) ||
+        hasVariantDiscount
       );
     } else {
       // ローカル商品の場合（現在は全てセールとして扱う）

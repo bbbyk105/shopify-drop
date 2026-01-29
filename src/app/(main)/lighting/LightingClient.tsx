@@ -16,6 +16,7 @@ export default function LightingClient({ products }: LightingClientProps) {
       products={products}
       title="Lighting Collection"
       description="Browse our complete collection of premium lighting solutions."
+      titleLevel="h2"
       itemsPerPage={8}
       currentCategory="/lighting"
       filterConfig={{
