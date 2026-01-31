@@ -5,11 +5,10 @@ import type { Product as ShopifyProduct } from "@/lib/shopify/types";
 import LightingClient from "./LightingClient";
 import { filterProductsByLighting } from "@/lib/utils/room-filters";
 import { buildPageMeta } from "@/lib/seo/meta";
-import SeoIntroSection from "@/components/seo/SeoIntroSection";
 
 export const metadata: Metadata = buildPageMeta(
-  "Lighting Collection - Evimeria Home",
-  "Browse our complete collection of premium lighting solutions.",
+  "Lighting - Evimeria Home",
+  "Premium lighting solutions.",
   "lighting",
 );
 
@@ -28,13 +27,5 @@ export default async function LightingPage() {
   // "Lighting"タグでフィルタリング
   const lightingProducts = filterProductsByLighting(allProducts);
 
-  return (
-    <>
-      <SeoIntroSection
-        title="Lighting Collection"
-        description="Browse our complete collection of premium lighting solutions. From table lamps to floor lamps, find the perfect piece to illuminate your space."
-      />
-      <LightingClient products={lightingProducts} />
-    </>
-  );
+  return <LightingClient products={lightingProducts} />;
 }
