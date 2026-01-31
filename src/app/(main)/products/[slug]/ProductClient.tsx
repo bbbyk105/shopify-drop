@@ -320,12 +320,37 @@ export default function ProductClient({
     ? selectedOptions[detectedSizeName]
     : null;
 
-  // useEffect: 画像切り替えのみ（stateの自動リセットはしない）
+  // 画像表示用のvariant: 完全一致があればそれ、なければ選択済みオプションに一致する最初のvariant
+  // 色だけ変更した時点で即座に写真を切り替えるため
+  const variantForImage = useMemo(() => {
+    if (selectedVariant) return selectedVariant;
+    const hasAnySelected = Object.values(selectedOptions).some(
+      (v) => v !== null,
+    );
+    if (!hasAnySelected) return null;
+    return (
+      allVariants.find((variant) => {
+        return Object.entries(selectedOptions).every(
+          ([optionName, optionValue]) => {
+            if (optionValue === null) return true;
+            const variantOption = variant.selectedOptions?.find(
+              (opt) => opt.name === optionName,
+            );
+            return variantOption?.value === optionValue;
+          },
+        );
+      }) ?? null
+    );
+  }, [selectedVariant, selectedOptions, allVariants]);
+
+  // useEffect: 色を変えた時点でvariantの写真を切り替える
   useEffect(() => {
-    if (selectedVariant && selectedVariant.image?.url) {
-      switchToVariantImage(selectedVariant);
+    if (variantForImage?.image?.url) {
+      switchToVariantImage(variantForImage);
+    } else if (variantForImage === null) {
+      setVariantImageOverride(null);
     }
-  }, [selectedVariant?.id]);
+  }, [variantForImage?.id, variantForImage?.image?.url]);
 
   // すべての選択を解除するハンドラ
   const handleClearAllSelections = () => {
