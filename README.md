@@ -31,6 +31,43 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Environment Variables
 
+### Google Tag Manager (GTM)
+
+分析・タグ管理にGTMを使う場合は `.env.local` に以下を設定する。未設定でもビルド・実行は可能。
+
+```env
+NEXT_PUBLIC_GTM_ID=GTM-XXXXXXX
+```
+
+`@next/third-parties` で読み込まれない場合のみ、`next/script` で挿入するフォールバックを使う（二重読み込み防止のため片方のみ有効）:
+
+```env
+NEXT_PUBLIC_GTM_USE_SCRIPT_FALLBACK=true
+```
+
+#### GTM が読み込まれているかの確認手順
+
+1. **Network タブ**
+   - DevTools → Network を開き、ページをリロードする。
+   - フィルタで `gtm` や `googletagmanager` を検索する。
+   - `gtm.js?id=GTM-...` というリクエストが発生していることを確認する。
+
+2. **Console**
+   - DevTools → Console を開く。
+   - `window.google_tag_manager` を実行し、オブジェクト（例: `{...}`）が表示されることを確認する。`undefined` の場合は GTM がまだ読み込まれていない。
+
+3. **Elements**
+   - DevTools → Elements で HTML を開く。
+   - Ctrl+F / Cmd+F で `googletagmanager` を検索する。
+   - `script[src*="googletagmanager.com/gtm.js"]` が存在することを確認する。
+
+4. **開発時のデバッグ**
+   - 開発モード（`npm run dev`）では、layout でサーバー側の `[GTM] NEXT_PUBLIC_GTM_ID = GTM-...` がターミナルに、クライアント側の `[GTM DEBUG]`（即時・2秒後・window.load）がブラウザ Console に出力される。これで env の読み込みとスクリプト挿入状況を切り分けできる。
+
+5. **`hasScript: true` なのに `window.google_tag_manager` が undefined の場合**
+   - **広告ブロッカー・プライバシー拡張**で `googletagmanager.com` がブロックされていることが多い。シークレットモードで開くか、拡張を無効にして再試行する。
+   - それでも解決しない場合は `.env.local` に `NEXT_PUBLIC_GTM_USE_SCRIPT_FALLBACK=true` を追加し、`next/script` による従来スニペットで読み込むフォールバックを試す（開発サーバー再起動が必要）。
+
 ### Contact Form Setup (Gmail)
 
 The contact form requires SMTP configuration. If you're using Gmail, you need to set up an App Password.
@@ -38,13 +75,11 @@ The contact form requires SMTP configuration. If you're using Gmail, you need to
 #### Steps to Create Gmail App Password:
 
 1. **Enable 2-Step Verification**
-
    - Go to your Google Account settings
    - Navigate to Security → 2-Step Verification
    - Follow the prompts to enable it
 
 2. **Generate App Password**
-
    - Go to Security → App passwords (or visit: https://myaccount.google.com/apppasswords)
    - Select "Mail" as the app
    - Select "Other (Custom name)" as the device

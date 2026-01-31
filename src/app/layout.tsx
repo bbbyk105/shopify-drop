@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
+import { GoogleTagManager } from "@next/third-parties/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/toaster";
 import { getSiteUrl } from "@/lib/seo/site-url";
@@ -50,11 +52,17 @@ export const metadata: Metadata = {
 
 const organizationAndWebSiteJsonLd = buildOrganizationAndWebSite();
 
+/** @next/third-parties が動かない場合のみ true にすると next/script で GTM を挿入（二重読み込み防止のため片方のみ） */
+const USE_GTM_SCRIPT_FALLBACK =
+  process.env.NEXT_PUBLIC_GTM_USE_SCRIPT_FALLBACK === "true";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -65,7 +73,23 @@ export default function RootLayout({
           }}
         />
       </head>
+
       <body className="antialiased">
+        {/* GTM: envがある時だけ読み込む / fallback=true の時は next/script を使う */}
+        {gtmId ? (
+          USE_GTM_SCRIPT_FALLBACK ? (
+            <Script id="gtm-init" strategy="afterInteractive">
+              {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','${gtmId}');`}
+            </Script>
+          ) : (
+            <GoogleTagManager gtmId={gtmId} />
+          )
+        ) : null}
+
         <ThemeProvider>
           {children}
           <Toaster />
