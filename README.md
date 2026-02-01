@@ -31,6 +31,16 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Environment Variables
 
+### Sentry（エラー監視）
+
+Sentry でエラー監視を行う場合は `.env.local` に DSN を設定する。未設定でもビルド・実行は可能（Sentry は無効になる）。
+
+```env
+NEXT_PUBLIC_SENTRY_DSN=https://xxxxx@xxxxx.ingest.us.sentry.io/xxxxx
+```
+
+DSN は [Sentry のプロジェクト設定](https://docs.sentry.io/product/sentry-basics/integrate-frontend/configurable/options/) で確認できる。
+
 ### Google Tag Manager (GTM)
 
 分析・タグ管理にGTMを使う場合は `.env.local` に以下を設定する。未設定でもビルド・実行は可能。

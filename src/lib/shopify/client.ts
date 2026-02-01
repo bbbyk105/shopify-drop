@@ -26,10 +26,6 @@ export async function shopifyFetch<T>(
   query: string,
   variables?: Record<string, unknown>,
 ): Promise<T> {
-  if (process.env.NODE_ENV !== "production") {
-    // 開発時のみ：実リクエストが走ったことを目視できるようにする（キャッシュヒット時は出ない）
-    console.log("[Shopify] request", variables ? Object.keys(variables) : []);
-  }
   try {
     return await shopify.request<T>(query, variables);
   } catch (error) {

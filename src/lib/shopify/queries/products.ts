@@ -88,38 +88,42 @@ const PRODUCT_FRAGMENT = /* GraphQL */ `
   }
 `;
 
-// 単一商品取得（unstable_cache で 300s キャッシュ、generateMetadata + page の重複を吸収）
+// 単一商品取得の実処理（モジュールスコープで1回だけ定義）
+const _getProductByHandle = async (
+  handle: string,
+): Promise<Product | null> => {
+  const query = /* GraphQL */ `
+    ${PRODUCT_FRAGMENT}
+    query getProduct($handle: String!) {
+      product(handle: $handle) {
+        ...ProductFields
+      }
+    }
+  `;
+  try {
+    const data = await shopifyFetch<{ product: Product | null }>(query, {
+      handle,
+    });
+    return data.product;
+  } catch (error) {
+    console.error(`Error fetching product ${handle}:`, error);
+    return null;
+  }
+};
+
+// モジュールスコープで1回だけ cached wrapper を生成。キーは引数 handle で統一（Next が引数をキーに含める）
+export const cachedGetProductByHandle = unstable_cache(
+  _getProductByHandle,
+  ["shopify", "productByHandle"],
+  { revalidate: REVALIDATE_PRODUCT },
+);
+
+// 互換維持：既存の getProductByHandle 利用箇所はそのまま動く
 export async function getProductByHandle(
   handle: string,
 ): Promise<Product | null> {
-  const cached = unstable_cache(
-    async (h: string) => {
-      const query = /* GraphQL */ `
-        ${PRODUCT_FRAGMENT}
-        query getProduct($handle: String!) {
-          product(handle: $handle) {
-            ...ProductFields
-          }
-        }
-      `;
-      try {
-        const data = await shopifyFetch<{ product: Product | null }>(query, {
-          handle: h,
-        });
-        return data.product;
-      } catch (error) {
-        console.error(`Error fetching product ${h}:`, error);
-        return null;
-      }
-    },
-    ["shopify", "productByHandle", handle],
-    { revalidate: REVALIDATE_PRODUCT },
-  );
-  return cached(handle);
+  return cachedGetProductByHandle(handle);
 }
-
-/** 商品詳細用：generateMetadata と page で同一キャッシュキーを使うための統一エントリ */
-export { getProductByHandle as cachedGetProductByHandle };
 
 // コレクション内の商品一覧取得（unstable_cache で 300s キャッシュ）
 export async function getProductsByCollection(
@@ -186,6 +190,48 @@ export async function getProductsByTag(
     console.error(`Error fetching products with tag ${tag}:`, error);
     return [];
   }
+}
+
+// generateStaticParams 専用：実処理（handle のみ取得、CREATED_AT 降順）
+const _getProductHandlesForStaticParams = async (
+  first: number,
+): Promise<string[]> => {
+  const query = /* GraphQL */ `
+    query getProductHandlesForStaticParams($first: Int!) {
+      products(first: $first, sortKey: CREATED_AT, reverse: true) {
+        edges {
+          node {
+            handle
+          }
+        }
+      }
+    }
+  `;
+  try {
+    const data = await shopifyFetch<{
+      products: { edges: { node: { handle: string } }[] };
+    }>(query, { first });
+    const handles =
+      data.products?.edges.map((e) => e.node.handle).filter(Boolean) ?? [];
+    return handles;
+  } catch (error) {
+    console.error("Error fetching product handles for static params:", error);
+    return [];
+  }
+};
+
+// モジュールスコープで1回だけ cached wrapper を生成（Next が引数 first をキーに含める）
+export const cachedGetProductHandlesForStaticParams = unstable_cache(
+  _getProductHandlesForStaticParams,
+  ["shopify", "productHandlesForStaticParams"],
+  { revalidate: REVALIDATE_LIST },
+);
+
+// 互換維持：既存の getProductHandlesForStaticParams 利用箇所はそのまま動く
+export async function getProductHandlesForStaticParams(
+  first: number = 200,
+): Promise<string[]> {
+  return cachedGetProductHandlesForStaticParams(first);
 }
 
 // 全商品取得（新しい順）。unstable_cache で 300s キャッシュ（layout + トップ等の重複を吸収）

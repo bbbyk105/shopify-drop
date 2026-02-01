@@ -1,6 +1,6 @@
 import {
   cachedGetProductByHandle,
-  getAllProducts,
+  getProductHandlesForStaticParams,
   getRelatedProducts,
 } from "@/lib/shopify/queries/products";
 import { getProductInventory } from "@/lib/shopify/queries/inventory";
@@ -16,11 +16,10 @@ import { getSiteUrl } from "@/lib/seo/site-url";
 /** ISR: 600秒で再検証。商品詳細。 */
 export const revalidate = 600;
 
-/** ビルド時に上位200件の商品を静的生成。それ以外はオンデマンド。 */
+/** ビルド時に上位200件の商品を静的生成（handle のみの軽量クエリ）。それ以外はオンデマンド。 */
 export async function generateStaticParams() {
   try {
-    const products = await getAllProducts(200);
-    const handles = products.map((p) => p.handle).filter(Boolean);
+    const handles = await getProductHandlesForStaticParams(200);
     return [...new Set(handles)].map((slug) => ({ slug }));
   } catch {
     return [];
