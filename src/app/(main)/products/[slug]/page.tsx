@@ -1,5 +1,6 @@
 import {
-  getProductByHandle,
+  cachedGetProductByHandle,
+  getAllProducts,
   getRelatedProducts,
 } from "@/lib/shopify/queries/products";
 import { getProductInventory } from "@/lib/shopify/queries/inventory";
@@ -11,6 +12,20 @@ import type { Product as ShopifyProduct } from "@/lib/shopify/types";
 import { buildProductMeta } from "@/lib/seo/meta";
 import { buildProductSchema, buildBreadcrumbSchema } from "@/lib/seo/schema";
 import { getSiteUrl } from "@/lib/seo/site-url";
+
+/** ISR: 600秒で再検証。商品詳細。 */
+export const revalidate = 600;
+
+/** ビルド時に上位200件の商品を静的生成。それ以外はオンデマンド。 */
+export async function generateStaticParams() {
+  try {
+    const products = await getAllProducts(200);
+    const handles = products.map((p) => p.handle).filter(Boolean);
+    return [...new Set(handles)].map((slug) => ({ slug }));
+  } catch {
+    return [];
+  }
+}
 
 interface ProductPageProps {
   params: Promise<{
@@ -30,7 +45,7 @@ export async function generateMetadata({
     };
   }
 
-  const product = await getProductByHandle(slug);
+  const product = await cachedGetProductByHandle(slug);
 
   if (!product) {
     return {
@@ -57,7 +72,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  const product = await getProductByHandle(slug);
+  const product = await cachedGetProductByHandle(slug);
 
   if (!product) {
     notFound();

@@ -11,6 +11,9 @@ export const metadata: Metadata = buildPageMeta(
   "new-arrivals",
 );
 
+/** ISR: 600秒で再検証。カテゴリ一覧。 */
+export const revalidate = 600;
+
 export default async function NewArrivalsPage() {
   // Shopifyから商品を取得（フォールバックとしてローカル商品も使用）
   let shopifyProducts: ShopifyProduct[] = [];

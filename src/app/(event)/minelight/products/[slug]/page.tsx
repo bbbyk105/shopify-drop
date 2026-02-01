@@ -1,9 +1,12 @@
-import { getProductByHandle } from "@/lib/shopify/queries/products";
+import { cachedGetProductByHandle } from "@/lib/shopify/queries/products";
 import { getProductInventory } from "@/lib/shopify/queries/inventory";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
 import MineLightProductClient from "./MineLightProductClient";
+
+/** ISR: 600秒で再検証。商品詳細（MineLight）。 */
+export const revalidate = 600;
 
 interface ProductPageProps {
   params: Promise<{
@@ -23,7 +26,7 @@ export async function generateMetadata({
     };
   }
 
-  const product = await getProductByHandle(slug);
+  const product = await cachedGetProductByHandle(slug);
 
   if (!product) {
     return {
@@ -55,7 +58,7 @@ export default async function MineLightProductPage({
     notFound();
   }
 
-  const product = await getProductByHandle(slug);
+  const product = await cachedGetProductByHandle(slug);
 
   if (!product) {
     notFound();
@@ -128,4 +131,3 @@ export default async function MineLightProductPage({
     </div>
   );
 }
-

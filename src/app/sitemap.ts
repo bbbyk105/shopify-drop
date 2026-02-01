@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getSiteUrl } from "@/lib/seo/site-url";
 import { STATIC_PATHS, getRoomPaths } from "@/lib/seo/routes";
-import { getAllProducts } from "@/lib/shopify/queries/products";
+import { getAllProductsForSitemap } from "@/lib/shopify/queries/products";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = getSiteUrl();
@@ -32,7 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 商品ページ: Shopify の handle を重複排除して列挙
   let productHandles: string[] = [];
   try {
-    const products = await getAllProducts(250);
+    const products = await getAllProductsForSitemap();
     const handles = products.map((p) => p.handle).filter(Boolean);
     productHandles = [...new Set(handles)];
   } catch (e) {

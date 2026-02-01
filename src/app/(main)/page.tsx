@@ -8,6 +8,9 @@ import { products } from "@/lib/products";
 import { getAllProducts } from "@/lib/shopify/queries/products";
 import type { Product as ShopifyProduct } from "@/lib/shopify/types";
 
+/** ISR: 180秒で再検証。トップは更新頻度をやや高めに。 */
+export const revalidate = 180;
+
 export default async function HomePage() {
   // Shopifyから商品を取得（フォールバックとしてローカル商品も使用）
   let shopifyProducts: ShopifyProduct[] = [];

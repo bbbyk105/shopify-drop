@@ -12,6 +12,9 @@ export const metadata: Metadata = buildPageMeta(
   "rooms/entryway",
 );
 
+/** ISR: 600秒で再検証。カテゴリ一覧。 */
+export const revalidate = 600;
+
 export default async function EntrywayPage() {
   let shopifyProducts: ShopifyProduct[] = [];
   try {
