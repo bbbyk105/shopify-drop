@@ -58,21 +58,13 @@ export default function TermsPage() {
             Article 4 (Shipping)
           </h2>
           <p>
-            We ship to Japan and the United States. Estimated delivery times are
-            as follows:
+            We ship to the United States only. Estimated delivery time is 1–14
+            business days, depending on the product.
           </p>
-          <ul className="list-disc pl-6 space-y-2 mt-4">
-            <li>
-              <strong>Japan:</strong> 5–14 business days
-            </li>
-            <li>
-              <strong>United States:</strong> 7–20 business days
-            </li>
-          </ul>
+
           <p className="mt-4">Delivery may be delayed due to:</p>
           <ul className="list-disc pl-6 space-y-2 mt-2">
             <li>Weather, natural disasters, traffic conditions</li>
-            <li>Customs clearance or international shipping delays</li>
             <li>Peak seasons and logistics congestion</li>
             <li>Supplier or carrier circumstances</li>
           </ul>
@@ -275,11 +267,11 @@ export default function TermsPage() {
               of order placement.
             </p>
             <p>
-              <strong>Shipping & Delivery:</strong> Items are typically shipped
-              within 5-20 business days after order confirmation, depending on
-              the shipping destination. Estimated delivery times: Japan (5-14
-              business days), United States (7-20 business days). For more
-              details, please see our{" "}
+              <strong>Shipping & Delivery:</strong> We ship to the United States
+              only. Items are typically shipped within 1-14 business days after
+              order confirmation, depending on the product. For more details,
+              please see our{" "}
+
               <a
                 href="/terms#shipping"
                 className="text-primary hover:underline"

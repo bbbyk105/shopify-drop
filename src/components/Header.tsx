@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Search, Heart, ShoppingCart, Sun, Moon, Menu, X, HelpCircle, User, Phone, MessageCircle, Info, PenTool } from "lucide-react";
+import { Search, Heart, ShoppingCart, Sun, Moon, Menu, X, HelpCircle, Phone, MessageCircle, Info } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import { useCart } from "@/hooks/useCart";
 import { useTheme } from "@/components/ThemeProvider";
 
@@ -129,12 +128,6 @@ export default function Header({ hasSale = true }: HeaderProps) {
                 )}
               </Button>
 
-              <Link href={"/account"}>
-                <Button variant="ghost" size="icon">
-                  <User className="h-5 w-5" />
-                </Button>
-              </Link>
-
               <Link href={"/favorite"}>
                 <Button variant="ghost" size="icon">
                   <Heart className="h-5 w-5" />
@@ -191,11 +184,6 @@ export default function Header({ hasSale = true }: HeaderProps) {
                   <Sun className="h-4 w-4 text-foreground" />
                 )}
               </Button>
-              <Link href={"/account"}>
-                <Button variant="ghost" size="icon" className="h-7 w-7 p-0 min-w-0">
-                  <User className="h-4 w-4 text-foreground" />
-                </Button>
-              </Link>
               <Link href={"/favorite"}>
                 <Button variant="ghost" size="icon" className="h-7 w-7 p-0 min-w-0">
                   <Heart className="h-4 w-4 text-foreground" />
@@ -458,14 +446,6 @@ export default function Header({ hasSale = true }: HeaderProps) {
                 )}
                 <span>Toggle Theme</span>
               </div>
-              <Link
-                href="/account"
-                className="flex items-center gap-3 px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <User className="h-5 w-5" />
-                <span>My Account & Orders</span>
-              </Link>
               <Link
                 href="/help"
                 className="flex items-center gap-3 px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"

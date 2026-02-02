@@ -63,19 +63,25 @@ export default function Hero() {
       video3Ref.current.pause();
     }
 
-    // 表示されている動画を再生
+    // 表示されている動画を再生（切り替え時に play が pause で中断されるエラーは無視）
+    const ignoreInterrupted = (e: unknown) => {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (!msg.includes("interrupted") && !msg.includes("pause")) {
+        console.error(e);
+      }
+    };
     if (currentVideo === 0 && video1Ref.current) {
       // 動画1に戻ったときのみリセット（ループ時）
       if (video1Ref.current.ended) {
         video1Ref.current.currentTime = 0;
       }
-      video1Ref.current.play().catch(console.error);
+      video1Ref.current.play().catch(ignoreInterrupted);
     } else if (currentVideo === 1 && video2Ref.current) {
       video2Ref.current.currentTime = 0;
-      video2Ref.current.play().catch(console.error);
+      video2Ref.current.play().catch(ignoreInterrupted);
     } else if (currentVideo === 2 && video3Ref.current) {
       video3Ref.current.currentTime = 0;
-      video3Ref.current.play().catch(console.error);
+      video3Ref.current.play().catch(ignoreInterrupted);
     }
   }, [currentVideo]);
 

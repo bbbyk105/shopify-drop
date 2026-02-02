@@ -4,10 +4,14 @@ import "./globals.css";
 import { GoogleTagManager } from "@next/third-parties/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/toaster";
+
+import ChatWidget from "@/components/ChatWidget";
+
 import { getSiteUrl } from "@/lib/seo/site-url";
 import { buildOrganizationAndWebSite } from "@/lib/seo/schema";
 
 const siteUrl = getSiteUrl();
+
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -93,6 +97,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <ThemeProvider>
           {children}
           <Toaster />
+          <ChatWidget />
         </ThemeProvider>
       </body>
     </html>
