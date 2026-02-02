@@ -4,11 +4,16 @@ import { getAllProducts } from "@/lib/shopify/queries/products";
 import type { Product as ShopifyProduct } from "@/lib/shopify/types";
 import LightingClient from "./LightingClient";
 import { filterProductsByLighting } from "@/lib/utils/room-filters";
+import { buildPageMeta } from "@/lib/seo/meta";
 
-export const metadata: Metadata = {
-  title: "Lighting Collection - Evimeria Home",
-  description: "Browse our complete collection of premium lighting solutions.",
-};
+export const metadata: Metadata = buildPageMeta(
+  "Lighting - Evimeria Home",
+  "Premium lighting solutions.",
+  "lighting",
+);
+
+/** ISR: 600秒で再検証。カテゴリ一覧。 */
+export const revalidate = 600;
 
 export default async function LightingPage() {
   // Shopifyから商品を取得（フォールバックとしてローカル商品も使用）
@@ -20,8 +25,7 @@ export default async function LightingPage() {
   }
 
   // Shopify商品があればそれを使用、なければローカル商品を使用
-  const allProducts =
-    shopifyProducts.length > 0 ? shopifyProducts : products;
+  const allProducts = shopifyProducts.length > 0 ? shopifyProducts : products;
 
   // "Lighting"タグでフィルタリング
   const lightingProducts = filterProductsByLighting(allProducts);

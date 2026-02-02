@@ -9,14 +9,7 @@ import AddToFavoritesButton from "@/components/shared/AddToFavoritesButton";
 import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { Product, Variant } from "@/lib/shopify/types";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Star,
-  X,
-  Plus,
-  Minus,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Star, X, Plus, Minus } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -49,11 +42,17 @@ const COLOR_NAME_CANDIDATES = ["Color", "Colour", "カラー", "色"];
 const SIZE_NAME_CANDIDATES = ["Size", "サイズ"];
 
 // 共通ユーティリティ関数
-const getOptionValue = (variant: Variant, optionName: string): string | undefined => {
+const getOptionValue = (
+  variant: Variant,
+  optionName: string,
+): string | undefined => {
   return variant.selectedOptions?.find((opt) => opt.name === optionName)?.value;
 };
 
-const isPurchasable = (variant: Variant, inventory: Record<string, number>): boolean => {
+const isPurchasable = (
+  variant: Variant,
+  inventory: Record<string, number>,
+): boolean => {
   if (!variant.availableForSale) return false;
   // inventoryが取得できた場合は、在庫数もチェック（undefinedは0扱いしない）
   const inv = inventory[variant.id];
@@ -78,7 +77,7 @@ export default function ProductClient({
     altText?: string | null;
   } | null>(null);
   const [quantity, setQuantity] = useState(1);
-  
+
   // スワイプジェスチャー用のrefとstate
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
@@ -92,11 +91,11 @@ export default function ProductClient({
   // Option名の検出（Color/Sizeの揺れ対応）
   const detectedColorName = useMemo(() => {
     // 実際のvariantsから存在するColor名を検出
-    for (const variant of product.variants.edges.map(e => e.node)) {
-      const colorOption = variant.selectedOptions?.find(opt => 
-        COLOR_NAME_CANDIDATES.some(candidate => 
-          opt.name.toLowerCase() === candidate.toLowerCase()
-        )
+    for (const variant of product.variants.edges.map((e) => e.node)) {
+      const colorOption = variant.selectedOptions?.find((opt) =>
+        COLOR_NAME_CANDIDATES.some(
+          (candidate) => opt.name.toLowerCase() === candidate.toLowerCase(),
+        ),
       );
       if (colorOption) return colorOption.name; // 実名を返す
     }
@@ -104,11 +103,11 @@ export default function ProductClient({
   }, [product.variants.edges]);
 
   const detectedSizeName = useMemo(() => {
-    for (const variant of product.variants.edges.map(e => e.node)) {
-      const sizeOption = variant.selectedOptions?.find(opt => 
-        SIZE_NAME_CANDIDATES.some(candidate => 
-          opt.name.toLowerCase() === candidate.toLowerCase()
-        )
+    for (const variant of product.variants.edges.map((e) => e.node)) {
+      const sizeOption = variant.selectedOptions?.find((opt) =>
+        SIZE_NAME_CANDIDATES.some(
+          (candidate) => opt.name.toLowerCase() === candidate.toLowerCase(),
+        ),
       );
       if (sizeOption) return sizeOption.name;
     }
@@ -154,47 +153,50 @@ export default function ProductClient({
   // optionTypes の順序を固定: Color+Size商品の場合は [Color, Size, ...rest] の順
   const optionTypes = useMemo(() => {
     const allTypes = Array.from(optionTypesMap.keys());
-    
+
     if (detectedColorName && detectedSizeName) {
       // Color+Size商品の場合、順序を固定
       const ordered: string[] = [];
       const rest: string[] = [];
-      
+
       // Colorを最初に
       if (allTypes.includes(detectedColorName)) {
         ordered.push(detectedColorName);
       }
-      
+
       // Sizeを2番目に
       if (allTypes.includes(detectedSizeName)) {
         ordered.push(detectedSizeName);
       }
-      
+
       // 残りを追加
-      allTypes.forEach(type => {
+      allTypes.forEach((type) => {
         if (type !== detectedColorName && type !== detectedSizeName) {
           rest.push(type);
         }
       });
-      
+
       return [...ordered, ...rest];
     }
-    
+
     // Color+Size商品でない場合は元の順序
     return allTypes;
   }, [optionTypesMap, detectedColorName, detectedSizeName]);
 
   const hasMultipleOptionTypes = optionTypes.length >= 2;
-  const isColorSizeProduct = detectedColorName !== null && detectedSizeName !== null && hasMultipleOptionTypes;
+  const isColorSizeProduct =
+    detectedColorName !== null &&
+    detectedSizeName !== null &&
+    hasMultipleOptionTypes;
 
   // Primary / Secondary の定義
   const primaryOptionName = optionTypes[0] || null;
   const secondaryOptionName = optionTypes[1] || null;
 
   // State管理: selectedOptions（すべてnullで初期化）
-  const [selectedOptions, setSelectedOptions] = useState<Record<string, string | null>>(
-    () => normalizeSelectedOptions(productOptions)
-  );
+  const [selectedOptions, setSelectedOptions] = useState<
+    Record<string, string | null>
+  >(() => normalizeSelectedOptions(productOptions));
 
   // secondaryリセット通知の表示フラグ
   const [secondaryResetNotice, setSecondaryResetNotice] = useState(false);
@@ -210,7 +212,7 @@ export default function ProductClient({
     if (isSingleVariantProduct) {
       return firstVariant;
     }
-    
+
     return findVariantBySelectedOptions(allVariants, selectedOptions);
   }, [selectedOptions, allVariants, isSingleVariantProduct, firstVariant]);
 
@@ -240,7 +242,11 @@ export default function ProductClient({
   }, [selectedVariant, product.compareAtPriceRange]);
 
   const hasDiscount = useMemo(() => {
-    return compareAtPriceValue !== null && compareAtPriceValue > 0 && compareAtPriceValue > price;
+    return (
+      compareAtPriceValue !== null &&
+      compareAtPriceValue > 0 &&
+      compareAtPriceValue > price
+    );
   }, [compareAtPriceValue, price]);
 
   // 在庫数の取得（inventoryがundefinedの場合はnullを返す）
@@ -273,7 +279,7 @@ export default function ProductClient({
         const normalizedImgUrl = normalizeUrl(img.url);
         return normalizedImgUrl === variantImageUrl;
       });
-      
+
       if (imageIndex !== -1) {
         setVariantImageOverride(null);
         setSelectedImage(imageIndex);
@@ -306,17 +312,45 @@ export default function ProductClient({
     }
   };
 
-
   // 選択されたColor/Sizeを取得（nullを許容）
-  const selectedColor = detectedColorName ? selectedOptions[detectedColorName] : null;
-  const selectedSize = detectedSizeName ? selectedOptions[detectedSizeName] : null;
+  const selectedColor = detectedColorName
+    ? selectedOptions[detectedColorName]
+    : null;
+  const selectedSize = detectedSizeName
+    ? selectedOptions[detectedSizeName]
+    : null;
 
-  // useEffect: 画像切り替えのみ（stateの自動リセットはしない）
+  // 画像表示用のvariant: 完全一致があればそれ、なければ選択済みオプションに一致する最初のvariant
+  // 色だけ変更した時点で即座に写真を切り替えるため
+  const variantForImage = useMemo(() => {
+    if (selectedVariant) return selectedVariant;
+    const hasAnySelected = Object.values(selectedOptions).some(
+      (v) => v !== null,
+    );
+    if (!hasAnySelected) return null;
+    return (
+      allVariants.find((variant) => {
+        return Object.entries(selectedOptions).every(
+          ([optionName, optionValue]) => {
+            if (optionValue === null) return true;
+            const variantOption = variant.selectedOptions?.find(
+              (opt) => opt.name === optionName,
+            );
+            return variantOption?.value === optionValue;
+          },
+        );
+      }) ?? null
+    );
+  }, [selectedVariant, selectedOptions, allVariants]);
+
+  // useEffect: 色を変えた時点でvariantの写真を切り替える
   useEffect(() => {
-    if (selectedVariant && selectedVariant.image?.url) {
-      switchToVariantImage(selectedVariant);
+    if (variantForImage?.image?.url) {
+      switchToVariantImage(variantForImage);
+    } else if (variantForImage === null) {
+      setVariantImageOverride(null);
     }
-  }, [selectedVariant?.id]);
+  }, [variantForImage?.id, variantForImage?.image?.url]);
 
   // すべての選択を解除するハンドラ
   const handleClearAllSelections = () => {
@@ -333,14 +367,14 @@ export default function ProductClient({
   // オプション選択ハンドラ
   const handleOptionSelect = (optionType: string, value: string) => {
     const currentValue = selectedOptions[optionType];
-    
+
     // 同じ値がクリックされた場合は解除（nullに戻す）
     if (currentValue === value) {
       const newSelectedOptions: Record<string, string | null> = {
         ...selectedOptions,
         [optionType]: null,
       };
-      
+
       // 選択したオプション以降をクリア
       const currentIndex = optionTypes.indexOf(optionType);
       if (currentIndex !== -1) {
@@ -348,13 +382,13 @@ export default function ProductClient({
           newSelectedOptions[type] = null;
         });
       }
-      
+
       setSelectedOptions(newSelectedOptions);
       setQuantity(1);
       setSecondaryResetNotice(false);
       return;
     }
-    
+
     // 新しい選択を適用（primary変更時のsecondaryリセット処理を含む）
     // オプションが2つ以上ある場合、primary変更時にsecondaryをチェック
     if (hasMultipleOptionTypes && primaryOptionName && secondaryOptionName) {
@@ -366,7 +400,7 @@ export default function ProductClient({
         changedName: optionType,
         nextValue: value,
       });
-      
+
       // 選択したオプション以降をクリア（primary変更時以外も含む）
       const currentIndex = optionTypes.indexOf(optionType);
       if (currentIndex !== -1) {
@@ -376,7 +410,7 @@ export default function ProductClient({
           }
         });
       }
-      
+
       setSelectedOptions(result.nextSelectedOptions);
       setSecondaryResetNotice(result.didResetSecondary);
     } else {
@@ -385,7 +419,7 @@ export default function ProductClient({
         ...selectedOptions,
         [optionType]: value,
       };
-      
+
       // 選択したオプション以降をクリア
       const currentIndex = optionTypes.indexOf(optionType);
       if (currentIndex !== -1) {
@@ -393,11 +427,11 @@ export default function ProductClient({
           newSelectedOptions[type] = null;
         });
       }
-      
+
       setSelectedOptions(newSelectedOptions);
       setSecondaryResetNotice(false);
     }
-    
+
     setQuantity(1);
   };
 
@@ -441,8 +475,12 @@ export default function ProductClient({
 
   // 配送日付レンジを計算
   const getDeliveryDateRange = (): string => {
-    const minDays = product.deliveryMin?.value ? Number(product.deliveryMin.value) : null;
-    const maxDays = product.deliveryMax?.value ? Number(product.deliveryMax.value) : null;
+    const minDays = product.deliveryMin?.value
+      ? Number(product.deliveryMin.value)
+      : null;
+    const maxDays = product.deliveryMax?.value
+      ? Number(product.deliveryMax.value)
+      : null;
 
     const isValidMin = minDays !== null && !isNaN(minDays) && minDays >= 0;
     const isValidMax = maxDays !== null && !isNaN(maxDays) && maxDays >= 0;
@@ -461,7 +499,7 @@ export default function ProductClient({
     const todayUTC = Date.UTC(
       today.getUTCFullYear(),
       today.getUTCMonth(),
-      today.getUTCDate()
+      today.getUTCDate(),
     );
 
     const minDate = new Date(todayUTC + finalMin * 24 * 60 * 60 * 1000);
@@ -479,8 +517,12 @@ export default function ProductClient({
 
   // 配送日数を取得
   const getDeliveryDays = (): string | null => {
-    const minDays = product.deliveryMin?.value ? Number(product.deliveryMin.value) : null;
-    const maxDays = product.deliveryMax?.value ? Number(product.deliveryMax.value) : null;
+    const minDays = product.deliveryMin?.value
+      ? Number(product.deliveryMin.value)
+      : null;
+    const maxDays = product.deliveryMax?.value
+      ? Number(product.deliveryMax.value)
+      : null;
 
     const isValidMin = minDays !== null && !isNaN(minDays) && minDays >= 0;
     const isValidMax = maxDays !== null && !isNaN(maxDays) && maxDays >= 0;
@@ -525,7 +567,7 @@ export default function ProductClient({
 
   const onTouchEnd = () => {
     if (!touchStartX.current || !touchEndX.current) return;
-    
+
     const distance = touchStartX.current - touchEndX.current;
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
@@ -599,7 +641,7 @@ export default function ProductClient({
                   onClick={() => {
                     setVariantImageOverride(null);
                     setSelectedImage(
-                      (prev) => (prev - 1 + images.length) % images.length
+                      (prev) => (prev - 1 + images.length) % images.length,
                     );
                   }}
                   className="hidden xl:flex absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all z-10"
@@ -619,7 +661,7 @@ export default function ProductClient({
                 </button>
               </>
             )}
-            
+
             {/* モバイル用の画像インジケーター */}
             {images.length > 1 && (
               <div className="xl:hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
@@ -707,7 +749,10 @@ export default function ProductClient({
               ))}
             </div>
             <span className="text-sm text-muted-foreground">4.3</span>
-            <a href="#" className="text-sm text-muted-foreground hover:underline">
+            <a
+              href="#"
+              className="text-sm text-muted-foreground hover:underline"
+            >
               (1212)
             </a>
           </div>
@@ -748,27 +793,30 @@ export default function ProductClient({
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {sortOptionValues(
-                        Array.from(optionTypesMap.get(optionType) || [])
+                        Array.from(optionTypesMap.get(optionType) || []),
                       ).map((value) => {
-                        const isValueSelected = selectedOptions[optionType] === value;
+                        const isValueSelected =
+                          selectedOptions[optionType] === value;
                         const isSelectable = isOptionValueSelectable(
                           allVariants,
                           selectedOptions,
                           optionType,
-                          value
+                          value,
                         );
 
                         return (
                           <button
                             key={value}
-                            onClick={() => handleOptionSelect(optionType, value)}
+                            onClick={() =>
+                              handleOptionSelect(optionType, value)
+                            }
                             disabled={!isSelectable}
                             className={cn(
                               "px-4 py-2 rounded-full text-sm font-medium transition-all border",
                               isValueSelected
                                 ? "bg-zinc-800 text-white border-zinc-800"
                                 : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200 hover:border-zinc-300",
-                              !isSelectable && "opacity-50 cursor-not-allowed"
+                              !isSelectable && "opacity-50 cursor-not-allowed",
                             )}
                           >
                             {value}
@@ -779,7 +827,8 @@ export default function ProductClient({
                     {/* Secondaryリセット通知 */}
                     {isSecondary && secondaryResetNotice && (
                       <p className="text-xs text-amber-600 mt-2">
-                        Selected option isn't available for this selection. Please choose again.
+                        Selected option isn't available for this selection.
+                        Please choose again.
                       </p>
                     )}
                   </div>
@@ -822,7 +871,10 @@ export default function ProductClient({
                           onClick={() => {
                             if (canIncrease) {
                               const newQty = quantity + 1;
-                              if (maxQuantity === null || newQty <= maxQuantity) {
+                              if (
+                                maxQuantity === null ||
+                                newQty <= maxQuantity
+                              ) {
                                 setQuantity(newQty);
                               }
                             }
@@ -888,10 +940,10 @@ export default function ProductClient({
                     {ctaState.type === "select_options"
                       ? "SELECT OPTIONS"
                       : ctaState.type === "unavailable"
-                      ? "UNAVAILABLE"
-                      : ctaState.type === "sold_out"
-                      ? "SOLD OUT"
-                      : "SELECT OPTIONS"}
+                        ? "UNAVAILABLE"
+                        : ctaState.type === "sold_out"
+                          ? "SOLD OUT"
+                          : "SELECT OPTIONS"}
                   </Button>
                   <AddToFavoritesButton
                     productId={product.id}
@@ -904,6 +956,48 @@ export default function ProductClient({
                 </>
               )}
             </div>
+
+            {/* 在庫切れ時: 再入荷通知プレースホルダー + 類似商品への導線 */}
+            {productAllSoldOut && (
+              <div className="space-y-4 pt-4 border-t">
+                <div className="text-sm">
+                  <p className="font-medium mb-2">Get restock updates</p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full sm:w-auto"
+                    disabled
+                    title="Coming soon"
+                  >
+                    Notify me when back in stock
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    (Restock notifications coming soon)
+                  </p>
+                </div>
+                {relatedProducts.length > 0 && (
+                  <div className="text-sm">
+                    <p className="font-medium mb-2">You might also like</p>
+                    <p className="text-muted-foreground mb-2">
+                      Similar items that are in stock:
+                    </p>
+                    <ul className="flex flex-wrap gap-2">
+                      {relatedProducts.slice(0, 4).map((rp) => (
+                        <li key={rp.id}>
+                          <Link
+                            href={`/products/${rp.handle}`}
+                            className="text-primary hover:underline font-medium"
+                          >
+                            {rp.title}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* 配送情報 */}
@@ -942,7 +1036,9 @@ export default function ProductClient({
                     {product.descriptionHtml ? (
                       <div
                         className="rte text-sm text-foreground [&_p]:mb-4 [&_p]:leading-relaxed [&_p:last-child]:mb-0 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mb-4 [&_h1]:mt-6 [&_h1:first-child]:mt-0 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mb-3 [&_h2]:mt-5 [&_h2:first-child]:mt-0 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mb-2 [&_h3]:mt-4 [&_h3:first-child]:mt-0 [&_h4]:text-base [&_h4]:font-semibold [&_h4]:mb-2 [&_h4]:mt-3 [&_h4:first-child]:mt-0 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4 [&_ol]:space-y-2 [&_li]:mb-1 [&_a]:text-primary [&_a]:underline [&_a:hover]:opacity-80 [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-4 [&_strong]:font-bold [&_em]:italic [&_blockquote]:border-l-4 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_hr]:my-6 [&_hr]:border-t [&_hr]:border-border"
-                        dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
+                        dangerouslySetInnerHTML={{
+                          __html: product.descriptionHtml,
+                        }}
                       />
                     ) : (
                       <p className="text-sm text-foreground leading-relaxed">
@@ -961,7 +1057,9 @@ export default function ProductClient({
                   {product.descriptionHtml ? (
                     <div
                       className="rte text-sm text-foreground [&_p]:mb-4 [&_p]:leading-relaxed [&_p:last-child]:mb-0 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mb-4 [&_h1]:mt-6 [&_h1:first-child]:mt-0 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mb-3 [&_h2]:mt-5 [&_h2:first-child]:mt-0 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mb-2 [&_h3]:mt-4 [&_h3:first-child]:mt-0 [&_h4]:text-base [&_h4]:font-semibold [&_h4]:mb-2 [&_h4]:mt-3 [&_h4:first-child]:mt-0 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ul]:space-y-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4 [&_ol]:space-y-2 [&_li]:mb-1 [&_a]:text-primary [&_a]:underline [&_a:hover]:opacity-80 [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-4 [&_strong]:font-bold [&_em]:italic [&_blockquote]:border-l-4 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-4 [&_hr]:my-6 [&_hr]:border-t [&_hr]:border-border"
-                      dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
+                      dangerouslySetInnerHTML={{
+                        __html: product.descriptionHtml,
+                      }}
                     />
                   ) : (
                     <p className="text-sm text-foreground leading-relaxed">
@@ -979,7 +1077,7 @@ export default function ProductClient({
               <h3 className="text-sm font-medium mb-4">Made to go with</h3>
               {relatedProducts.map((relatedProduct) => {
                 const relatedPrice = parseFloat(
-                  relatedProduct.priceRange.minVariantPrice.amount
+                  relatedProduct.priceRange.minVariantPrice.amount,
                 );
                 const relatedImage =
                   relatedProduct.featuredImage?.url ||
@@ -987,7 +1085,10 @@ export default function ProductClient({
                   "/placeholder.png";
 
                 return (
-                  <div key={relatedProduct.id} className="flex items-center gap-4">
+                  <div
+                    key={relatedProduct.id}
+                    className="flex items-center gap-4"
+                  >
                     <Link
                       href={`/products/${relatedProduct.handle}`}
                       className="relative w-20 h-20 overflow-hidden rounded-lg border bg-secondary/30 hover:opacity-80 transition-opacity"

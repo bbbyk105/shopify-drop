@@ -1,5 +1,10 @@
+import { unstable_cache } from "next/cache";
 import { shopifyFetch } from "../client";
 import type { Product } from "../types";
+
+const REVALIDATE_PRODUCT = 300;
+const REVALIDATE_LIST = 300;
+const REVALIDATE_SITEMAP = 900;
 
 const PRODUCT_FRAGMENT = /* GraphQL */ `
   fragment ProductFields on Product {
@@ -83,10 +88,10 @@ const PRODUCT_FRAGMENT = /* GraphQL */ `
   }
 `;
 
-// 単一商品取得
-export async function getProductByHandle(
-  handle: string
-): Promise<Product | null> {
+// 単一商品取得の実処理（モジュールスコープで1回だけ定義）
+const _getProductByHandle = async (
+  handle: string,
+): Promise<Product | null> => {
   const query = /* GraphQL */ `
     ${PRODUCT_FRAGMENT}
     query getProduct($handle: String!) {
@@ -95,7 +100,6 @@ export async function getProductByHandle(
       }
     }
   `;
-
   try {
     const data = await shopifyFetch<{ product: Product | null }>(query, {
       handle,
@@ -105,44 +109,63 @@ export async function getProductByHandle(
     console.error(`Error fetching product ${handle}:`, error);
     return null;
   }
+};
+
+// モジュールスコープで1回だけ cached wrapper を生成。キーは引数 handle で統一（Next が引数をキーに含める）
+export const cachedGetProductByHandle = unstable_cache(
+  _getProductByHandle,
+  ["shopify", "productByHandle"],
+  { revalidate: REVALIDATE_PRODUCT },
+);
+
+// 互換維持：既存の getProductByHandle 利用箇所はそのまま動く
+export async function getProductByHandle(
+  handle: string,
+): Promise<Product | null> {
+  return cachedGetProductByHandle(handle);
 }
 
-// コレクション内の商品一覧取得
+// コレクション内の商品一覧取得（unstable_cache で 300s キャッシュ）
 export async function getProductsByCollection(
   handle: string,
-  first: number = 24
+  first: number = 24,
 ): Promise<Product[]> {
-  const query = /* GraphQL */ `
-    ${PRODUCT_FRAGMENT}
-    query getCollectionProducts($handle: String!, $first: Int!) {
-      collection(handle: $handle) {
-        products(first: $first) {
-          edges {
-            node {
-              ...ProductFields
+  const cached = unstable_cache(
+    async (h: string, f: number) => {
+      const query = /* GraphQL */ `
+        ${PRODUCT_FRAGMENT}
+        query getCollectionProducts($handle: String!, $first: Int!) {
+          collection(handle: $handle) {
+            products(first: $first) {
+              edges {
+                node {
+                  ...ProductFields
+                }
+              }
             }
           }
         }
+      `;
+      try {
+        const data = await shopifyFetch<{
+          collection: { products: { edges: { node: Product }[] } } | null;
+        }>(query, { handle: h, first: f });
+        return data.collection?.products?.edges.map((e) => e.node) ?? [];
+      } catch (error) {
+        console.error(`Error fetching collection ${h}:`, error);
+        return [];
       }
-    }
-  `;
-
-  try {
-    const data = await shopifyFetch<{
-      collection: { products: { edges: { node: Product }[] } } | null;
-    }>(query, { handle, first });
-
-    return data.collection?.products?.edges.map((e) => e.node) ?? [];
-  } catch (error) {
-    console.error(`Error fetching collection ${handle}:`, error);
-    return [];
-  }
+    },
+    ["shopify", "collection", handle, String(first)],
+    { revalidate: REVALIDATE_LIST },
+  );
+  return cached(handle, first);
 }
 
 // タグで商品をフィルター
 export async function getProductsByTag(
   tag: string,
-  first: number = 24
+  first: number = 24,
 ): Promise<Product[]> {
   const query = /* GraphQL */ `
     ${PRODUCT_FRAGMENT}
@@ -169,72 +192,163 @@ export async function getProductsByTag(
   }
 }
 
-// 全商品取得（新しい順）
-export async function getAllProducts(first: number = 50): Promise<Product[]> {
+// generateStaticParams 専用：実処理（handle のみ取得、CREATED_AT 降順）
+const _getProductHandlesForStaticParams = async (
+  first: number,
+): Promise<string[]> => {
   const query = /* GraphQL */ `
-    ${PRODUCT_FRAGMENT}
-    query getAllProducts($first: Int!) {
+    query getProductHandlesForStaticParams($first: Int!) {
       products(first: $first, sortKey: CREATED_AT, reverse: true) {
         edges {
           node {
-            ...ProductFields
+            handle
           }
         }
       }
     }
   `;
-
   try {
     const data = await shopifyFetch<{
-      products: { edges: { node: Product }[] };
+      products: { edges: { node: { handle: string } }[] };
     }>(query, { first });
-
-    return data.products?.edges.map((e) => e.node) ?? [];
+    const handles =
+      data.products?.edges.map((e) => e.node.handle).filter(Boolean) ?? [];
+    return handles;
   } catch (error) {
-    console.error("Error fetching all products:", error);
+    console.error("Error fetching product handles for static params:", error);
     return [];
   }
+};
+
+// モジュールスコープで1回だけ cached wrapper を生成（Next が引数 first をキーに含める）
+export const cachedGetProductHandlesForStaticParams = unstable_cache(
+  _getProductHandlesForStaticParams,
+  ["shopify", "productHandlesForStaticParams"],
+  { revalidate: REVALIDATE_LIST },
+);
+
+// 互換維持：既存の getProductHandlesForStaticParams 利用箇所はそのまま動く
+export async function getProductHandlesForStaticParams(
+  first: number = 200,
+): Promise<string[]> {
+  return cachedGetProductHandlesForStaticParams(first);
 }
 
-// 類似商品を取得（同じタグを持つ商品、現在の商品を除く）
+// 全商品取得（新しい順）。unstable_cache で 300s キャッシュ（layout + トップ等の重複を吸収）
+export async function getAllProducts(first: number = 50): Promise<Product[]> {
+  const cached = unstable_cache(
+    async (f: number) => {
+      const query = /* GraphQL */ `
+        ${PRODUCT_FRAGMENT}
+        query getAllProducts($first: Int!) {
+          products(first: $first, sortKey: CREATED_AT, reverse: true) {
+            edges {
+              node {
+                ...ProductFields
+              }
+            }
+          }
+        }
+      `;
+      try {
+        const data = await shopifyFetch<{
+          products: { edges: { node: Product }[] };
+        }>(query, { first: f });
+        return data.products?.edges.map((e) => e.node) ?? [];
+      } catch (error) {
+        console.error("Error fetching all products:", error);
+        return [];
+      }
+    },
+    ["shopify", "allProducts", String(first)],
+    { revalidate: REVALIDATE_LIST },
+  );
+  return cached(first);
+}
+
+// sitemap 専用：250件・900s キャッシュ（sitemap が毎回 Shopify を叩かないようにする）
+export async function getAllProductsForSitemap(): Promise<Product[]> {
+  const cached = unstable_cache(
+    async () => {
+      const query = /* GraphQL */ `
+        ${PRODUCT_FRAGMENT}
+        query getAllProducts($first: Int!) {
+          products(first: $first, sortKey: CREATED_AT, reverse: true) {
+            edges {
+              node {
+                ...ProductFields
+              }
+            }
+          }
+        }
+      `;
+      try {
+        const data = await shopifyFetch<{
+          products: { edges: { node: Product }[] };
+        }>(query, { first: 250 });
+        return data.products?.edges.map((e) => e.node) ?? [];
+      } catch (error) {
+        console.error("Error fetching all products (sitemap):", error);
+        return [];
+      }
+    },
+    ["shopify", "allProductsSitemap"],
+    { revalidate: REVALIDATE_SITEMAP },
+  );
+  return cached();
+}
+
+// 類似商品を取得（同じタグを持つ商品、現在の商品を除く）。unstable_cache で 300s キャッシュ
 export async function getRelatedProducts(
   currentProductId: string,
   tags: string[],
-  limit: number = 4
+  limit: number = 4,
 ): Promise<Product[]> {
   if (tags.length === 0) {
     return [];
   }
 
-  // 最初のタグを使用して類似商品を検索
   const tag = tags[0];
-  const query = /* GraphQL */ `
-    ${PRODUCT_FRAGMENT}
-    query getRelatedProducts($query: String!, $first: Int!) {
-      products(first: $first, query: $query) {
-        edges {
-          node {
-            ...ProductFields
+  const cacheKey = [
+    "shopify",
+    "relatedProducts",
+    currentProductId,
+    tag,
+    String(limit),
+  ];
+
+  const cached = unstable_cache(
+    async (productId: string, tagList: string[], lim: number) => {
+      const t = tagList[0];
+      const query = /* GraphQL */ `
+        ${PRODUCT_FRAGMENT}
+        query getRelatedProducts($query: String!, $first: Int!) {
+          products(first: $first, query: $query) {
+            edges {
+              node {
+                ...ProductFields
+              }
+            }
           }
         }
+      `;
+      try {
+        const data = await shopifyFetch<{
+          products: { edges: { node: Product }[] };
+        }>(query, { query: `tag:${t}`, first: lim + 1 });
+        const relatedProducts =
+          data.products?.edges
+            .map((e) => e.node)
+            .filter((p) => p.id !== productId)
+            .slice(0, lim) ?? [];
+        return relatedProducts;
+      } catch (error) {
+        console.error("Error fetching related products:", error);
+        return [];
       }
-    }
-  `;
-
-  try {
-    const data = await shopifyFetch<{
-      products: { edges: { node: Product }[] };
-    }>(query, { query: `tag:${tag}`, first: limit + 1 });
-
-    // 現在の商品を除外
-    const relatedProducts = data.products?.edges
-      .map((e) => e.node)
-      .filter((p) => p.id !== currentProductId)
-      .slice(0, limit) ?? [];
-
-    return relatedProducts;
-  } catch (error) {
-    console.error("Error fetching related products:", error);
-    return [];
-  }
+    },
+    cacheKey,
+    { revalidate: REVALIDATE_LIST },
+  );
+  return cached(currentProductId, tags, limit);
 }

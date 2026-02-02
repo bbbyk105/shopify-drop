@@ -3,7 +3,7 @@ const adminToken = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN;
 
 export async function shopifyAdminFetch<T>(
   query: string,
-  variables?: Record<string, unknown>
+  variables?: Record<string, unknown>,
 ): Promise<T> {
   if (!adminToken) {
     throw new Error("SHOPIFY_ADMIN_ACCESS_TOKEN is not defined");
@@ -17,7 +17,8 @@ export async function shopifyAdminFetch<T>(
         "X-Shopify-Access-Token": adminToken,
       },
       body: JSON.stringify({ query, variables }),
-      cache: "no-store",
+      // 静的生成を許可するため cache を有効化。在庫は 60s で再検証。
+      next: { revalidate: 60 },
     });
 
     if (!response.ok) {

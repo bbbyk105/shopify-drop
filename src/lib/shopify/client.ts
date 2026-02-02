@@ -24,7 +24,7 @@ export const shopify = new GraphQLClient(endpoint, {
 
 export async function shopifyFetch<T>(
   query: string,
-  variables?: Record<string, unknown>
+  variables?: Record<string, unknown>,
 ): Promise<T> {
   try {
     return await shopify.request<T>(query, variables);

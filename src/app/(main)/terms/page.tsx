@@ -61,6 +61,7 @@ export default function TermsPage() {
             We ship to the United States only. Estimated delivery time is 1–14
             business days, depending on the product.
           </p>
+
           <p className="mt-4">Delivery may be delayed due to:</p>
           <ul className="list-disc pl-6 space-y-2 mt-2">
             <li>Weather, natural disasters, traffic conditions</li>
@@ -270,6 +271,7 @@ export default function TermsPage() {
               only. Items are typically shipped within 1-14 business days after
               order confirmation, depending on the product. For more details,
               please see our{" "}
+
               <a
                 href="/terms#shipping"
                 className="text-primary hover:underline"
