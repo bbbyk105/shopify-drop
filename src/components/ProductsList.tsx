@@ -23,7 +23,7 @@ interface ProductsListProps {
   products: Product[];
   title: string;
   description?: string;
-  /** ページ上部に SeoIntroSection 等で h1 がある場合は "h2" を指定（h1 重複防止） */
+  /** ページ上部に h1 がある場合は "h2" を指定（h1 重複防止） */
   titleLevel?: "h1" | "h2";
   itemsPerPage?: number;
   currentCategory?: string;
@@ -238,7 +238,7 @@ export default function ProductsList({
       if ("variants" in product && product.variants?.edges) {
         product.variants.edges.forEach(({ node }) => {
           const colorOption = node.selectedOptions?.find(
-            (opt) => opt.name.toLowerCase() === "color",
+            (opt) => opt.name.toLowerCase() === "color"
           );
           if (colorOption) {
             colorSet.add(colorOption.value);
@@ -281,7 +281,7 @@ export default function ProductsList({
       if ("variants" in product && product.variants?.edges) {
         product.variants.edges.forEach(({ node }) => {
           const sizeOption = node.selectedOptions?.find(
-            (opt) => opt.name.toLowerCase() === "size",
+            (opt) => opt.name.toLowerCase() === "size"
           );
           if (sizeOption) {
             sizeSet.add(sizeOption.value);
@@ -383,7 +383,7 @@ export default function ProductsList({
         if ("variants" in product && product.variants?.edges) {
           return product.variants.edges.some(({ node }) => {
             const colorOption = node.selectedOptions?.find(
-              (opt) => opt.name.toLowerCase() === "color",
+              (opt) => opt.name.toLowerCase() === "color"
             );
             return colorOption && selectedColors.includes(colorOption.value);
           });
@@ -397,7 +397,7 @@ export default function ProductsList({
       filtered = filtered.filter((product) => {
         if ("tags" in product && Array.isArray(product.tags)) {
           return selectedMaterials.some((material) =>
-            product.tags.includes(material),
+            product.tags.includes(material)
           );
         }
         return false;
@@ -410,7 +410,7 @@ export default function ProductsList({
         if ("variants" in product && product.variants?.edges) {
           return product.variants.edges.some(({ node }) => {
             const sizeOption = node.selectedOptions?.find(
-              (opt) => opt.name.toLowerCase() === "size",
+              (opt) => opt.name.toLowerCase() === "size"
             );
             return sizeOption && selectedSizes.includes(sizeOption.value);
           });
@@ -480,7 +480,7 @@ export default function ProductsList({
             if (node.compareAtPrice) {
               const variantPrice = parseFloat(node.price.amount);
               const variantCompareAtPrice = parseFloat(
-                node.compareAtPrice.amount,
+                node.compareAtPrice.amount
               );
               return variantCompareAtPrice > variantPrice;
             }
@@ -557,7 +557,7 @@ export default function ProductsList({
   const endIndex = startIndex + itemsPerPage;
   const displayedProducts = filteredAndSortedProducts.slice(
     startIndex,
-    endIndex,
+    endIndex
   );
 
   // ソート変更時にページを1にリセット
@@ -582,21 +582,21 @@ export default function ProductsList({
     setSelectedProducts((prev) =>
       prev.includes(product)
         ? prev.filter((p) => p !== product)
-        : [...prev, product],
+        : [...prev, product]
     );
     setCurrentPage(1);
   };
 
   const toggleRoom = (room: string) => {
     setSelectedRooms((prev) =>
-      prev.includes(room) ? prev.filter((r) => r !== room) : [...prev, room],
+      prev.includes(room) ? prev.filter((r) => r !== room) : [...prev, room]
     );
     setCurrentPage(1);
   };
 
   const toggleColor = (color: string) => {
     setSelectedColors((prev) =>
-      prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color],
+      prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]
     );
     setCurrentPage(1);
   };
@@ -605,28 +605,28 @@ export default function ProductsList({
     setSelectedMaterials((prev) =>
       prev.includes(material)
         ? prev.filter((m) => m !== material)
-        : [...prev, material],
+        : [...prev, material]
     );
     setCurrentPage(1);
   };
 
   const toggleSize = (size: string) => {
     setSelectedSizes((prev) =>
-      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size],
+      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
     );
     setCurrentPage(1);
   };
 
   const toggleType = (type: string) => {
     setSelectedTypes((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
     );
     setCurrentPage(1);
   };
 
   const toggleStyle = (style: string) => {
     setSelectedStyles((prev) =>
-      prev.includes(style) ? prev.filter((s) => s !== style) : [...prev, style],
+      prev.includes(style) ? prev.filter((s) => s !== style) : [...prev, style]
     );
     setCurrentPage(1);
   };
@@ -690,7 +690,7 @@ export default function ProductsList({
         image: "/images/entryway.webp",
       },
     ],
-    [],
+    []
   );
 
   return (
@@ -727,14 +727,14 @@ export default function ProductsList({
                       onClick={(e) => {
                         // カテゴリ選択時に水平スクロール位置を保持
                         const container = document.getElementById(
-                          "category-scroll-container",
+                          "category-scroll-container"
                         );
                         if (container) {
                           const scrollLeft = container.scrollLeft;
                           // スクロール位置をsessionStorageに保存
                           sessionStorage.setItem(
                             "categoryScrollPosition",
-                            scrollLeft.toString(),
+                            scrollLeft.toString()
                           );
                         }
                       }}
@@ -762,7 +762,11 @@ export default function ProductsList({
                         ) : null}
                       </div>
                       <span
-                        className={`text-sm font-semibold pr-4 ${isActive ? "text-zinc-900 dark:text-white" : "text-zinc-700 dark:text-zinc-200"}`}
+                        className={`text-sm font-semibold pr-4 ${
+                          isActive
+                            ? "text-zinc-900 dark:text-white"
+                            : "text-zinc-700 dark:text-zinc-200"
+                        }`}
                       >
                         {category.name}
                       </span>
@@ -778,14 +782,14 @@ export default function ProductsList({
                       onClick={(e) => {
                         // カテゴリ選択時に水平スクロール位置を保持
                         const container = document.getElementById(
-                          "category-scroll-container",
+                          "category-scroll-container"
                         );
                         if (container) {
                           const scrollLeft = container.scrollLeft;
                           // スクロール位置をsessionStorageに保存
                           sessionStorage.setItem(
                             "categoryScrollPosition",
-                            scrollLeft.toString(),
+                            scrollLeft.toString()
                           );
                         }
                       }}
@@ -890,10 +894,10 @@ export default function ProductsList({
                             {option === "popularity"
                               ? "Popularity"
                               : option === "price-high"
-                                ? "High - Low Price"
-                                : option === "price-low"
-                                  ? "Low - High Price"
-                                  : "Newest"}
+                              ? "High - Low Price"
+                              : option === "price-low"
+                              ? "Low - High Price"
+                              : "Newest"}
                           </span>
                         </label>
                       ))}
@@ -922,7 +926,7 @@ export default function ProductsList({
                             (p) =>
                               "tags" in p &&
                               Array.isArray(p.tags) &&
-                              p.tags.includes(cat),
+                              p.tags.includes(cat)
                           ).length;
                           return (
                             <label
@@ -1007,7 +1011,7 @@ export default function ProductsList({
                             onChange={(e) => {
                               const value = e.target.value.replace(
                                 /[^0-9]/g,
-                                "",
+                                ""
                               );
                               if (value === "") {
                                 setMinPrice(0);
@@ -1041,7 +1045,7 @@ export default function ProductsList({
                             onChange={(e) => {
                               const value = e.target.value.replace(
                                 /[^0-9]/g,
-                                "",
+                                ""
                               );
                               if (value === "") {
                                 setMaxPrice(10000);
@@ -1087,7 +1091,7 @@ export default function ProductsList({
                             (p) =>
                               "tags" in p &&
                               Array.isArray(p.tags) &&
-                              p.tags.includes(room),
+                              p.tags.includes(room)
                           ).length;
                           return (
                             <label
@@ -1139,7 +1143,7 @@ export default function ProductsList({
                             if ("variants" in p && p.variants?.edges) {
                               return p.variants.edges.some(({ node }) => {
                                 const colorOption = node.selectedOptions?.find(
-                                  (opt) => opt.name.toLowerCase() === "color",
+                                  (opt) => opt.name.toLowerCase() === "color"
                                 );
                                 return (
                                   colorOption && colorOption.value === color
@@ -1197,7 +1201,7 @@ export default function ProductsList({
                             (p) =>
                               "tags" in p &&
                               Array.isArray(p.tags) &&
-                              p.tags.includes(material),
+                              p.tags.includes(material)
                           ).length;
                           return (
                             <label
@@ -1242,7 +1246,7 @@ export default function ProductsList({
                             if ("variants" in p && p.variants?.edges) {
                               return p.variants.edges.some(({ node }) => {
                                 const sizeOption = node.selectedOptions?.find(
-                                  (opt) => opt.name.toLowerCase() === "size",
+                                  (opt) => opt.name.toLowerCase() === "size"
                                 );
                                 return sizeOption && sizeOption.value === size;
                               });
@@ -1299,7 +1303,7 @@ export default function ProductsList({
                             (p) =>
                               "tags" in p &&
                               Array.isArray(p.tags) &&
-                              p.tags.includes(type),
+                              p.tags.includes(type)
                           ).length;
                           return (
                             <label
@@ -1344,7 +1348,7 @@ export default function ProductsList({
                             (p) =>
                               "tags" in p &&
                               Array.isArray(p.tags) &&
-                              p.tags.includes(style),
+                              p.tags.includes(style)
                           ).length;
                           return (
                             <label
@@ -1490,10 +1494,10 @@ export default function ProductsList({
                           {option === "popularity"
                             ? "Popularity"
                             : option === "price-high"
-                              ? "High - Low Price"
-                              : option === "price-low"
-                                ? "Low - High Price"
-                                : "Newest"}
+                            ? "High - Low Price"
+                            : option === "price-low"
+                            ? "Low - High Price"
+                            : "Newest"}
                         </span>
                       </label>
                     ))}
@@ -1522,7 +1526,7 @@ export default function ProductsList({
                           (p) =>
                             "tags" in p &&
                             Array.isArray(p.tags) &&
-                            p.tags.includes(cat),
+                            p.tags.includes(cat)
                         ).length;
                         return (
                           <label
@@ -1679,7 +1683,7 @@ export default function ProductsList({
                           (p) =>
                             "tags" in p &&
                             Array.isArray(p.tags) &&
-                            p.tags.includes(room),
+                            p.tags.includes(room)
                         ).length;
                         return (
                           <label
@@ -1731,7 +1735,7 @@ export default function ProductsList({
                           if ("variants" in p && p.variants?.edges) {
                             return p.variants.edges.some(({ node }) => {
                               const colorOption = node.selectedOptions?.find(
-                                (opt) => opt.name.toLowerCase() === "color",
+                                (opt) => opt.name.toLowerCase() === "color"
                               );
                               return colorOption && colorOption.value === color;
                             });
@@ -1787,7 +1791,7 @@ export default function ProductsList({
                           (p) =>
                             "tags" in p &&
                             Array.isArray(p.tags) &&
-                            p.tags.includes(material),
+                            p.tags.includes(material)
                         ).length;
                         return (
                           <label
@@ -1832,7 +1836,7 @@ export default function ProductsList({
                           if ("variants" in p && p.variants?.edges) {
                             return p.variants.edges.some(({ node }) => {
                               const sizeOption = node.selectedOptions?.find(
-                                (opt) => opt.name.toLowerCase() === "size",
+                                (opt) => opt.name.toLowerCase() === "size"
                               );
                               return sizeOption && sizeOption.value === size;
                             });
@@ -1889,7 +1893,7 @@ export default function ProductsList({
                           (p) =>
                             "tags" in p &&
                             Array.isArray(p.tags) &&
-                            p.tags.includes(type),
+                            p.tags.includes(type)
                         ).length;
                         return (
                           <label
@@ -1934,7 +1938,7 @@ export default function ProductsList({
                           (p) =>
                             "tags" in p &&
                             Array.isArray(p.tags) &&
-                            p.tags.includes(style),
+                            p.tags.includes(style)
                         ).length;
                         return (
                           <label
@@ -2106,7 +2110,7 @@ export default function ProductsList({
                           {page}
                         </Button>
                       );
-                    },
+                    }
                   )}
                 </div>
 
