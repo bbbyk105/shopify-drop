@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/toaster";
+import ChatWidget from "@/components/ChatWidget";
 
 export const metadata: Metadata = {
   title: "Evimeria Home - Illuminate Your World",
@@ -44,6 +45,7 @@ export default function RootLayout({
         <ThemeProvider>
           {children}
           <Toaster />
+          <ChatWidget />
         </ThemeProvider>
       </body>
     </html>

@@ -74,6 +74,38 @@ The contact form requires SMTP configuration. If you're using Gmail, you need to
 
 You can also use other SMTP providers (SendGrid, Mailgun, etc.) by adjusting the `SMTP_HOST`, `SMTP_PORT`, and `SMTP_SECURE` values accordingly.
 
+## チャットボット（OpenAI）
+
+画面右下のチャットウィジェットで、商品・配送・返品などについて質問できます。
+
+### 環境変数
+
+`.env.local` に以下を追加してください。
+
+```env
+OPENAI_API_KEY=sk-xxxx
+OPENAI_MODEL=gpt-4o-mini
+```
+
+- `OPENAI_API_KEY`: OpenAI API キー（必須）
+- `OPENAI_MODEL`: 使用モデル（未設定時は `gpt-4o-mini`）
+- （オプション）RAG 利用時: `OPENAI_VECTOR_STORE_ID` / `OPENAI_ASSISTANT_ID`
+
+### ローカルで動かす手順
+
+1. `.env.example` をコピーして `.env.local` を作成（または既存の `.env.local` に追記）
+2. `OPENAI_API_KEY` と必要に応じて `OPENAI_MODEL` を設定
+3. `npm run dev` で起動
+4. ブラウザで http://localhost:3000 を開く
+5. 画面右下のチャットボタンをクリックしてメッセージを送信
+
+### 動作
+
+- 返品・配送・保証などはガードレールに従い、不確かなことは「確認が必要」と案内し、問い合わせ導線を提示します。
+- 返品したい・返金・クレーム・破損・未着・領収書・請求などのキーワードがあると「担当者が確認します」とお問い合わせリンク（`/contact`）を表示します。
+- レート制限: IP あたり 20 回/分（超過時は丁寧なメッセージを返却）
+- エラー時は「現在混雑しています」等のフォールバック文言を返します。
+
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
