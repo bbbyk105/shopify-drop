@@ -12,7 +12,6 @@ import { buildOrganizationAndWebSite } from "@/lib/seo/schema";
 
 const siteUrl = getSiteUrl();
 
-
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: "Evimeria Home | Evimeria - Illuminate Your World",
@@ -56,7 +55,7 @@ export const metadata: Metadata = {
 
 const organizationAndWebSiteJsonLd = buildOrganizationAndWebSite();
 
-/** @next/third-parties が動かない場合のみ true にすると next/script で GTM を挿入（二重読み込み防止のため片方のみ） */
+/** true にすると next/script で GTM を挿入（@next/third-parties が動かない場合用） */
 const USE_GTM_SCRIPT_FALLBACK =
   process.env.NEXT_PUBLIC_GTM_USE_SCRIPT_FALLBACK === "true";
 
@@ -79,7 +78,7 @@ export default function RootLayout({
       </head>
 
       <body className="antialiased">
-        {/* GTM: envがある時だけ読み込む / fallback=true の時は next/script を使う */}
+        {/* GTM: env がある時だけ読み込む / USE_GTM_SCRIPT_FALLBACK=true の時は next/script のみ */}
         {gtmId ? (
           USE_GTM_SCRIPT_FALLBACK ? (
             <Script id="gtm-init" strategy="afterInteractive">

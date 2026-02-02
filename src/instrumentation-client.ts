@@ -13,7 +13,7 @@ Sentry.init({
   tracesSampleRate: process.env.NODE_ENV === "development" ? 1.0 : 0.05,
   environment: process.env.NODE_ENV,
 
-  beforeSend(event, hint) {
+  beforeSend(event) {
     const url = event.request?.url;
     if (shouldDropEventUrl(url)) return null;
     if (event.request) {
