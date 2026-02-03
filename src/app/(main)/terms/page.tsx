@@ -259,9 +259,15 @@ export default function TermsPage() {
               include applicable taxes. Shipping fees and handling charges are
               displayed separately during checkout.
             </p>
-            <p>
-              <strong>Payment Methods:</strong> Credit card, PayPal
-            </p>
+            <div className="space-y-2">
+              <p>
+                <strong>Payment Methods:</strong> We currently accept major
+                credit cards and supported digital wallets such as Shop Pay and
+                Google Pay. Available payment options may vary depending on your
+                device, location, and checkout conditions. All payments are
+                securely processed via Shopify Checkout.
+              </p>
+            </div>
             <p>
               <strong>Payment Timing:</strong> Payment is processed at the time
               of order placement.
