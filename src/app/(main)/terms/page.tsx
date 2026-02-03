@@ -245,9 +245,9 @@ export default function TermsPage() {
             <p>
               <strong>Business Address:</strong>
               <br />
-              8-21-2, Yoshiwara 2-chome
+              653-1, Denbo
               <br />
-              Fuji City, Shizuoka 417-0051
+              Fuji City, Shizuoka 417-0061
               <br />
               Japan
             </p>
@@ -271,7 +271,6 @@ export default function TermsPage() {
               only. Items are typically shipped within 1-14 business days after
               order confirmation, depending on the product. For more details,
               please see our{" "}
-
               <a
                 href="/terms#shipping"
                 className="text-primary hover:underline"
