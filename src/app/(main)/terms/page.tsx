@@ -245,11 +245,11 @@ export default function TermsPage() {
             <p>
               <strong>Business Address:</strong>
               <br />
-              653-1, Denbo
+              〒417-0061
               <br />
-              Fuji City, Shizuoka 417-0061
+              静岡県富士市伝法653-1
               <br />
-              Japan
+              日本
             </p>
             <p>
               <strong>Contact Email:</strong> info@evimeria105.com
