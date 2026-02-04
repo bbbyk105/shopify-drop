@@ -248,8 +248,6 @@ export default function TermsPage() {
               〒417-0061
               <br />
               静岡県富士市伝法653-1
-              <br />
-              日本
             </p>
             <p>
               <strong>Contact Email:</strong> info@evimeria105.com
