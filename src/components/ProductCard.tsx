@@ -163,12 +163,16 @@ export default function ProductCard({
 
   const isTitleOnly = variant === "titleOnly";
 
-  // 売り切れ判定（Shopify商品のみ。全バリアントが売り切れ or availableForSale=false）
+  // 売り切れ判定（Shopify商品のみ。product.availableForSale=false または全バリアントが売り切れ）
   const isSoldOut =
     isShopifyProduct &&
-    ("availableForSale" in product
-      ? !product.availableForSale
-      : product.variants.edges.every(({ node }) => !node.availableForSale));
+    (() => {
+      const p = product as ShopifyProduct;
+      return (
+        !p.availableForSale ||
+        p.variants.edges.every(({ node }) => !node.availableForSale)
+      );
+    })();
 
   const productId = isShopifyProduct ? product.id : `local-${product.slug}`;
 

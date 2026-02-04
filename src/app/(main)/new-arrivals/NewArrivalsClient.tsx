@@ -10,7 +10,9 @@ interface NewArrivalsClientProps {
   products: Product[];
 }
 
-export default function NewArrivalsClient({ products }: NewArrivalsClientProps) {
+export default function NewArrivalsClient({
+  products,
+}: NewArrivalsClientProps) {
   return (
     <ProductsList
       products={products}
@@ -19,11 +21,9 @@ export default function NewArrivalsClient({ products }: NewArrivalsClientProps) 
       itemsPerPage={8}
       currentCategory="/new-arrivals"
       filterConfig={{
-        showColor: true,
         showMaterial: true,
         showRoom: true,
       }}
     />
   );
 }
-

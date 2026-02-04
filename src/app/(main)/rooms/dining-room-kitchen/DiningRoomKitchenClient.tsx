@@ -21,7 +21,6 @@ export default function DiningRoomKitchenClient({
       itemsPerPage={8}
       currentCategory="/rooms/dining-room-kitchen"
       filterConfig={{
-        showColor: true,
         showMaterial: true,
       }}
     />

@@ -19,7 +19,6 @@ export default function OutdoorClient({ products }: OutdoorClientProps) {
       itemsPerPage={8}
       currentCategory="/rooms/outdoor"
       filterConfig={{
-        showColor: true,
         showMaterial: true,
       }}
     />

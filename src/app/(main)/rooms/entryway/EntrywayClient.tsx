@@ -19,7 +19,6 @@ export default function EntrywayClient({ products }: EntrywayClientProps) {
       itemsPerPage={8}
       currentCategory="/rooms/entryway"
       filterConfig={{
-        showColor: true,
         showMaterial: true,
       }}
     />

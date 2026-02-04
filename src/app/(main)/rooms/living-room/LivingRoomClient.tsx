@@ -19,7 +19,6 @@ export default function LivingRoomClient({ products }: LivingRoomClientProps) {
       itemsPerPage={8}
       currentCategory="/rooms/living-room"
       filterConfig={{
-        showColor: true,
         showMaterial: true,
       }}
     />

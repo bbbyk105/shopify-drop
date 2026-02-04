@@ -19,7 +19,6 @@ export default function ClothingClient({ products }: ClothingClientProps) {
       itemsPerPage={8}
       currentCategory="/clothing"
       filterConfig={{
-        showColor: true,
         showSize: true,
         showType: true,
         showStyle: true,

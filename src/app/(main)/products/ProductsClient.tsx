@@ -21,7 +21,6 @@ export default function ProductsClient({ products }: ProductsClientProps) {
       filterConfig={{
         showProduct: true,
         showRoom: true,
-        showColor: true,
         showMaterial: true,
       }}
     />

@@ -19,7 +19,6 @@ export default function BedroomClient({ products }: BedroomClientProps) {
       itemsPerPage={8}
       currentCategory="/rooms/bedroom"
       filterConfig={{
-        showColor: true,
         showMaterial: true,
       }}
     />

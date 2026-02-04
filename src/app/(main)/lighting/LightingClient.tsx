@@ -20,7 +20,6 @@ export default function LightingClient({ products }: LightingClientProps) {
       itemsPerPage={8}
       currentCategory="/lighting"
       filterConfig={{
-        showColor: true,
         showMaterial: true,
         showRoom: true,
       }}

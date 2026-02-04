@@ -19,7 +19,6 @@ export default function HomeOfficeClient({ products }: HomeOfficeClientProps) {
       itemsPerPage={8}
       currentCategory="/rooms/home-office"
       filterConfig={{
-        showColor: true,
         showMaterial: true,
       }}
     />

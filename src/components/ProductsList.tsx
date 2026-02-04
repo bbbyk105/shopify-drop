@@ -30,7 +30,6 @@ interface ProductsListProps {
   filterConfig?: {
     showProduct?: boolean;
     showRoom?: boolean;
-    showColor?: boolean;
     showMaterial?: boolean;
     showSize?: boolean;
     showType?: boolean;
@@ -47,23 +46,6 @@ interface ProductsListProps {
 type SortOption = "popularity" | "price-high" | "price-low" | "newest";
 
 const ITEMS_PER_PAGE_DEFAULT = 20;
-
-// カラーマップ
-const colorMap: Record<string, string> = {
-  white: "#FFFFFF",
-  black: "#000000",
-  gray: "#808080",
-  grey: "#808080",
-  brown: "#8B4513",
-  red: "#FF0000",
-  blue: "#0000FF",
-  green: "#008000",
-  yellow: "#FFFF00",
-  beige: "#F5F5DC",
-  tan: "#D2B48C",
-  navy: "#000080",
-  cream: "#FFFDD0",
-};
 
 export default function ProductsList({
   products,
@@ -84,7 +66,6 @@ export default function ProductsList({
     product: false,
     price: false,
     room: false,
-    color: false,
     material: false,
     size: false,
     type: false,
@@ -101,7 +82,6 @@ export default function ProductsList({
           product: false,
           price: false,
           room: false,
-          color: false,
           material: false,
           size: false,
           type: false,
@@ -145,13 +125,17 @@ export default function ProductsList({
   // フィルター状態
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
-  const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
+  const PRICE_MAX = 3000;
   const [minPrice, setMinPrice] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(3000);
+  const [maxPrice, setMaxPrice] = useState(PRICE_MAX);
+  const safeMinPrice = Math.min(minPrice, maxPrice);
+  const safeMaxPrice = Math.max(minPrice, maxPrice);
+  const minSliderMax = Math.max(1, maxPrice);
+  const maxSliderMin = Math.min(minPrice, PRICE_MAX - 1);
   const [onSale, setOnSale] = useState(false);
   const [inStock, setInStock] = useState(true);
 
@@ -205,49 +189,6 @@ export default function ProductsList({
     });
     return Array.from(roomSet).sort();
   }, [products, filterConfig.showRoom]);
-
-  const colors = useMemo(() => {
-    if (!filterConfig.showColor) return [];
-    const colorSet = new Set<string>();
-    products.forEach((product) => {
-      if ("tags" in product && Array.isArray(product.tags)) {
-        product.tags.forEach((tag) => {
-          const lower = tag.toLowerCase();
-          if (
-            [
-              "white",
-              "black",
-              "gray",
-              "grey",
-              "brown",
-              "red",
-              "blue",
-              "green",
-              "yellow",
-              "beige",
-              "tan",
-              "navy",
-              "cream",
-            ].includes(lower)
-          ) {
-            colorSet.add(tag);
-          }
-        });
-      }
-      // バリアントからもカラーを抽出
-      if ("variants" in product && product.variants?.edges) {
-        product.variants.edges.forEach(({ node }) => {
-          const colorOption = node.selectedOptions?.find(
-            (opt) => opt.name.toLowerCase() === "color"
-          );
-          if (colorOption) {
-            colorSet.add(colorOption.value);
-          }
-        });
-      }
-    });
-    return Array.from(colorSet).sort();
-  }, [products, filterConfig.showColor]);
 
   const materials = useMemo(() => {
     if (!filterConfig.showMaterial) return [];
@@ -368,25 +309,6 @@ export default function ProductsList({
       filtered = filtered.filter((product) => {
         if ("tags" in product && Array.isArray(product.tags)) {
           return selectedRooms.some((room) => product.tags.includes(room));
-        }
-        return false;
-      });
-    }
-
-    // カラーフィルター
-    if (selectedColors.length > 0) {
-      filtered = filtered.filter((product) => {
-        if ("tags" in product && Array.isArray(product.tags)) {
-          if (selectedColors.some((color) => product.tags.includes(color)))
-            return true;
-        }
-        if ("variants" in product && product.variants?.edges) {
-          return product.variants.edges.some(({ node }) => {
-            const colorOption = node.selectedOptions?.find(
-              (opt) => opt.name.toLowerCase() === "color"
-            );
-            return colorOption && selectedColors.includes(colorOption.value);
-          });
         }
         return false;
       });
@@ -538,7 +460,6 @@ export default function ProductsList({
     sortOption,
     selectedProducts,
     selectedRooms,
-    selectedColors,
     selectedMaterials,
     selectedSizes,
     selectedTypes,
@@ -614,13 +535,6 @@ export default function ProductsList({
   const toggleRoom = (room: string) => {
     setSelectedRooms((prev) =>
       prev.includes(room) ? prev.filter((r) => r !== room) : [...prev, room]
-    );
-    setCurrentPage(1);
-  };
-
-  const toggleColor = (color: string) => {
-    setSelectedColors((prev) =>
-      prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]
     );
     setCurrentPage(1);
   };
@@ -994,33 +908,48 @@ export default function ProductsList({
                         <div
                           className="absolute top-0 h-2 bg-gray-400 rounded-full"
                           style={{
-                            left: `${(minPrice / 3000) * 100}%`,
-                            width: `${((maxPrice - minPrice) / 3000) * 100}%`,
+                            left: `${(safeMinPrice / PRICE_MAX) * 100}%`,
+                            width: `${
+                              ((safeMaxPrice - safeMinPrice) / PRICE_MAX) * 100
+                            }%`,
                           }}
                         ></div>
                         <input
                           type="range"
-                          min="0"
-                          max="3000"
-                          value={minPrice}
+                          min={0}
+                          max={minSliderMax}
+                          value={safeMinPrice}
                           onChange={(e) => {
                             const val = Number(e.target.value);
-                            if (val <= maxPrice) setMinPrice(val);
+                            const newMin = Math.min(val, maxPrice);
+                            setMinPrice(newMin);
+                            if (newMin > maxPrice) setMaxPrice(newMin);
                           }}
-                          className="absolute top-0 w-full h-2 bg-transparent appearance-none cursor-pointer z-10 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-gray-600 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer"
-                          style={{ background: "transparent" }}
+                          className="absolute top-0 left-0 h-2 bg-transparent appearance-none cursor-pointer z-10 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-gray-600 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer"
+                          style={{
+                            width: `${(minSliderMax / PRICE_MAX) * 100}%`,
+                            background: "transparent",
+                          }}
                         />
                         <input
                           type="range"
-                          min="0"
-                          max="3000"
-                          value={maxPrice}
+                          min={maxSliderMin}
+                          max={PRICE_MAX}
+                          value={safeMaxPrice}
                           onChange={(e) => {
                             const val = Number(e.target.value);
-                            if (val >= minPrice) setMaxPrice(val);
+                            const newMax = Math.max(val, minPrice);
+                            setMaxPrice(newMax);
+                            if (newMax < minPrice) setMinPrice(newMax);
                           }}
-                          className="absolute top-0 w-full h-2 bg-transparent appearance-none cursor-pointer z-20 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-gray-600 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer"
-                          style={{ background: "transparent" }}
+                          className="absolute top-0 h-2 bg-transparent appearance-none cursor-pointer z-20 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-gray-600 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer"
+                          style={{
+                            left: `${(maxSliderMin / PRICE_MAX) * 100}%`,
+                            width: `${
+                              ((PRICE_MAX - maxSliderMin) / PRICE_MAX) * 100
+                            }%`,
+                            background: "transparent",
+                          }}
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -1031,7 +960,7 @@ export default function ProductsList({
                           <Input
                             type="text"
                             inputMode="numeric"
-                            value={minPrice === 0 ? "" : minPrice.toString()}
+                            value={minPrice.toString()}
                             onChange={(e) => {
                               const value = e.target.value.replace(
                                 /[^0-9]/g,
@@ -1040,16 +969,13 @@ export default function ProductsList({
                               if (value === "") {
                                 setMinPrice(0);
                               } else {
-                                const num = Number(value);
-                                if (num <= maxPrice && num <= 3000) {
-                                  setMinPrice(num);
-                                }
+                                const num = Math.min(Number(value), PRICE_MAX);
+                                setMinPrice(num);
+                                if (num > maxPrice) setMaxPrice(num);
                               }
                             }}
-                            onBlur={(e) => {
-                              if (e.target.value === "") {
-                                setMinPrice(0);
-                              }
+                            onBlur={() => {
+                              if (minPrice > maxPrice) setMaxPrice(minPrice);
                             }}
                             placeholder="0"
                             className="pl-7 w-full"
@@ -1063,27 +989,24 @@ export default function ProductsList({
                           <Input
                             type="text"
                             inputMode="numeric"
-                            value={maxPrice === 3000 ? "" : maxPrice.toString()}
+                            value={maxPrice.toString()}
                             onChange={(e) => {
                               const value = e.target.value.replace(
                                 /[^0-9]/g,
                                 ""
                               );
                               if (value === "") {
-                                setMaxPrice(3000);
+                                setMaxPrice(PRICE_MAX);
                               } else {
-                                const num = Number(value);
-                                if (num >= minPrice && num <= 3000) {
-                                  setMaxPrice(num);
-                                }
+                                const num = Math.min(Number(value), PRICE_MAX);
+                                setMaxPrice(num);
+                                if (num < minPrice) setMinPrice(num);
                               }
                             }}
-                            onBlur={(e) => {
-                              if (e.target.value === "") {
-                                setMaxPrice(3000);
-                              }
+                            onBlur={() => {
+                              if (maxPrice < minPrice) setMinPrice(maxPrice);
                             }}
-                            placeholder="3000"
+                            placeholder={PRICE_MAX.toString()}
                             className="pl-7 w-full"
                           />
                         </div>
@@ -1128,71 +1051,6 @@ export default function ProductsList({
                               />
                               <span className="text-sm">
                                 {room} ({count})
-                              </span>
-                            </label>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Color */}
-                {filterConfig.showColor && colors.length > 0 && (
-                  <div className="border-b pb-4">
-                    <button
-                      onClick={() => toggleFilter("color")}
-                      className="flex items-center justify-between w-full text-base font-medium mb-4"
-                    >
-                      <span>Color</span>
-                      {expandedFilters.color ? (
-                        <Minus className="h-4 w-4" />
-                      ) : (
-                        <Plus className="h-4 w-4" />
-                      )}
-                    </button>
-                    {expandedFilters.color && (
-                      <div className="space-y-2">
-                        {colors.map((color) => {
-                          const count = products.filter((p) => {
-                            if (
-                              "tags" in p &&
-                              Array.isArray(p.tags) &&
-                              p.tags.includes(color)
-                            ) {
-                              return true;
-                            }
-                            if ("variants" in p && p.variants?.edges) {
-                              return p.variants.edges.some(({ node }) => {
-                                const colorOption = node.selectedOptions?.find(
-                                  (opt) => opt.name.toLowerCase() === "color"
-                                );
-                                return (
-                                  colorOption && colorOption.value === color
-                                );
-                              });
-                            }
-                            return false;
-                          }).length;
-                          const colorKey = color.toLowerCase();
-                          const colorValue = colorMap[colorKey] || "#808080";
-                          return (
-                            <label
-                              key={color}
-                              className="flex items-center gap-2 cursor-pointer"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={selectedColors.includes(color)}
-                                onChange={() => toggleColor(color)}
-                                className="w-4 h-4"
-                              />
-                              <div
-                                className="w-4 h-4 rounded-full border border-border"
-                                style={{ backgroundColor: colorValue }}
-                              />
-                              <span className="text-sm">
-                                {color} ({count})
                               </span>
                             </label>
                           );
@@ -1594,33 +1452,48 @@ export default function ProductsList({
                       <div
                         className="absolute top-0 h-2 bg-gray-400 rounded-full"
                         style={{
-                          left: `${(minPrice / 3000) * 100}%`,
-                          width: `${((maxPrice - minPrice) / 3000) * 100}%`,
+                          left: `${(safeMinPrice / PRICE_MAX) * 100}%`,
+                          width: `${
+                            ((safeMaxPrice - safeMinPrice) / PRICE_MAX) * 100
+                          }%`,
                         }}
                       ></div>
                       <input
                         type="range"
-                        min="0"
-                        max="3000"
-                        value={minPrice}
+                        min={0}
+                        max={minSliderMax}
+                        value={safeMinPrice}
                         onChange={(e) => {
                           const val = Number(e.target.value);
-                          if (val <= maxPrice) setMinPrice(val);
+                          const newMin = Math.min(val, maxPrice);
+                          setMinPrice(newMin);
+                          if (newMin > maxPrice) setMaxPrice(newMin);
                         }}
-                        className="absolute top-0 w-full h-2 bg-transparent appearance-none cursor-pointer z-10 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-gray-600 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer"
-                        style={{ background: "transparent" }}
+                        className="absolute top-0 left-0 h-2 bg-transparent appearance-none cursor-pointer z-10 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-gray-600 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer"
+                        style={{
+                          width: `${(minSliderMax / PRICE_MAX) * 100}%`,
+                          background: "transparent",
+                        }}
                       />
                       <input
                         type="range"
-                        min="0"
-                        max="3000"
-                        value={maxPrice}
+                        min={maxSliderMin}
+                        max={PRICE_MAX}
+                        value={safeMaxPrice}
                         onChange={(e) => {
                           const val = Number(e.target.value);
-                          if (val >= minPrice) setMaxPrice(val);
+                          const newMax = Math.max(val, minPrice);
+                          setMaxPrice(newMax);
+                          if (newMax < minPrice) setMinPrice(newMax);
                         }}
-                        className="absolute top-0 w-full h-2 bg-transparent appearance-none cursor-pointer z-20 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-gray-600 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer"
-                        style={{ background: "transparent" }}
+                        className="absolute top-0 h-2 bg-transparent appearance-none cursor-pointer z-20 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-gray-600 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer"
+                        style={{
+                          left: `${(maxSliderMin / PRICE_MAX) * 100}%`,
+                          width: `${
+                            ((PRICE_MAX - maxSliderMin) / PRICE_MAX) * 100
+                          }%`,
+                          background: "transparent",
+                        }}
                       />
                     </div>
                     <div className="flex items-center gap-2">
@@ -1631,22 +1504,19 @@ export default function ProductsList({
                         <Input
                           type="text"
                           inputMode="numeric"
-                          value={minPrice === 0 ? "" : minPrice.toString()}
+                          value={minPrice.toString()}
                           onChange={(e) => {
                             const value = e.target.value.replace(/[^0-9]/g, "");
                             if (value === "") {
                               setMinPrice(0);
                             } else {
-                              const num = Number(value);
-                              if (num <= maxPrice && num <= 3000) {
-                                setMinPrice(num);
-                              }
+                              const num = Math.min(Number(value), PRICE_MAX);
+                              setMinPrice(num);
+                              if (num > maxPrice) setMaxPrice(num);
                             }
                           }}
-                          onBlur={(e) => {
-                            if (e.target.value === "") {
-                              setMinPrice(0);
-                            }
+                          onBlur={() => {
+                            if (minPrice > maxPrice) setMaxPrice(minPrice);
                           }}
                           placeholder="0"
                           className="pl-7 w-full"
@@ -1660,24 +1530,21 @@ export default function ProductsList({
                         <Input
                           type="text"
                           inputMode="numeric"
-                          value={maxPrice === 3000 ? "" : maxPrice.toString()}
+                          value={maxPrice.toString()}
                           onChange={(e) => {
                             const value = e.target.value.replace(/[^0-9]/g, "");
                             if (value === "") {
-                              setMaxPrice(3000);
+                              setMaxPrice(PRICE_MAX);
                             } else {
-                              const num = Number(value);
-                              if (num >= minPrice && num <= 3000) {
-                                setMaxPrice(num);
-                              }
+                              const num = Math.min(Number(value), PRICE_MAX);
+                              setMaxPrice(num);
+                              if (num < minPrice) setMinPrice(num);
                             }
                           }}
-                          onBlur={(e) => {
-                            if (e.target.value === "") {
-                              setMaxPrice(3000);
-                            }
+                          onBlur={() => {
+                            if (maxPrice < minPrice) setMinPrice(maxPrice);
                           }}
-                          placeholder="3000"
+                          placeholder={PRICE_MAX.toString()}
                           className="pl-7 w-full"
                         />
                       </div>
@@ -1722,69 +1589,6 @@ export default function ProductsList({
                             />
                             <span className="text-sm">
                               {room} ({count})
-                            </span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Color */}
-              {filterConfig.showColor && colors.length > 0 && (
-                <div className="border-b pb-4">
-                  <button
-                    onClick={() => toggleFilter("color")}
-                    className="flex items-center justify-between w-full text-base font-medium mb-4"
-                  >
-                    <span>Color</span>
-                    {expandedFilters.color ? (
-                      <Minus className="h-4 w-4" />
-                    ) : (
-                      <Plus className="h-4 w-4" />
-                    )}
-                  </button>
-                  {expandedFilters.color && (
-                    <div className="space-y-2">
-                      {colors.map((color) => {
-                        const count = products.filter((p) => {
-                          if (
-                            "tags" in p &&
-                            Array.isArray(p.tags) &&
-                            p.tags.includes(color)
-                          ) {
-                            return true;
-                          }
-                          if ("variants" in p && p.variants?.edges) {
-                            return p.variants.edges.some(({ node }) => {
-                              const colorOption = node.selectedOptions?.find(
-                                (opt) => opt.name.toLowerCase() === "color"
-                              );
-                              return colorOption && colorOption.value === color;
-                            });
-                          }
-                          return false;
-                        }).length;
-                        const colorKey = color.toLowerCase();
-                        const colorValue = colorMap[colorKey] || "#808080";
-                        return (
-                          <label
-                            key={color}
-                            className="flex items-center gap-2 cursor-pointer"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={selectedColors.includes(color)}
-                              onChange={() => toggleColor(color)}
-                              className="w-4 h-4"
-                            />
-                            <div
-                              className="w-4 h-4 rounded-full border border-border"
-                              style={{ backgroundColor: colorValue }}
-                            />
-                            <span className="text-sm">
-                              {color} ({count})
                             </span>
                           </label>
                         );
