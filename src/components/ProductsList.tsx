@@ -151,7 +151,7 @@ export default function ProductsList({
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
   const [minPrice, setMinPrice] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(10000);
+  const [maxPrice, setMaxPrice] = useState(3000);
   const [onSale, setOnSale] = useState(false);
   const [inStock, setInStock] = useState(true);
 
@@ -994,14 +994,14 @@ export default function ProductsList({
                         <div
                           className="absolute top-0 h-2 bg-gray-400 rounded-full"
                           style={{
-                            left: `${(minPrice / 10000) * 100}%`,
-                            width: `${((maxPrice - minPrice) / 10000) * 100}%`,
+                            left: `${(minPrice / 3000) * 100}%`,
+                            width: `${((maxPrice - minPrice) / 3000) * 100}%`,
                           }}
                         ></div>
                         <input
                           type="range"
                           min="0"
-                          max="10000"
+                          max="3000"
                           value={minPrice}
                           onChange={(e) => {
                             const val = Number(e.target.value);
@@ -1013,7 +1013,7 @@ export default function ProductsList({
                         <input
                           type="range"
                           min="0"
-                          max="10000"
+                          max="3000"
                           value={maxPrice}
                           onChange={(e) => {
                             const val = Number(e.target.value);
@@ -1041,7 +1041,7 @@ export default function ProductsList({
                                 setMinPrice(0);
                               } else {
                                 const num = Number(value);
-                                if (num <= maxPrice && num <= 10000) {
+                                if (num <= maxPrice && num <= 3000) {
                                   setMinPrice(num);
                                 }
                               }
@@ -1063,29 +1063,27 @@ export default function ProductsList({
                           <Input
                             type="text"
                             inputMode="numeric"
-                            value={
-                              maxPrice === 10000 ? "" : maxPrice.toString()
-                            }
+                            value={maxPrice === 3000 ? "" : maxPrice.toString()}
                             onChange={(e) => {
                               const value = e.target.value.replace(
                                 /[^0-9]/g,
                                 ""
                               );
                               if (value === "") {
-                                setMaxPrice(10000);
+                                setMaxPrice(3000);
                               } else {
                                 const num = Number(value);
-                                if (num >= minPrice && num <= 10000) {
+                                if (num >= minPrice && num <= 3000) {
                                   setMaxPrice(num);
                                 }
                               }
                             }}
                             onBlur={(e) => {
                               if (e.target.value === "") {
-                                setMaxPrice(10000);
+                                setMaxPrice(3000);
                               }
                             }}
-                            placeholder="8000"
+                            placeholder="3000"
                             className="pl-7 w-full"
                           />
                         </div>
@@ -1596,14 +1594,14 @@ export default function ProductsList({
                       <div
                         className="absolute top-0 h-2 bg-gray-400 rounded-full"
                         style={{
-                          left: `${(minPrice / 10000) * 100}%`,
-                          width: `${((maxPrice - minPrice) / 10000) * 100}%`,
+                          left: `${(minPrice / 3000) * 100}%`,
+                          width: `${((maxPrice - minPrice) / 3000) * 100}%`,
                         }}
                       ></div>
                       <input
                         type="range"
                         min="0"
-                        max="10000"
+                        max="3000"
                         value={minPrice}
                         onChange={(e) => {
                           const val = Number(e.target.value);
@@ -1615,7 +1613,7 @@ export default function ProductsList({
                       <input
                         type="range"
                         min="0"
-                        max="10000"
+                        max="3000"
                         value={maxPrice}
                         onChange={(e) => {
                           const val = Number(e.target.value);
@@ -1640,7 +1638,7 @@ export default function ProductsList({
                               setMinPrice(0);
                             } else {
                               const num = Number(value);
-                              if (num <= maxPrice && num <= 10000) {
+                              if (num <= maxPrice && num <= 3000) {
                                 setMinPrice(num);
                               }
                             }
@@ -1662,24 +1660,24 @@ export default function ProductsList({
                         <Input
                           type="text"
                           inputMode="numeric"
-                          value={maxPrice === 10000 ? "" : maxPrice.toString()}
+                          value={maxPrice === 3000 ? "" : maxPrice.toString()}
                           onChange={(e) => {
                             const value = e.target.value.replace(/[^0-9]/g, "");
                             if (value === "") {
-                              setMaxPrice(10000);
+                              setMaxPrice(3000);
                             } else {
                               const num = Number(value);
-                              if (num >= minPrice && num <= 10000) {
+                              if (num >= minPrice && num <= 3000) {
                                 setMaxPrice(num);
                               }
                             }
                           }}
                           onBlur={(e) => {
                             if (e.target.value === "") {
-                              setMaxPrice(10000);
+                              setMaxPrice(3000);
                             }
                           }}
-                          placeholder="8000"
+                          placeholder="3000"
                           className="pl-7 w-full"
                         />
                       </div>
