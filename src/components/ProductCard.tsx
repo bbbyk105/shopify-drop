@@ -37,12 +37,12 @@ export default function ProductCard({
   const description = isShopifyProduct
     ? product.description
     : product.description;
-  
+
   // バリエーションオプションを抽出（Shopify商品のみ）
   // Colorを優先、Colorがない場合は最初に見つかったオプションタイプを使用
   const variantOptions: VariantOption[] = [];
   let targetOptionName: string | null = null;
-  
+
   if (isShopifyProduct) {
     // まずColorオプションを探す
     for (const { node } of product.variants.edges) {
@@ -58,7 +58,7 @@ export default function ProductCard({
         break;
       }
     }
-    
+
     // Colorが見つからない場合は、最初のオプションタイプを使用
     if (!targetOptionName && product.variants.edges.length > 0) {
       const firstOption = product.variants.edges[0]?.node.selectedOptions?.[0];
@@ -66,16 +66,19 @@ export default function ProductCard({
         targetOptionName = firstOption.name;
       }
     }
-    
+
     // 対象オプションタイプのバリエーションを抽出
     if (targetOptionName) {
-      const optionMap = new Map<string, { imageUrl: string; variantId: string }>();
-      
+      const optionMap = new Map<
+        string,
+        { imageUrl: string; variantId: string }
+      >();
+
       product.variants.edges.forEach(({ node }) => {
         const option = node.selectedOptions?.find(
           (opt) => opt.name === targetOptionName
         );
-        
+
         if (option) {
           const optionValue = option.value;
           // まだこの値が登録されていない、または画像がある場合は更新
@@ -91,7 +94,7 @@ export default function ProductCard({
           }
         }
       });
-      
+
       optionMap.forEach((value, optionValue) => {
         variantOptions.push({
           optionName: targetOptionName!,
@@ -102,21 +105,23 @@ export default function ProductCard({
       });
     }
   }
-  
+
   // 1枚目の画像
   const firstImage = isShopifyProduct
     ? product.featuredImage?.url ||
       product.images.edges[0]?.node.url ||
       "/placeholder.png"
     : product.image;
-  
+
   // 2枚目の画像（ホバー時に表示）
   const secondImage = isShopifyProduct
     ? product.images.edges[1]?.node.url ||
       product.images.edges[0]?.node.url ||
       "/placeholder.png"
-    : (product.images && product.images.length > 1 ? product.images[1] : product.image);
-  
+    : product.images && product.images.length > 1
+    ? product.images[1]
+    : product.image;
+
   // 表示する画像を決定
   let displayImage = firstImage;
   const activeOption = hoveredOption ?? selectedOption;
@@ -126,28 +131,44 @@ export default function ProductCard({
 
   // ホバーされたオプションの画像を優先表示
   if (hoveredOption && variantOptions.length > 0) {
-    const hoveredVariant = variantOptions.find((vo) => vo.optionValue === hoveredOption);
+    const hoveredVariant = variantOptions.find(
+      (vo) => vo.optionValue === hoveredOption
+    );
     if (hoveredVariant) {
       displayImage = hoveredVariant.imageUrl;
     }
-  } 
+  }
   // 選択されたオプションの画像を表示
   else if (selectedOption && variantOptions.length > 0) {
-    const selectedVariant = variantOptions.find((vo) => vo.optionValue === selectedOption);
+    const selectedVariant = variantOptions.find(
+      (vo) => vo.optionValue === selectedOption
+    );
     if (selectedVariant) {
       displayImage = selectedVariant.imageUrl;
     }
-  } 
+  }
   // 通常のホバー時は2枚目の画像
-  else if (!suppressSecondImage && isHovered && secondImage && secondImage !== firstImage) {
+  else if (
+    !suppressSecondImage &&
+    isHovered &&
+    secondImage &&
+    secondImage !== firstImage
+  ) {
     displayImage = secondImage;
   }
-  
+
   const price = isShopifyProduct
     ? parseFloat(product.priceRange.minVariantPrice.amount)
     : product.price;
 
   const isTitleOnly = variant === "titleOnly";
+
+  // 売り切れ判定（Shopify商品のみ。全バリアントが売り切れ or availableForSale=false）
+  const isSoldOut =
+    isShopifyProduct &&
+    ("availableForSale" in product
+      ? !product.availableForSale
+      : product.variants.edges.every(({ node }) => !node.availableForSale));
 
   const productId = isShopifyProduct ? product.id : `local-${product.slug}`;
 
@@ -212,9 +233,10 @@ export default function ProductCard({
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   };
 
-  const imageBgColor = activeOption && targetOptionName?.toLowerCase().includes("color")
-    ? hexToRgba(getColorValue(activeOption), 0.10)
-    : undefined;
+  const imageBgColor =
+    activeOption && targetOptionName?.toLowerCase().includes("color")
+      ? hexToRgba(getColorValue(activeOption), 0.1)
+      : undefined;
 
   return (
     <div className="group flex flex-col">
@@ -241,6 +263,15 @@ export default function ProductCard({
                 isHovered ? "opacity-100" : "opacity-0"
               }`}
             />
+            {/* 売り切れバッジ */}
+            {isSoldOut && (
+              <div
+                className="absolute top-2 left-2 z-10 rounded-md bg-foreground/90 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-background"
+                aria-hidden
+              >
+                Sold Out
+              </div>
+            )}
             {/* お気に入りボタン */}
             <div
               className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
@@ -265,7 +296,7 @@ export default function ProductCard({
             </h3>
             {/* バリエーションオプションスウォッチ */}
             {variantOptions.length > 0 && (
-              <div 
+              <div
                 className="mb-3 min-h-8 shrink-0 overflow-x-auto pt-1"
                 onMouseEnter={() => setIsSwatchAreaHovered(true)}
                 onMouseLeave={() => setIsSwatchAreaHovered(false)}
@@ -276,13 +307,16 @@ export default function ProductCard({
               >
                 <div className="flex gap-2 items-center justify-start px-1">
                   {variantOptions.map((variantOption) => {
-                    const isSelected = selectedOption === variantOption.optionValue;
-                    const isHovered = hoveredOption === variantOption.optionValue;
-                    const isColorOption = targetOptionName?.toLowerCase().includes("color") || 
-                                        targetOptionName?.toLowerCase().includes("colour") ||
-                                        targetOptionName?.toLowerCase().includes("カラー") ||
-                                        targetOptionName?.toLowerCase().includes("色");
-                    
+                    const isSelected =
+                      selectedOption === variantOption.optionValue;
+                    const isHovered =
+                      hoveredOption === variantOption.optionValue;
+                    const isColorOption =
+                      targetOptionName?.toLowerCase().includes("color") ||
+                      targetOptionName?.toLowerCase().includes("colour") ||
+                      targetOptionName?.toLowerCase().includes("カラー") ||
+                      targetOptionName?.toLowerCase().includes("色");
+
                     return (
                       <button
                         key={variantOption.variantId}
@@ -293,7 +327,9 @@ export default function ProductCard({
                             ? "border-foreground scale-110"
                             : "border-border hover:border-foreground/50"
                         }`}
-                        onMouseEnter={() => setHoveredOption(variantOption.optionValue)}
+                        onMouseEnter={() =>
+                          setHoveredOption(variantOption.optionValue)
+                        }
                         onMouseLeave={() => setHoveredOption(null)}
                         onClick={(e) => {
                           e.preventDefault();
@@ -308,7 +344,11 @@ export default function ProductCard({
                           <span
                             aria-hidden
                             className="absolute inset-0"
-                            style={{ backgroundColor: getColorValue(variantOption.optionValue) }}
+                            style={{
+                              backgroundColor: getColorValue(
+                                variantOption.optionValue
+                              ),
+                            }}
                           />
                         )}
                         <Image

@@ -551,6 +551,30 @@ export default function ProductsList({
     filterConfig.customFilters,
   ]);
 
+  // セール中の商品が1件以上あるか
+  const hasProductsOnSale = useMemo(() => {
+    return products.some((product) => {
+      if ("priceRange" in product) {
+        const price = parseFloat(product.priceRange.minVariantPrice.amount);
+        const compareAtPrice = product.compareAtPriceRange?.minVariantPrice
+          ? parseFloat(product.compareAtPriceRange.minVariantPrice.amount)
+          : null;
+        if (compareAtPrice != null && compareAtPrice > price) return true;
+        return product.variants.edges.some(({ node }) => {
+          if (node.compareAtPrice) {
+            const variantPrice = parseFloat(node.price.amount);
+            const variantCompareAtPrice = parseFloat(
+              node.compareAtPrice.amount
+            );
+            return variantCompareAtPrice > variantPrice;
+          }
+          return false;
+        });
+      }
+      return false;
+    });
+  }, [products]);
+
   // ページネーション計算
   const totalPages = Math.ceil(filteredAndSortedProducts.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -1416,20 +1440,22 @@ export default function ProductsList({
                   </div>
                 ))}
 
-                {/* Sale */}
-                <div className="border-b pb-4">
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={onSale}
-                        onChange={(e) => setOnSale(e.target.checked)}
-                        className="w-4 h-4"
-                      />
-                      <span className="text-sm">On Sale</span>
-                    </label>
+                {/* Sale - セール中の商品がある場合のみ表示 */}
+                {hasProductsOnSale && (
+                  <div className="border-b pb-4">
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={onSale}
+                          onChange={(e) => setOnSale(e.target.checked)}
+                          className="w-4 h-4"
+                        />
+                        <span className="text-sm">On Sale</span>
+                      </label>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Availability */}
                 <div className="border-b pb-4">
@@ -2006,20 +2032,22 @@ export default function ProductsList({
                 </div>
               ))}
 
-              {/* Sale */}
-              <div className="border-b pb-4">
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={onSale}
-                      onChange={(e) => setOnSale(e.target.checked)}
-                      className="w-4 h-4"
-                    />
-                    <span className="text-sm">On Sale</span>
-                  </label>
+              {/* Sale - セール中の商品がある場合のみ表示 */}
+              {hasProductsOnSale && (
+                <div className="border-b pb-4">
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={onSale}
+                        onChange={(e) => setOnSale(e.target.checked)}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm">On Sale</span>
+                    </label>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Availability */}
               <div className="border-b pb-4">
