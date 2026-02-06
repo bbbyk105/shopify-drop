@@ -5,8 +5,13 @@ import ShopByRoom from "@/components/home/ShopByRoom";
 import PromotionalTwoColumn from "@/components/home/PromotionalTwoColumn";
 import Section from "@/components/home/Section";
 import { products } from "@/lib/products";
-import { getAllProducts } from "@/lib/shopify/queries/products";
+import {
+  getAllProducts,
+  getProductsByCollection,
+  getProductsByTag,
+} from "@/lib/shopify/queries/products";
 import type { Product as ShopifyProduct } from "@/lib/shopify/types";
+import type { Product as LocalProduct } from "@/types";
 
 /** ISR: 180秒で再検証。トップは更新頻度をやや高めに。 */
 export const revalidate = 180;
@@ -24,29 +29,41 @@ export default async function HomePage() {
   const allProducts = shopifyProducts.length > 0 ? shopifyProducts : products;
 
   // New Arrivals: 最新商品として最大8件まで表示
-  // ShopifyのAPIは新しい順（CREATED_AT DESC）で返すため、最初の8件が最新
-  // 新しい商品が追加されると、9件目以降は表示されないため、古い商品から順に消える
   const newArrivals = allProducts.slice(0, 8);
 
-  // Best Sellers: 「bestseller」系タグが付いている商品を最大8件
-  const bestSellers = allProducts
-    .filter((product) => {
-      const tags: string[] =
-        "tags" in product && Array.isArray((product as ShopifyProduct).tags)
-          ? (product as ShopifyProduct).tags
-          : [];
-      return tags.some((tag) => {
-        const lower = tag.toLowerCase();
-        return [
-          "bestseller",
-          "best-seller",
-          "best seller",
-          "top-seller",
-          "top seller",
-        ].includes(lower);
-      });
-    })
-    .slice(0, 8);
+  // Top Sellers: ①「Best-Seller」コレクション → ②タグでAPI検索（bestseller, best-seller, best seller, top-seller, top seller）
+  // ※getAllProducts(20)の絞り込みではなく、Shopifyのタグ検索APIで直接取得
+  const BESTSELLER_TAGS = [
+    "bestseller",
+    "best-seller",
+    "best seller",
+    "top-seller",
+    "top seller",
+  ];
+  let bestSellers: Array<ShopifyProduct | LocalProduct> = [];
+  try {
+    bestSellers = await getProductsByCollection("Best-Seller", 8);
+  } catch (error) {
+    console.error("Failed to fetch Best-Seller collection:", error);
+  }
+  if (bestSellers.length === 0) {
+    const seen = new Set<string>();
+    for (const tag of BESTSELLER_TAGS) {
+      try {
+        const items = await getProductsByTag(tag, 8);
+        for (const p of items) {
+          if (!seen.has(p.id)) {
+            seen.add(p.id);
+            bestSellers.push(p);
+            if (bestSellers.length >= 8) break;
+          }
+        }
+      } catch {
+        // タグが存在しない場合はスキップ
+      }
+      if (bestSellers.length >= 8) break;
+    }
+  }
 
   return (
     <div>
