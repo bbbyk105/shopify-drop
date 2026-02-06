@@ -29,6 +29,10 @@ const CART_FIELDS = /* GraphQL */ `
                 amount
                 currencyCode
               }
+              image {
+                url
+                altText
+              }
               product {
                 handle
                 title

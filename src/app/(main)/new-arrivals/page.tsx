@@ -15,21 +15,21 @@ export const metadata: Metadata = buildPageMeta(
 export const revalidate = 600;
 
 export default async function NewArrivalsPage() {
-  // Shopifyから商品を取得（フォールバックとしてローカル商品も使用）
+  // Shopifyから商品を取得（在庫ありの最新8件。多めに取得して在庫で絞ってから8件に）
   let shopifyProducts: ShopifyProduct[] = [];
   try {
-    shopifyProducts = await getAllProducts(50);
+    shopifyProducts = await getAllProducts(24);
   } catch (error) {
     console.error("Failed to fetch Shopify products:", error);
   }
 
-  // Shopify商品があればそれを使用、なければローカル商品を使用
+  // Shopify商品があればそれを使用、なければローカル商品
   const allProducts = shopifyProducts.length > 0 ? shopifyProducts : products;
-
-  // New Arrivals: 新しい商品から左から順に表示
-  // ShopifyのAPIは新しい順（CREATED_AT DESC）で返すため、そのまま使用
-  // 配列の最初が最新商品、最後が最古商品
-  const newProducts = allProducts;
+  // 在庫ありに絞ってから先頭8件（ProductsListの「在庫あり」フィルターで1件消えないようにする）
+  const inStockProducts = allProducts.filter(
+    (p) => !("availableForSale" in p) || p.availableForSale !== false
+  );
+  const newProducts = inStockProducts.slice(0, 8);
 
   return <NewArrivalsClient products={newProducts} />;
 }

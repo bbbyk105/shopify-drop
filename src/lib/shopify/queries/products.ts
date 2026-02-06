@@ -89,9 +89,7 @@ const PRODUCT_FRAGMENT = /* GraphQL */ `
 `;
 
 // 単一商品取得の実処理（モジュールスコープで1回だけ定義）
-const _getProductByHandle = async (
-  handle: string,
-): Promise<Product | null> => {
+const _getProductByHandle = async (handle: string): Promise<Product | null> => {
   const query = /* GraphQL */ `
     ${PRODUCT_FRAGMENT}
     query getProduct($handle: String!) {
@@ -115,12 +113,12 @@ const _getProductByHandle = async (
 export const cachedGetProductByHandle = unstable_cache(
   _getProductByHandle,
   ["shopify", "productByHandle"],
-  { revalidate: REVALIDATE_PRODUCT },
+  { revalidate: REVALIDATE_PRODUCT }
 );
 
 // 互換維持：既存の getProductByHandle 利用箇所はそのまま動く
 export async function getProductByHandle(
-  handle: string,
+  handle: string
 ): Promise<Product | null> {
   return cachedGetProductByHandle(handle);
 }
@@ -128,7 +126,7 @@ export async function getProductByHandle(
 // コレクション内の商品一覧取得（unstable_cache で 300s キャッシュ）
 export async function getProductsByCollection(
   handle: string,
-  first: number = 24,
+  first: number = 24
 ): Promise<Product[]> {
   const cached = unstable_cache(
     async (h: string, f: number) => {
@@ -157,7 +155,7 @@ export async function getProductsByCollection(
       }
     },
     ["shopify", "collection", handle, String(first)],
-    { revalidate: REVALIDATE_LIST },
+    { revalidate: REVALIDATE_LIST }
   );
   return cached(handle, first);
 }
@@ -165,7 +163,7 @@ export async function getProductsByCollection(
 // タグで商品をフィルター
 export async function getProductsByTag(
   tag: string,
-  first: number = 24,
+  first: number = 24
 ): Promise<Product[]> {
   const query = /* GraphQL */ `
     ${PRODUCT_FRAGMENT}
@@ -194,7 +192,7 @@ export async function getProductsByTag(
 
 // generateStaticParams 専用：実処理（handle のみ取得、CREATED_AT 降順）
 const _getProductHandlesForStaticParams = async (
-  first: number,
+  first: number
 ): Promise<string[]> => {
   const query = /* GraphQL */ `
     query getProductHandlesForStaticParams($first: Int!) {
@@ -224,12 +222,12 @@ const _getProductHandlesForStaticParams = async (
 export const cachedGetProductHandlesForStaticParams = unstable_cache(
   _getProductHandlesForStaticParams,
   ["shopify", "productHandlesForStaticParams"],
-  { revalidate: REVALIDATE_LIST },
+  { revalidate: REVALIDATE_LIST }
 );
 
 // 互換維持：既存の getProductHandlesForStaticParams 利用箇所はそのまま動く
 export async function getProductHandlesForStaticParams(
-  first: number = 200,
+  first: number = 200
 ): Promise<string[]> {
   return cachedGetProductHandlesForStaticParams(first);
 }
@@ -261,7 +259,7 @@ export async function getAllProducts(first: number = 50): Promise<Product[]> {
       }
     },
     ["shopify", "allProducts", String(first)],
-    { revalidate: REVALIDATE_LIST },
+    { revalidate: REVALIDATE_LIST }
   );
   return cached(first);
 }
@@ -293,7 +291,7 @@ export async function getAllProductsForSitemap(): Promise<Product[]> {
       }
     },
     ["shopify", "allProductsSitemap"],
-    { revalidate: REVALIDATE_SITEMAP },
+    { revalidate: REVALIDATE_SITEMAP }
   );
   return cached();
 }
@@ -302,7 +300,7 @@ export async function getAllProductsForSitemap(): Promise<Product[]> {
 export async function getRelatedProducts(
   currentProductId: string,
   tags: string[],
-  limit: number = 4,
+  limit: number = 4
 ): Promise<Product[]> {
   if (tags.length === 0) {
     return [];
@@ -348,7 +346,7 @@ export async function getRelatedProducts(
       }
     },
     cacheKey,
-    { revalidate: REVALIDATE_LIST },
+    { revalidate: REVALIDATE_LIST }
   );
   return cached(currentProductId, tags, limit);
 }

@@ -8,7 +8,7 @@ import { buildPageMeta } from "@/lib/seo/meta";
 export const metadata: Metadata = buildPageMeta(
   "All Products - Evimeria Home",
   "Browse our complete collection of premium furniture and home decor.",
-  "products",
+  "products"
 );
 
 /** ISR: 600秒で再検証。カテゴリ一覧。 */

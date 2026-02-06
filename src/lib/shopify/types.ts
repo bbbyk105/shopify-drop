@@ -91,6 +91,10 @@ export type CartLine = {
   merchandise: {
     id: string;
     title: string;
+    image?: {
+      url: string;
+      altText?: string | null;
+    } | null;
     product: {
       handle: string;
       title: string;

@@ -116,13 +116,16 @@ export default function CartPage() {
                 key={node.id}
                 className="flex gap-3 md:gap-4 p-3 md:p-4 border rounded-lg bg-card"
               >
-                {/* 商品画像 - 常に小さく表示 */}
-                {node.merchandise.product.featuredImage && (
+                {/* 商品画像 - バリアント画像があればそれ、なければ商品の featuredImage */}
+                {(node.merchandise.image ?? node.merchandise.product.featuredImage) && (
                   <div className="relative w-20 h-20 md:w-24 md:h-24 shrink-0">
                     <Image
-                      src={node.merchandise.product.featuredImage.url}
+                      src={
+                        (node.merchandise.image ?? node.merchandise.product.featuredImage)!.url
+                      }
                       alt={
-                        node.merchandise.product.featuredImage.altText ||
+                        node.merchandise.image?.altText ??
+                        node.merchandise.product.featuredImage?.altText ??
                         node.merchandise.product.title
                       }
                       fill
@@ -269,14 +272,17 @@ export default function CartPage() {
                           your cart? This action cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
-                      {node.merchandise.product.featuredImage && (
+                      {(node.merchandise.image ?? node.merchandise.product.featuredImage) && (
                         <div className="flex justify-center my-4">
                           <div className="relative h-24 w-24 overflow-hidden rounded-md border bg-secondary">
                             <Image
-                              src={node.merchandise.product.featuredImage.url}
+                              src={
+                                (node.merchandise.image ?? node.merchandise.product.featuredImage)!.url
+                              }
                               alt={
-                                node.merchandise.product.featuredImage
-                                  .altText || node.merchandise.product.title
+                                node.merchandise.image?.altText ??
+                                node.merchandise.product.featuredImage?.altText ??
+                                node.merchandise.product.title
                               }
                               fill
                               className="object-cover"

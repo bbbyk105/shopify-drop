@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createCart, addLines, updateLineQty, removeLines } from "@/lib/shopify/mutations/cart";
 import { getCart } from "@/lib/shopify/queries/cart";
+import { getVariantsInventory } from "@/lib/shopify/queries/inventory";
 
 // カート操作（作成、追加、更新、削除）
 export async function POST(request: NextRequest) {
@@ -20,6 +21,33 @@ export async function POST(request: NextRequest) {
             { error: "cartId and lines are required" },
             { status: 400 }
           );
+        }
+        // 売り切れ・在庫不足の場合は追加させない（本番でカートに追加されるのを防ぐ）
+        const variantIds = (lines as { merchandiseId: string; quantity: number }[]).map(
+          (line) => line.merchandiseId
+        );
+        const inventory = await getVariantsInventory(variantIds);
+        for (const line of lines as { merchandiseId: string; quantity: number }[]) {
+          const available = inventory[line.merchandiseId];
+          if (available === undefined) {
+            // 在庫取得に失敗した場合は安全のため拒否
+            return NextResponse.json(
+              { error: "Unable to verify stock. Please try again." },
+              { status: 400 }
+            );
+          }
+          if (available <= 0) {
+            return NextResponse.json(
+              { error: "This item is currently sold out." },
+              { status: 400 }
+            );
+          }
+          if (line.quantity > available) {
+            return NextResponse.json(
+              { error: `Only ${available} item(s) available for this variant.` },
+              { status: 400 }
+            );
+          }
         }
         const addResult = await addLines(cartId, lines);
         return NextResponse.json(addResult);

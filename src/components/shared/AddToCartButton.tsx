@@ -13,6 +13,8 @@ interface AddToCartButtonProps {
   children?: React.ReactNode;
   productName?: string;
   productImage?: string;
+  /**  false のときはボタンを無効化し、カート追加を行わない（売り切れ対策） */
+  availableForSale?: boolean;
 }
 
 export default function AddToCartButton({
@@ -22,6 +24,7 @@ export default function AddToCartButton({
   children,
   productName,
   productImage,
+  availableForSale = true,
 }: AddToCartButtonProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
@@ -29,7 +32,8 @@ export default function AddToCartButton({
   const { toast } = useToast();
 
   const handleAddToCart = async () => {
-    // すでにdisabledならreturn
+    // 売り切れ・無効時は追加しない（スマホ本番などで誤って追加されるのを防ぐ）
+    if (!availableForSale) return;
     if (isAdding || justAdded) return;
 
     setIsAdding(true);
@@ -67,7 +71,7 @@ export default function AddToCartButton({
   return (
     <Button
       onClick={handleAddToCart}
-      disabled={isAdding || justAdded}
+      disabled={!availableForSale || isAdding || justAdded}
       className={className}
     >
       {isAdding ? (

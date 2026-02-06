@@ -895,6 +895,7 @@ export default function ProductClient({
                     className="flex-1 bg-slate-900 hover:bg-slate-800 text-white h-12 font-semibold uppercase"
                     productName={product.title}
                     productImage={images[selectedImage]?.url || images[0]?.url}
+                    availableForSale={isPurchasable(selectedVariant, inventory)}
                   >
                     ADD TO CART
                   </AddToCartButton>
