@@ -50,7 +50,7 @@ function loadStoredChat(): {
 function saveStoredChat(
   messages: Message[],
   handoff: boolean,
-  sources: Source[]
+  sources: Source[],
 ) {
   if (typeof window === "undefined") return;
   try {
@@ -61,7 +61,7 @@ function saveStoredChat(
         handoff,
         sources,
         savedAt: Date.now(),
-      })
+      }),
     );
   } catch {
     // ignore
@@ -111,7 +111,7 @@ function renderMessageContent(content: string) {
           className="underline text-primary hover:no-underline"
         >
           {linkText}
-        </a>
+        </a>,
       );
       lastIndex = i + full.length;
     });
@@ -136,7 +136,7 @@ function renderMessageContent(content: string) {
           className="underline text-primary hover:no-underline"
         >
           {url}
-        </a>
+        </a>,
       );
       lastIndex = i + raw.length;
     });
@@ -160,9 +160,18 @@ export default function ChatWidget() {
   const [typewriterLength, setTypewriterLength] = useState(0);
   const typewriterTargetRef = useRef<number>(0);
   const typewriterIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
-    null
+    null,
   );
   const animateNextAssistantRef = useRef(false);
+
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () =>
+      setIsMobile(typeof window !== "undefined" && window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   // Typewriter: animate the last assistant message character by character (only when we just received a reply).
   useEffect(() => {
@@ -300,6 +309,8 @@ export default function ChatWidget() {
     send();
   };
 
+  if (isMobile) return null;
+
   return (
     <>
       <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2">
@@ -307,7 +318,7 @@ export default function ChatWidget() {
           <div
             className={cn(
               "flex w-[min(100vw-2rem,380px)] flex-col rounded-lg border border-border bg-background shadow-lg",
-              "max-h-[min(70vh,520px)]"
+              "max-h-[min(70vh,520px)]",
             )}
             aria-label="Chat"
           >
@@ -358,7 +369,7 @@ export default function ChatWidget() {
                       "rounded-lg text-sm",
                       m.role === "user"
                         ? "ml-auto w-fit max-w-[85%] bg-primary text-primary-foreground px-1.5 py-0.5"
-                        : "mr-auto max-w-[85%] bg-muted text-foreground px-3 py-2"
+                        : "mr-auto max-w-[85%] bg-muted text-foreground px-3 py-2",
                     )}
                   >
                     <span className="whitespace-pre-wrap break-words">

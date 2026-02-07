@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useCart } from "@/hooks/useCart";
+import { useCartAddedDrawer, type RelatedProductItem } from "@/hooks/useCartAddedDrawer";
 import { Button } from "@/components/ui/button";
 import { Check, ShoppingCart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -13,8 +14,18 @@ interface AddToCartButtonProps {
   children?: React.ReactNode;
   productName?: string;
   productImage?: string;
-  /**  false のときはボタンを無効化し、カート追加を行わない（売り切れ対策） */
+  /** Variant display name for cart drawer e.g. "Basket, White, 25x26x18 cm" */
+  variantTitle?: string;
+  /** Unit price; required to show the cart added drawer */
+  price?: number;
+  /** Related products to show in the drawer (e.g. from product page) */
+  relatedProducts?: RelatedProductItem[];
+  /** When false, button is disabled and add to cart is skipped */
   availableForSale?: boolean;
+  /** When true, only render children in default state (no cart icon + text); for icon-only buttons */
+  iconOnly?: boolean;
+  /** When false, do not open the cart drawer on add (e.g. when adding from inside the drawer); show toast only */
+  openDrawerOnAdd?: boolean;
 }
 
 export default function AddToCartButton({
@@ -24,15 +35,27 @@ export default function AddToCartButton({
   children,
   productName,
   productImage,
+  variantTitle,
+  price,
+  relatedProducts = [],
   availableForSale = true,
+  iconOnly = false,
+  openDrawerOnAdd = true,
 }: AddToCartButtonProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
   const add = useCart((state) => state.add);
+  const openDrawer = useCartAddedDrawer((s) => s.open);
   const { toast } = useToast();
 
+  const showDrawer =
+    openDrawerOnAdd &&
+    productName &&
+    productImage &&
+    price !== undefined &&
+    price !== null;
+
   const handleAddToCart = async () => {
-    // 売り切れ・無効時は追加しない（スマホ本番などで誤って追加されるのを防ぐ）
     if (!availableForSale) return;
     if (isAdding || justAdded) return;
 
@@ -41,14 +64,25 @@ export default function AddToCartButton({
       await add(variantId, quantity);
       setJustAdded(true);
 
-      // Toast通知を表示
-      toast({
-        variant: "success",
-        title: "Added to Cart",
-        description: productName || "Item added to cart",
-        productImage,
-        productName,
-      });
+      if (showDrawer) {
+        openDrawer({
+          product: {
+            productName,
+            productImage,
+            variantTitle,
+            price,
+          },
+          relatedProducts,
+        });
+      } else {
+        toast({
+          variant: "success",
+          title: "Added to Cart",
+          description: productName || "Item added to cart",
+          productImage,
+          productName,
+        });
+      }
 
       // 2秒後に「Added」状態をリセット
       setTimeout(() => {
@@ -59,7 +93,8 @@ export default function AddToCartButton({
       toast({
         variant: "destructive",
         title: "Error",
-        description: "This item may have just sold out. Please reselect options.",
+        description:
+          "This item may have just sold out. Please reselect options.",
         productImage,
         productName,
       });
@@ -75,15 +110,25 @@ export default function AddToCartButton({
       className={className}
     >
       {isAdding ? (
+        iconOnly ? (
+          <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" aria-hidden />
+        ) : (
         <>
           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
           Adding...
         </>
+        )
       ) : justAdded ? (
+        iconOnly ? (
+          <Check className="h-5 w-5" aria-hidden />
+        ) : (
         <>
           <Check className="w-5 h-5 mr-2" />
           Added to Cart!
         </>
+        )
+      ) : iconOnly ? (
+        children
       ) : (
         <>
           <ShoppingCart className="w-5 h-5 mr-2" />

@@ -4,6 +4,7 @@ import "./globals.css";
 import { GoogleTagManager } from "@next/third-parties/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/toaster";
+import CartAddedDrawer from "@/components/CartAddedDrawer";
 
 import ChatWidget from "@/components/ChatWidget";
 
@@ -96,6 +97,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <ThemeProvider>
           {children}
           <Toaster />
+          <CartAddedDrawer />
           <ChatWidget />
         </ThemeProvider>
       </body>

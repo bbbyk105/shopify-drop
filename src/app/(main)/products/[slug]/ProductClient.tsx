@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import AddToCartButton from "@/components/shared/AddToCartButton";
+import type { RelatedProductItem } from "@/hooks/useCartAddedDrawer";
 import AddToFavoritesButton from "@/components/shared/AddToFavoritesButton";
 import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -83,9 +84,27 @@ export default function ProductClient({
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
+  // Sticky CTA bar: show only when inline CTA has scrolled out of view (mobile)
+  const ctaRef = useRef<HTMLDivElement>(null);
+  const [showStickyCta, setShowStickyCta] = useState(false);
+
   // クライアントマウント後に詳細（Accordion）を表示
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // Show sticky CTA bar only when inline CTA is out of view (scrolled down)
+  useEffect(() => {
+    const el = ctaRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowStickyCta(!entry.isIntersecting);
+      },
+      { threshold: 0, rootMargin: "0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   // Option名の検出（Color/Sizeの揺れ対応）
@@ -260,6 +279,33 @@ export default function ProductClient({
   const productAllSoldOut = useMemo(() => {
     return product.variants.edges.every(({ node }) => !node.availableForSale);
   }, [product.variants.edges]);
+
+  // Map related products for cart added drawer
+  const drawerRelatedProducts = useMemo((): RelatedProductItem[] => {
+    return relatedProducts
+      .slice(0, 4)
+      .map((p) => {
+        const firstVariant = p.variants.edges[0]?.node;
+        const variantTitle = firstVariant?.selectedOptions
+          ?.map((o) => o.value)
+          .join(", ");
+        const imageUrl =
+          p.featuredImage?.url ||
+          p.images.edges[0]?.node.url ||
+          "/placeholder.png";
+        const price = parseFloat(p.priceRange.minVariantPrice.amount);
+        return {
+          id: p.id,
+          title: p.title,
+          handle: p.handle,
+          imageUrl,
+          price,
+          variantId: firstVariant?.id ?? "",
+          variantTitle,
+        };
+      })
+      .filter((item) => item.variantId !== "");
+  }, [relatedProducts]);
 
   // URL正規化関数
   const normalizeUrl = (url: string): string => {
@@ -583,8 +629,65 @@ export default function ProductClient({
     }
   };
 
+  // Sticky CTA block for mobile (same as inline CTA)
+  const stickyCta = (
+    <div className="flex items-center gap-3 w-full">
+      {ctaState.type === "add_to_cart" && selectedVariant ? (
+        <>
+          <AddToCartButton
+            variantId={selectedVariant.id}
+            quantity={quantity}
+            className="flex-1 bg-slate-900 hover:bg-slate-800 text-white h-12 font-semibold uppercase"
+            productName={product.title}
+            productImage={images[selectedImage]?.url || images[0]?.url}
+            variantTitle={selectedVariant.selectedOptions
+              ?.map((o) => o.value)
+              .join(", ")}
+            price={price}
+            relatedProducts={drawerRelatedProducts}
+            availableForSale={isPurchasable(selectedVariant, inventory)}
+          >
+            ADD TO CART
+          </AddToCartButton>
+          <AddToFavoritesButton
+            productId={product.id}
+            productName={product.title}
+            productImage={images[selectedImage]?.url || images[0]?.url}
+            variant="icon"
+            size="lg"
+            className="h-12 w-12 shrink-0"
+          />
+        </>
+      ) : (
+        <>
+          <Button
+            disabled={ctaState.disabled}
+            size="lg"
+            className="flex-1 h-12 font-semibold uppercase"
+          >
+            {ctaState.type === "select_options"
+              ? "SELECT OPTIONS"
+              : ctaState.type === "unavailable"
+              ? "UNAVAILABLE"
+              : ctaState.type === "sold_out"
+              ? "SOLD OUT"
+              : "SELECT OPTIONS"}
+          </Button>
+          <AddToFavoritesButton
+            productId={product.id}
+            productName={product.title}
+            productImage={images[selectedImage]?.url || images[0]?.url}
+            variant="icon"
+            size="lg"
+            className="h-12 w-12 shrink-0"
+          />
+        </>
+      )}
+    </div>
+  );
+
   return (
-    <div className="bg-background">
+    <div className="bg-background pb-24 md:pb-0">
       {/* Product Section */}
       <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_1fr] gap-8 xl:gap-12 mb-12 xl:mb-16">
         {/* Images - Left Side */}
@@ -885,54 +988,9 @@ export default function ProductClient({
               </div>
             )}
 
-            {/* カートに追加ボタン */}
-            <div className="flex items-center gap-3">
-              {ctaState.type === "add_to_cart" && selectedVariant ? (
-                <>
-                  <AddToCartButton
-                    variantId={selectedVariant.id}
-                    quantity={quantity}
-                    className="flex-1 bg-slate-900 hover:bg-slate-800 text-white h-12 font-semibold uppercase"
-                    productName={product.title}
-                    productImage={images[selectedImage]?.url || images[0]?.url}
-                    availableForSale={isPurchasable(selectedVariant, inventory)}
-                  >
-                    ADD TO CART
-                  </AddToCartButton>
-                  <AddToFavoritesButton
-                    productId={product.id}
-                    productName={product.title}
-                    productImage={images[selectedImage]?.url || images[0]?.url}
-                    variant="icon"
-                    size="lg"
-                    className="h-12 w-12"
-                  />
-                </>
-              ) : (
-                <>
-                  <Button
-                    disabled={ctaState.disabled}
-                    size="lg"
-                    className="flex-1 h-12 font-semibold uppercase"
-                  >
-                    {ctaState.type === "select_options"
-                      ? "SELECT OPTIONS"
-                      : ctaState.type === "unavailable"
-                      ? "UNAVAILABLE"
-                      : ctaState.type === "sold_out"
-                      ? "SOLD OUT"
-                      : "SELECT OPTIONS"}
-                  </Button>
-                  <AddToFavoritesButton
-                    productId={product.id}
-                    productName={product.title}
-                    productImage={images[selectedImage]?.url || images[0]?.url}
-                    variant="icon"
-                    size="lg"
-                    className="h-12 w-12"
-                  />
-                </>
-              )}
+            {/* Add to Cart / CTA - inline (desktop + mobile in flow) */}
+            <div ref={ctaRef} className="flex items-center gap-3 md:flex">
+              {stickyCta}
             </div>
 
             {/* 在庫切れ時: 再入荷通知プレースホルダー + 類似商品への導線 */}
@@ -1096,6 +1154,17 @@ export default function ProductClient({
             </div>
           )}
         </div>
+      </div>
+
+      {/* Sticky Add to Cart bar - mobile only, visible when inline CTA is scrolled out of view */}
+      <div
+        className={cn(
+          "fixed bottom-0 left-0 right-0 z-40 border-t bg-background px-3 pt-3 md:hidden transition-transform duration-300 ease-out",
+          showStickyCta ? "translate-y-0" : "translate-y-full pointer-events-none"
+        )}
+        style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+      >
+        {stickyCta}
       </div>
     </div>
   );
