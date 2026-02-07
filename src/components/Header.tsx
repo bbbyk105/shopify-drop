@@ -1,7 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { Search, Heart, ShoppingCart, Sun, Moon, Menu, X, HelpCircle, Phone, MessageCircle, Info } from "lucide-react";
+import {
+  Search,
+  Heart,
+  ShoppingCart,
+  Sun,
+  Moon,
+  Menu,
+  X,
+  HelpCircle,
+  Phone,
+  Info,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
@@ -15,6 +26,8 @@ interface HeaderProps {
 export default function Header({ hasSale = true }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMenuClosing, setIsMenuClosing] = useState(false);
+  const [isMenuSlideIn, setIsMenuSlideIn] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const cart = useCart((state) => state.cart);
@@ -68,18 +81,34 @@ export default function Header({ hasSale = true }: HeaderProps) {
   // ハンバーガーメニューが開いている時、背景のスクロールを無効化
   useEffect(() => {
     if (isMobileMenuOpen) {
-      // メニューが開いている時は背景のスクロールを無効化
       document.body.style.overflow = "hidden";
     } else {
-      // メニューが閉じている時はスクロールを有効化
       document.body.style.overflow = "";
     }
-
-    // クリーンアップ
     return () => {
       document.body.style.overflow = "";
     };
   }, [isMobileMenuOpen]);
+
+  // 開く時: マウント後にスライドインを発火
+  useEffect(() => {
+    if (isMobileMenuOpen && !isMenuClosing) {
+      const id = requestAnimationFrame(() => setIsMenuSlideIn(true));
+      return () => cancelAnimationFrame(id);
+    }
+    if (!isMobileMenuOpen) {
+      setIsMenuSlideIn(false);
+    }
+  }, [isMobileMenuOpen, isMenuClosing]);
+
+  const closeMobileMenu = () => {
+    setIsMenuClosing(true);
+    setIsMenuSlideIn(false);
+    setTimeout(() => {
+      setIsMobileMenuOpen(false);
+      setIsMenuClosing(false);
+    }, 300);
+  };
 
   return (
     <>
@@ -94,13 +123,23 @@ export default function Header({ hasSale = true }: HeaderProps) {
             {/* Logo - Left */}
             <Link href="/" className="flex items-center shrink-0 group">
               <span className="text-xl md:text-2xl font-semibold tracking-wide">
-                <span className="text-[#E1F244] group-hover:text-[#E1F244]/80 transition-colors">EVIMERÍA</span>
-                <span className={`${theme === "dark" ? "text-white" : "text-[#020B20]"} group-hover:opacity-80 transition-colors`}> home</span>
+                <span className="text-[#E1F244] group-hover:text-[#E1F244]/80 transition-colors">
+                  EVIMERÍA
+                </span>
+                <span
+                  className={`${theme === "dark" ? "text-white" : "text-[#020B20]"} group-hover:opacity-80 transition-colors`}
+                >
+                  {" "}
+                  home
+                </span>
               </span>
             </Link>
 
             {/* Search Bar - Center (Desktop) */}
-            <form onSubmit={handleSearch} className="flex flex-1 max-w-2xl mx-4">
+            <form
+              onSubmit={handleSearch}
+              className="flex flex-1 max-w-2xl mx-4"
+            >
               <div className="relative w-full">
                 <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -162,10 +201,18 @@ export default function Header({ hasSale = true }: HeaderProps) {
             </Button>
 
             {/* Logo - Center */}
-            <Link href="/" className="flex items-center absolute left-1/2 -translate-x-1/2 pointer-events-auto z-10 max-w-[calc(100%-180px)]">
+            <Link
+              href="/"
+              className="flex items-center absolute left-1/2 -translate-x-1/2 pointer-events-auto z-10 max-w-[calc(100%-180px)]"
+            >
               <span className="text-xs font-semibold tracking-tight whitespace-nowrap">
                 <span className="text-[#E1F244]">EVIMERÍA</span>
-                <span className={`${theme === "dark" ? "text-white" : "text-[#020B20]"}`}> home</span>
+                <span
+                  className={`${theme === "dark" ? "text-white" : "text-[#020B20]"}`}
+                >
+                  {" "}
+                  home
+                </span>
               </span>
             </Link>
 
@@ -185,12 +232,20 @@ export default function Header({ hasSale = true }: HeaderProps) {
                 )}
               </Button>
               <Link href={"/favorite"}>
-                <Button variant="ghost" size="icon" className="h-7 w-7 p-0 min-w-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 p-0 min-w-0"
+                >
                   <Heart className="h-4 w-4 text-foreground" />
                 </Button>
               </Link>
               <Link href={"/cart"} className="relative">
-                <Button variant="ghost" size="icon" className="h-7 w-7 p-0 min-w-0 relative">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 p-0 min-w-0 relative"
+                >
                   <ShoppingCart className="h-4 w-4 text-foreground" />
                   <span
                     className={`absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground ${
@@ -220,7 +275,7 @@ export default function Header({ hasSale = true }: HeaderProps) {
             </form>
           </div>
 
-          {/* Secondary Navigation Bar: All Links (Desktop) */}
+          {/* Secondary Navigation Bar: ProductsListのcategoryFilters順に合わせる */}
           <nav className="hidden md:flex items-center h-12 border-t border-border/40 space-x-6 overflow-x-auto">
             <Link
               href="/"
@@ -241,26 +296,6 @@ export default function Header({ hasSale = true }: HeaderProps) {
               New Arrivals
             </Link>
             <Link
-              href="/lighting"
-              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
-            >
-              Lighting
-            </Link>
-            <Link
-              href="/clothing"
-              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
-            >
-              Clothing
-            </Link>
-            {hasSale && (
-              <Link
-                href="/sale"
-                className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
-              >
-                Sale
-              </Link>
-            )}
-            <Link
               href="/rooms/living-room"
               className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
             >
@@ -271,6 +306,12 @@ export default function Header({ hasSale = true }: HeaderProps) {
               className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
             >
               Bedroom
+            </Link>
+            <Link
+              href="/lighting"
+              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+            >
+              Lighting
             </Link>
             <Link
               href="/rooms/dining-room-kitchen"
@@ -296,40 +337,70 @@ export default function Header({ hasSale = true }: HeaderProps) {
             >
               Entryway
             </Link>
+            <Link
+              href="/clothing"
+              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+            >
+              Clothing
+            </Link>
+            {hasSale && (
+              <Link
+                href="/sale"
+                className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+              >
+                Sale
+              </Link>
+            )}
           </nav>
         </div>
       </header>
 
       {/* Mobile Sidebar Menu */}
-      {isMobileMenuOpen && (
+      {(isMobileMenuOpen || isMenuClosing) && (
         <div className="fixed inset-0 z-50 md:hidden">
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setIsMobileMenuOpen(false)}
+            className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ease-out ${
+              isMenuSlideIn ? "opacity-100" : "opacity-0"
+            }`}
+            onClick={closeMobileMenu}
           />
-          {/* Sidebar */}
-          <div className="absolute left-0 top-0 h-full w-80 bg-background shadow-lg overflow-y-auto">
+          {/* Sidebar - 左からスライドイン */}
+          <div
+            className={`absolute left-0 top-0 h-full w-80 bg-background shadow-lg overflow-y-auto transition-transform duration-300 ease-out ${
+              isMenuSlideIn ? "translate-x-0" : "-translate-x-full"
+            }`}
+          >
             {/* Sidebar Header */}
             <div className="flex items-center justify-between h-14 px-4 border-b border-border/40">
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={closeMobileMenu}
                 aria-label="Close menu"
               >
                 <X className="h-5 w-5 text-foreground" />
               </Button>
               <div className="flex items-center space-x-2">
-                <Link href={"/favorite"} onClick={() => setIsMobileMenuOpen(false)}>
+                <Link href={"/favorite"} onClick={closeMobileMenu}>
                   <Button variant="ghost" size="icon" className="h-9 w-9">
                     <Heart className="h-5 w-5 text-foreground" />
                   </Button>
                 </Link>
-                <Link href={"/cart"} className="relative" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button variant="ghost" size="icon" className="h-9 w-9 relative">
+                <Link
+                  href={"/cart"}
+                  className="relative"
+                  onClick={closeMobileMenu}
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 relative"
+                  >
                     <ShoppingCart className="h-5 w-5 text-foreground" />
-                    <span className={`absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground ${currentCartCount === 0 ? "opacity-50" : ""}`}>
+                    <span
+                      className={`absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground ${currentCartCount === 0 ? "opacity-50" : ""}`}
+                    >
                       {currentCartCount > 99 ? "99+" : currentCartCount}
                     </span>
                   </Button>
@@ -337,40 +408,82 @@ export default function Header({ hasSale = true }: HeaderProps) {
               </div>
             </div>
 
-            {/* Navigation Links */}
+            {/* Navigation Links: ProductsListのcategoryFilters順に合わせる */}
             <nav className="py-4">
               <Link
                 href="/"
                 className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={closeMobileMenu}
               >
                 <span>Home</span>
               </Link>
               <Link
                 href="/products"
                 className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={closeMobileMenu}
               >
                 <span>All Products</span>
               </Link>
               <Link
                 href="/new-arrivals"
                 className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={closeMobileMenu}
               >
                 <span>New Arrivals</span>
               </Link>
               <Link
+                href="/rooms/living-room"
+                className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
+                onClick={closeMobileMenu}
+              >
+                <span>Living Room</span>
+              </Link>
+              <Link
+                href="/rooms/bedroom"
+                className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
+                onClick={closeMobileMenu}
+              >
+                <span>Bedroom</span>
+              </Link>
+              <Link
                 href="/lighting"
                 className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={closeMobileMenu}
               >
                 <span>Lighting</span>
               </Link>
               <Link
+                href="/rooms/dining-room-kitchen"
+                className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
+                onClick={closeMobileMenu}
+              >
+                <span>Dining Room & Kitchen</span>
+              </Link>
+              <Link
+                href="/rooms/outdoor"
+                className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
+                onClick={closeMobileMenu}
+              >
+                <span>Outdoor</span>
+              </Link>
+              <Link
+                href="/rooms/home-office"
+                className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
+                onClick={closeMobileMenu}
+              >
+                <span>Home Office</span>
+              </Link>
+              <Link
+                href="/rooms/entryway"
+                className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
+                onClick={closeMobileMenu}
+              >
+                <span>Entryway</span>
+              </Link>
+              <Link
                 href="/clothing"
                 className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={closeMobileMenu}
               >
                 <span>Clothing</span>
               </Link>
@@ -378,58 +491,11 @@ export default function Header({ hasSale = true }: HeaderProps) {
                 <Link
                   href="/sale"
                   className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={closeMobileMenu}
                 >
                   <span>Sale</span>
                 </Link>
               )}
-
-              {/* Separator */}
-              <div className="border-t border-border/40 my-2" />
-
-              {/* Room Categories */}
-              <Link
-                href="/rooms/living-room"
-                className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <span>Living Room</span>
-              </Link>
-              <Link
-                href="/rooms/bedroom"
-                className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <span>Bedroom</span>
-              </Link>
-              <Link
-                href="/rooms/dining-room-kitchen"
-                className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <span>Dining Room & Kitchen</span>
-              </Link>
-              <Link
-                href="/rooms/outdoor"
-                className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <span>Outdoor</span>
-              </Link>
-              <Link
-                href="/rooms/home-office"
-                className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <span>Home Office</span>
-              </Link>
-              <Link
-                href="/rooms/entryway"
-                className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <span>Entryway</span>
-              </Link>
 
               {/* Separator */}
               <div className="border-t border-border/40 my-2" />
@@ -449,7 +515,7 @@ export default function Header({ hasSale = true }: HeaderProps) {
               <Link
                 href="/help"
                 className="flex items-center gap-3 px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={closeMobileMenu}
               >
                 <HelpCircle className="h-5 w-5" />
                 <span>Help Center</span>
@@ -457,23 +523,15 @@ export default function Header({ hasSale = true }: HeaderProps) {
               <Link
                 href="/contact"
                 className="flex items-center gap-3 px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={closeMobileMenu}
               >
                 <Phone className="h-5 w-5" />
                 <span>Contact us</span>
               </Link>
               <Link
-                href="/tracking"
-                className="flex items-center gap-3 px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                <MessageCircle className="h-5 w-5" />
-                <span>Live chat with us</span>
-              </Link>
-              <Link
                 href="/about"
                 className="flex items-center gap-3 px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={closeMobileMenu}
               >
                 <Info className="h-5 w-5" />
                 <span>About Evimeria</span>
