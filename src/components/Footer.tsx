@@ -24,6 +24,12 @@ export default function Footer() {
           {/* Links - Center */}
           <div className="flex flex-wrap justify-center gap-6 text-sm">
             <Link
+              href="/help"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Help
+            </Link>
+            <Link
               href="/contact"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
@@ -58,7 +64,7 @@ export default function Footer() {
           {/* Social Icons - Right */}
           <div className="flex justify-center md:justify-end gap-6">
             <Link
-              href="https://instagram.com/evimeria__official"
+              href="https://instagram.com/evimeriahome2026"
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors"
