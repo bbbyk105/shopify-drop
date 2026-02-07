@@ -60,47 +60,40 @@ export default function AddToCartButton({
     if (isAdding || justAdded) return;
 
     setIsAdding(true);
-    try {
-      await add(variantId, quantity);
-      setJustAdded(true);
-
-      if (showDrawer) {
-        openDrawer({
-          product: {
-            productName,
-            productImage,
-            variantTitle,
-            price,
-          },
-          relatedProducts,
-        });
-      } else {
-        toast({
-          variant: "success",
-          title: "Added to Cart",
-          description: productName || "Item added to cart",
-          productImage,
-          productName,
-        });
-      }
-
-      // 2秒後に「Added」状態をリセット
-      setTimeout(() => {
-        setJustAdded(false);
-      }, 2000);
-    } catch (error) {
-      console.error("Failed to add to cart:", error);
+    const result = await add(variantId, quantity);
+    if (!result.success) {
       toast({
         variant: "destructive",
         title: "Error",
-        description:
-          "This item may have just sold out. Please reselect options.",
+        description: result.error || "This item may have just sold out. Please reselect options.",
         productImage,
         productName,
       });
-    } finally {
       setIsAdding(false);
+      return;
     }
+    setJustAdded(true);
+    if (showDrawer) {
+      openDrawer({
+        product: {
+          productName,
+          productImage,
+          variantTitle,
+          price,
+        },
+        relatedProducts,
+      });
+    } else {
+      toast({
+        variant: "success",
+        title: "Added to Cart",
+        description: productName || "Item added to cart",
+        productImage,
+        productName,
+      });
+    }
+    setTimeout(() => setJustAdded(false), 2000);
+    setIsAdding(false);
   };
 
   return (

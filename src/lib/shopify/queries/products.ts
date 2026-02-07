@@ -190,6 +190,44 @@ export async function getProductsByTag(
   }
 }
 
+/** 複数タグから在庫ありの商品を取得し、指定IDを除いてシャッフルして返す（Complete the space 用） */
+export async function getComplementaryProducts(
+  tags: string[],
+  excludeProductId: string,
+  limit: number,
+  seed?: string
+): Promise<Product[]> {
+  const seen = new Set<string>();
+  const combined: Product[] = [];
+  const perTag = Math.max(6, Math.ceil(limit * 2 / tags.length));
+  for (const tag of tags) {
+    const products = await getProductsByTag(tag, perTag);
+    for (const p of products) {
+      if (p.id === excludeProductId || !p.availableForSale) continue;
+      if (seen.has(p.id)) continue;
+      seen.add(p.id);
+      combined.push(p);
+    }
+  }
+  if (combined.length <= limit) return combined;
+  const shuffled = seed ? shuffleWithSeed([...combined], seed) : [...combined].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, limit);
+}
+
+function shuffleWithSeed<T>(arr: T[], seed: string): T[] {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) {
+    h = (h << 5) - h + seed.charCodeAt(i) | 0;
+  }
+  const out = [...arr];
+  for (let i = out.length - 1; i > 0; i--) {
+    h = (h * 1103515245 + 12345) >>> 0;
+    const j = h % (i + 1);
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
 // generateStaticParams 専用：実処理（handle のみ取得、CREATED_AT 降順）
 const _getProductHandlesForStaticParams = async (
   first: number

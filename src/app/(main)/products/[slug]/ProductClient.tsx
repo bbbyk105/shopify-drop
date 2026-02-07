@@ -23,6 +23,11 @@ import {
   isOptionValueSelectable,
   applyOptionChangeWithReset,
 } from "@/lib/variants";
+import LifestyleVideoSection from "@/components/pdp/LifestyleVideoSection";
+import MoreInThisStyleSection from "@/components/pdp/MoreInThisStyleSection";
+import BundleSection from "@/components/pdp/BundleSection";
+import { PDP_LIFESTYLE_VIDEO } from "@/components/pdp/placeholder";
+import type { BundleGroup } from "@/components/pdp/types";
 
 interface ProductClientProps {
   product: Product;
@@ -36,6 +41,7 @@ interface ProductClientProps {
   firstVariant: Variant | undefined;
   inventory: Record<string, number>;
   relatedProducts?: Product[];
+  bundles?: BundleGroup[];
 }
 
 // Option名の揺れ対応: 実際のproduct.optionsから検出
@@ -70,6 +76,7 @@ export default function ProductClient({
   firstVariant,
   inventory,
   relatedProducts = [],
+  bundles = [],
 }: ProductClientProps) {
   const [mounted, setMounted] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -1107,52 +1114,29 @@ export default function ProductClient({
             )}
           </div>
 
-          {/* Made to go with セクション */}
-          {relatedProducts.length > 0 && (
-            <div className="pt-6 border-t">
-              <h3 className="text-sm font-medium mb-4">Made to go with</h3>
-              {relatedProducts.map((relatedProduct) => {
-                const relatedPrice = parseFloat(
-                  relatedProduct.priceRange.minVariantPrice.amount
-                );
-                const relatedImage =
-                  relatedProduct.featuredImage?.url ||
-                  relatedProduct.images.edges[0]?.node.url ||
-                  "/placeholder.png";
+        </div>
+      </div>
 
-                return (
-                  <div
-                    key={relatedProduct.id}
-                    className="flex items-center gap-4"
-                  >
-                    <Link
-                      href={`/products/${relatedProduct.handle}`}
-                      className="relative w-20 h-20 overflow-hidden rounded-lg border bg-secondary/30 hover:opacity-80 transition-opacity"
-                    >
-                      <Image
-                        src={relatedImage}
-                        alt={relatedProduct.title}
-                        fill
-                        className="object-cover"
-                        sizes="80px"
-                      />
-                    </Link>
-                    <div className="flex-1">
-                      <Link
-                        href={`/products/${relatedProduct.handle}`}
-                        className="text-sm font-medium hover:underline block"
-                      >
-                        {relatedProduct.title}
-                      </Link>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {formatPrice(relatedPrice)}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+      {/* Lower PDP: lifestyle video, more in this style, complete the space (no changes above this) */}
+      <div className="mt-0">
+        {/* 1) Lifestyle Video — full width, generous padding */}
+        <div className="py-12 md:py-16 lg:py-20 bg-background">
+          <LifestyleVideoSection
+            videoUrl={PDP_LIFESTYLE_VIDEO.videoUrl}
+            posterUrl={PDP_LIFESTYLE_VIDEO.posterUrl}
+            caption={PDP_LIFESTYLE_VIDEO.caption}
+          />
+        </div>
+        {/* 2) More in this style — very light gray background */}
+        <div className="bg-muted/30">
+          <MoreInThisStyleSection
+            relatedProducts={relatedProducts}
+            currentProductId={product.id}
+          />
+        </div>
+        {/* 3) Complete the space — white */}
+        <div className="py-12 md:py-16 lg:py-20 bg-background">
+          <BundleSection bundles={bundles} />
         </div>
       </div>
 

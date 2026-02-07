@@ -4,12 +4,22 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Cart } from "@/lib/shopify/types";
 
+export type CartLineInput = { merchandiseId: string; quantity: number };
+
 type CartState = {
   cartId?: string;
   cart?: Cart;
   loading: boolean;
   init: () => Promise<void>;
-  add: (variantId: string, quantity?: number) => Promise<void>;
+  /** Returns success/error; does not throw on API error (e.g. sold out). */
+  add: (
+    variantId: string,
+    quantity?: number
+  ) => Promise<{ success: true } | { success: false; error: string }>;
+  /** Add multiple lines in one request (e.g. bundle). Returns success/error; does not throw on API error. */
+  addMultiple: (
+    lines: CartLineInput[]
+  ) => Promise<{ success: true; cart: Cart } | { success: false; error: string }>;
   setQty: (lineId: string, qty: number) => Promise<void>;
   remove: (lineId: string) => Promise<void>;
 };
@@ -74,8 +84,11 @@ export const useCart = create<CartState>()(
         }
       },
 
-      // カートに商品追加
-      add: async (variantId: string, quantity = 1) => {
+      // カートに商品追加（API エラー時は throw せず結果を返す）
+      add: async (
+        variantId: string,
+        quantity = 1
+      ): Promise<{ success: true } | { success: false; error: string }> => {
         const { cartId, init } = get();
 
         if (!cartId) {
@@ -84,7 +97,7 @@ export const useCart = create<CartState>()(
 
         const currentCartId = get().cartId;
         if (!currentCartId) {
-          throw new Error("Cart not initialized");
+          return { success: false, error: "Cart not initialized" };
         }
 
         set({ loading: true });
@@ -98,13 +111,72 @@ export const useCart = create<CartState>()(
               lines: [{ merchandiseId: variantId, quantity }],
             }),
           });
-          if (!response.ok) throw new Error("Failed to add to cart");
-          const data = await response.json();
-          set({ cart: data.cartLinesAdd.cart, loading: false });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const message =
+              typeof data?.error === "string"
+                ? data.error
+                : "Failed to add to cart";
+            set({ loading: false });
+            return { success: false, error: message };
+          }
+          set({ cart: data.cartLinesAdd?.cart, loading: false });
+          return { success: true };
         } catch (error) {
           console.error("Error adding to cart:", error);
           set({ loading: false });
-          throw error;
+          return {
+            success: false,
+            error:
+              error instanceof Error ? error.message : "Failed to add to cart",
+          };
+        }
+      },
+
+      addMultiple: async (
+        lines: CartLineInput[]
+      ): Promise<
+        { success: true; cart: Cart } | { success: false; error: string }
+      > => {
+        if (!lines.length) {
+          return { success: false, error: "No items to add" };
+        }
+        const { cartId, init } = get();
+        if (!cartId) await init();
+        const currentCartId = get().cartId;
+        if (!currentCartId) {
+          return { success: false, error: "Cart not initialized" };
+        }
+        set({ loading: true });
+        try {
+          const response = await fetch("/api/shopify/cart", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "add",
+              cartId: currentCartId,
+              lines,
+            }),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            const message =
+              typeof data?.error === "string"
+                ? data.error
+                : "Failed to add to cart";
+            set({ loading: false });
+            return { success: false, error: message };
+          }
+          const cart = data.cartLinesAdd?.cart;
+          set({ cart, loading: false });
+          return cart ? { success: true, cart } : { success: false, error: "Invalid response" };
+        } catch (error) {
+          console.error("Error adding multiple to cart:", error);
+          set({ loading: false });
+          return {
+            success: false,
+            error: error instanceof Error ? error.message : "Failed to add to cart",
+          };
         }
       },
 

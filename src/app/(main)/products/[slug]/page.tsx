@@ -2,6 +2,7 @@ import {
   cachedGetProductByHandle,
   getProductHandlesForStaticParams,
   getRelatedProducts,
+  getComplementaryProducts,
 } from "@/lib/shopify/queries/products";
 import { getProductInventory } from "@/lib/shopify/queries/inventory";
 import { notFound } from "next/navigation";
@@ -9,6 +10,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import ProductClient from "./ProductClient";
 import type { Product as ShopifyProduct } from "@/lib/shopify/types";
+import type { BundleGroup } from "@/components/pdp/types";
 import { buildProductMeta } from "@/lib/seo/meta";
 import { buildProductSchema, buildBreadcrumbSchema } from "@/lib/seo/schema";
 import { getSiteUrl } from "@/lib/seo/site-url";
@@ -149,13 +151,96 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const category = getCategoryFromTags(product.tags);
 
-  // 類似商品を取得
+  // 類似商品を取得（More in this style 用に最大8件）
   let relatedProducts: ShopifyProduct[] = [];
   try {
-    relatedProducts = await getRelatedProducts(product.id, product.tags, 1);
+    relatedProducts = await getRelatedProducts(product.id, product.tags, 8);
   } catch (error) {
     console.error("Failed to fetch related products:", error);
   }
+
+  // Complete the space: 現在の商品は含めず、ナビのカテゴリから相性の良い組み合わせをランダムに提案（売り切れ除外）
+  // キーは product.tags の小文字・ハイフン版。値は Shopify のタグ（admin のタグと一致させること）
+  const complementaryTagMap: Record<string, string[]> = {
+    "living-room": ["lighting", "bedroom", "entryway", "new-arrivals"],
+    livingroom: ["lighting", "bedroom", "entryway", "new-arrivals"],
+    bedroom: ["lighting", "living-room", "entryway", "new-arrivals"],
+    lighting: ["living-room", "bedroom", "entryway", "new-arrivals"],
+    "dining-room-kitchen": ["lighting", "living-room", "new-arrivals"],
+    "dining-room": ["lighting", "living-room", "new-arrivals"],
+    outdoor: ["lighting", "living-room", "new-arrivals"],
+    "home-office": ["lighting", "living-room", "bedroom", "new-arrivals"],
+    homeoffice: ["lighting", "living-room", "bedroom", "new-arrivals"],
+    entryway: ["lighting", "living-room", "bedroom", "new-arrivals"],
+    clothing: ["new-arrivals"],
+    "new-arrivals": ["living-room", "lighting", "bedroom"],
+    newarrivals: ["living-room", "lighting", "bedroom"],
+    sale: ["living-room", "lighting", "bedroom"],
+  };
+  const normalizedProductTags = product.tags.map((t) => t.toLowerCase().trim());
+  const complementaryTags: string[] = [];
+  for (const tag of normalizedProductTags) {
+    const mapped =
+      complementaryTagMap[tag] ?? complementaryTagMap[tag.replace(/\s+/g, "-")];
+    if (mapped) {
+      complementaryTags.push(...mapped);
+      break;
+    }
+  }
+  if (complementaryTags.length === 0) {
+    complementaryTags.push(
+      "living-room",
+      "lighting",
+      "bedroom",
+      "new-arrivals",
+    );
+  }
+  const uniqueTags = [...new Set(complementaryTags)];
+  let complementaryProducts: ShopifyProduct[] = [];
+  try {
+    complementaryProducts = await getComplementaryProducts(
+      uniqueTags,
+      product.id,
+      4,
+      product.id,
+    );
+  } catch (error) {
+    console.error("Failed to fetch complementary products:", error);
+  }
+
+  const bundleItems = complementaryProducts
+    .map((p) => {
+      const v = p.variants.edges[0]?.node;
+      const variantId = v?.id ?? "";
+      if (!variantId) return null;
+      return {
+        handle: p.handle,
+        variantId,
+        title: p.title,
+        price: parseFloat(p.priceRange.minVariantPrice.amount),
+        image:
+          p.featuredImage?.url ??
+          p.images.edges[0]?.node.url ??
+          "/placeholder.png",
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => item !== null);
+
+  const bundleMedia =
+    bundleItems[0]?.image ??
+    product.featuredImage?.url ??
+    "/images/living_room.webp";
+  const bundles: BundleGroup[] =
+    bundleItems.length >= 2
+      ? [
+          {
+            title: "Complete the space",
+            subtitle: "Pairs well with your style",
+            media: bundleMedia,
+            items: bundleItems,
+          },
+        ]
+      : [];
 
   const siteUrl = getSiteUrl();
   const productUrl = `${siteUrl}/products/${slug}`;
@@ -214,6 +299,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         firstVariant={firstVariant}
         inventory={inventory}
         relatedProducts={relatedProducts}
+        bundles={bundles}
       />
     </div>
   );
