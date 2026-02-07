@@ -695,7 +695,7 @@ export default function ProductClient({
           {/* Main Image */}
           <div
             ref={imageContainerRef}
-            className="relative w-full aspect-4/3 rounded-lg bg-secondary/30 group flex items-center justify-center overflow-hidden touch-pan-y xl:touch-none"
+            className="relative w-full aspect-square rounded-lg bg-secondary/30 group flex items-center justify-center overflow-hidden touch-pan-y xl:aspect-4/3 xl:touch-none"
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}

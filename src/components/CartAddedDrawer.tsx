@@ -124,13 +124,13 @@ export default function CartAddedDrawer() {
           {/* Added product confirmation */}
           <div className="flex gap-4 pb-4">
             <div className="relative shrink-0 overflow-visible">
-              <div className="h-16 w-16 overflow-hidden rounded-md bg-slate-100">
+              <div className="h-20 w-20 shrink-0 overflow-hidden rounded-md bg-slate-100 sm:h-16 sm:w-16">
                 <Image
                   src={product.productImage}
                   alt={product.productName}
-                  width={64}
-                  height={64}
-                  className="h-full w-full object-cover"
+                  width={80}
+                  height={80}
+                  className="h-full w-full object-contain"
                 />
               </div>
               <span
@@ -177,7 +177,7 @@ export default function CartAddedDrawer() {
                         src={item.imageUrl}
                         alt={item.title}
                         fill
-                        className="object-cover"
+                        className="object-contain"
                         sizes="80px"
                       />
                     </Link>
