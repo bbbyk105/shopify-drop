@@ -4,6 +4,7 @@ import ProductSlider from "@/components/home/ProductSlider";
 import ShopByRoom from "@/components/home/ShopByRoom";
 import PromotionalTwoColumn from "@/components/home/PromotionalTwoColumn";
 import Section from "@/components/home/Section";
+import VerticalVideoSection from "@/components/home/VerticalVideoSection";
 import { products } from "@/lib/products";
 import {
   getAllProducts,
@@ -88,6 +89,14 @@ export default async function HomePage() {
       >
         <FeaturedCollections />
       </Section>
+
+      {/* (4.5) 縦動画（9:16） - Ad2.webm */}
+      <VerticalVideoSection
+        videoUrl="/videos/Ad2.webm"
+        title="See it in your space"
+        subtitle="Get a feel for how our pieces look in real life."
+        description="Our products are designed to blend seamlessly into your home. Watch how lighting and furniture come together to create a space you'll love."
+      />
 
       {/* (5) Promotional Two Column - 統合されたプロモーションバナー */}
       <div className="container mx-auto px-4 py-12 lg:py-16">
