@@ -23,10 +23,8 @@ import {
   isOptionValueSelectable,
   applyOptionChangeWithReset,
 } from "@/lib/variants";
-import LifestyleVideoSection from "@/components/pdp/LifestyleVideoSection";
 import MoreInThisStyleSection from "@/components/pdp/MoreInThisStyleSection";
 import BundleSection from "@/components/pdp/BundleSection";
-import { PDP_LIFESTYLE_VIDEO } from "@/components/pdp/placeholder";
 import type { BundleGroup } from "@/components/pdp/types";
 
 interface ProductClientProps {
@@ -1117,24 +1115,16 @@ export default function ProductClient({
         </div>
       </div>
 
-      {/* Lower PDP: lifestyle video, more in this style, complete the space (no changes above this) */}
+      {/* Lower PDP: more in this style, complete the space (no changes above this) */}
       <div className="mt-0">
-        {/* 1) Lifestyle Video — full width, generous padding */}
-        <div className="py-12 md:py-16 lg:py-20 bg-background">
-          <LifestyleVideoSection
-            videoUrl={PDP_LIFESTYLE_VIDEO.videoUrl}
-            posterUrl={PDP_LIFESTYLE_VIDEO.posterUrl}
-            caption={PDP_LIFESTYLE_VIDEO.caption}
-          />
-        </div>
-        {/* 2) More in this style — very light gray background */}
+        {/* 1) More in this style — very light gray background */}
         <div className="bg-muted/30">
           <MoreInThisStyleSection
             relatedProducts={relatedProducts}
             currentProductId={product.id}
           />
         </div>
-        {/* 3) Complete the space — white */}
+        {/* 2) Complete the space — white */}
         <div className="py-12 md:py-16 lg:py-20 bg-background">
           <BundleSection bundles={bundles} />
         </div>
