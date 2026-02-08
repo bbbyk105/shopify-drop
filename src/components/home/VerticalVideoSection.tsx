@@ -28,7 +28,6 @@ export default function VerticalVideoSection({
   title,
   subtitle,
   description,
-  maxWidth = 320,
 }: VerticalVideoSectionProps) {
   const paragraphs = description?.split("\n").filter(Boolean) ?? [];
   const isWide = aspectRatio === "16/9";
