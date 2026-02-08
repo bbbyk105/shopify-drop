@@ -14,7 +14,7 @@ export default function NotFound() {
             <span className="text-[#E1F244] group-hover:text-[#E1F244]/80 transition-colors">
               EVIMERÍA
             </span>
-            <span className="text-[#020B20] dark:text-white group-hover:opacity-80 transition-colors">
+            <span className="text-[#020B20] group-hover:opacity-80 transition-colors">
               {" "}home
             </span>
           </span>
@@ -22,7 +22,7 @@ export default function NotFound() {
 
         {/* 404 Error */}
         <div className="space-y-4">
-          <h1 className="text-8xl md:text-9xl font-bold text-primary/20 dark:text-primary/10">
+          <h1 className="text-8xl md:text-9xl font-bold text-primary/20">
             404
           </h1>
           <h2 className="text-3xl md:text-4xl font-bold text-foreground">

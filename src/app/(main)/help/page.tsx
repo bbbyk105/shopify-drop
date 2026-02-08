@@ -66,7 +66,7 @@ export default function HelpPage() {
             <Truck className="w-6 h-6" />
             Shipping & Delivery
           </h2>
-          <div className="prose prose-neutral dark:prose-invert max-w-none space-y-4">
+          <div className="prose prose-neutral max-w-none space-y-4">
             <p>
               We ship to the United States. Delivery typically takes 1–14
               business days depending on your location and the product.
@@ -91,7 +91,7 @@ export default function HelpPage() {
             <RotateCcw className="w-6 h-6" />
             Returns & Refunds
           </h2>
-          <div className="prose prose-neutral dark:prose-invert max-w-none space-y-4">
+          <div className="prose prose-neutral max-w-none space-y-4">
             <p>
               We accept returns within 7 days of delivery for most items in
               unused condition. Please see our{" "}
@@ -120,7 +120,7 @@ export default function HelpPage() {
             <Package className="w-6 h-6" />
             Order Status & Tracking
           </h2>
-          <div className="prose prose-neutral dark:prose-invert max-w-none space-y-4">
+          <div className="prose prose-neutral max-w-none space-y-4">
             <p>
               After placing an order, you will receive an email confirmation.
               When your order ships, we will send a separate email with tracking
@@ -145,7 +145,7 @@ export default function HelpPage() {
             <CreditCard className="w-6 h-6" />
             Payment
           </h2>
-          <div className="prose prose-neutral dark:prose-invert max-w-none space-y-4">
+          <div className="prose prose-neutral max-w-none space-y-4">
             <p>
               We accept major credit cards and other payment methods offered at
               checkout. All transactions are processed securely.

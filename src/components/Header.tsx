@@ -5,8 +5,6 @@ import {
   Search,
   Heart,
   ShoppingCart,
-  Sun,
-  Moon,
   Menu,
   X,
   HelpCircle,
@@ -17,8 +15,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useCart } from "@/hooks/useCart";
-import { useTheme } from "@/components/ThemeProvider";
-
 interface HeaderProps {
   hasSale?: boolean;
 }
@@ -33,8 +29,6 @@ export default function Header({ hasSale = true }: HeaderProps) {
   const cart = useCart((state) => state.cart);
   const [cartCount, setCartCount] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-  const { theme, toggleTheme } = useTheme();
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Searching for:", searchQuery);
@@ -126,9 +120,7 @@ export default function Header({ hasSale = true }: HeaderProps) {
                 <span className="text-[#E1F244] group-hover:text-[#E1F244]/80 transition-colors">
                   EVIMERÍA
                 </span>
-                <span
-                  className={`${theme === "dark" ? "text-white" : "text-[#020B20]"} group-hover:opacity-80 transition-colors`}
-                >
+                <span className="text-[#020B20] group-hover:opacity-80 transition-colors">
                   {" "}
                   home
                 </span>
@@ -154,19 +146,6 @@ export default function Header({ hasSale = true }: HeaderProps) {
 
             {/* Utility Icons - Right */}
             <div className="flex items-center space-x-2 shrink-0">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleTheme}
-                aria-label="Toggle theme"
-              >
-                {theme === "light" ? (
-                  <Moon className="h-5 w-5" />
-                ) : (
-                  <Sun className="h-5 w-5" />
-                )}
-              </Button>
-
               <Link href={"/favorite"}>
                 <Button variant="ghost" size="icon">
                   <Heart className="h-5 w-5" />
@@ -207,9 +186,7 @@ export default function Header({ hasSale = true }: HeaderProps) {
             >
               <span className="text-xs font-semibold tracking-tight whitespace-nowrap">
                 <span className="text-[#E1F244]">EVIMERÍA</span>
-                <span
-                  className={`${theme === "dark" ? "text-white" : "text-[#020B20]"}`}
-                >
+                <span className="text-[#020B20]">
                   {" "}
                   home
                 </span>
@@ -218,19 +195,6 @@ export default function Header({ hasSale = true }: HeaderProps) {
 
             {/* Utility Icons - Right */}
             <div className="flex items-center space-x-0.5 shrink-0 ml-auto">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleTheme}
-                aria-label="Toggle theme"
-                className="h-7 w-7 p-0 min-w-0"
-              >
-                {theme === "light" ? (
-                  <Moon className="h-4 w-4 text-foreground" />
-                ) : (
-                  <Sun className="h-4 w-4 text-foreground" />
-                )}
-              </Button>
               <Link href={"/favorite"}>
                 <Button
                   variant="ghost"
@@ -501,17 +465,6 @@ export default function Header({ hasSale = true }: HeaderProps) {
               <div className="border-t border-border/40 my-2" />
 
               {/* Utility Links */}
-              <div
-                className="flex items-center gap-3 px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors cursor-pointer"
-                onClick={toggleTheme}
-              >
-                {theme === "light" ? (
-                  <Moon className="h-5 w-5" />
-                ) : (
-                  <Sun className="h-5 w-5" />
-                )}
-                <span>Toggle Theme</span>
-              </div>
               <Link
                 href="/help"
                 className="flex items-center gap-3 px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"

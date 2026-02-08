@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
 import { GoogleTagManager } from "@next/third-parties/google";
-import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/toaster";
 import CartAddedDrawer from "@/components/CartAddedDrawer";
 
@@ -94,12 +93,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           )
         ) : null}
 
-        <ThemeProvider>
-          {children}
-          <Toaster />
-          <CartAddedDrawer />
-          <ChatWidget />
-        </ThemeProvider>
+        {children}
+        <Toaster />
+        <CartAddedDrawer />
+        <ChatWidget />
       </body>
     </html>
   );

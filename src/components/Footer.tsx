@@ -16,7 +16,7 @@ export default function Footer() {
                 alt="Evimeria Home"
                 width={150}
                 height={150}
-                className="h-12 w-auto brightness-0 dark:brightness-100"
+                className="h-12 w-auto brightness-0"
               />
             </Link>
           </div>
@@ -104,7 +104,7 @@ export default function Footer() {
                   alt="Shop Pay"
                   width={56}
                   height={24}
-                  className="h-4 w-auto object-contain dark:invert"
+                  className="h-4 w-auto object-contain"
                 />
               </span>
               <span className="inline-flex items-center h-6" title="Apple Pay">
