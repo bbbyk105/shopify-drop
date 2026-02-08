@@ -7,20 +7,8 @@ export default function Footer() {
   return (
     <footer className="border-t border-border/40 mt-20">
       <div className="container mx-auto px-4 py-10 md:py-12">
-        {/* Main row: Logo, Links, Social */}
-        <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
-          <div className="flex justify-center md:justify-start">
-            <Link href="/" className="flex items-center">
-              <Image
-                src="/logos/transparent.png"
-                alt="Evimeria Home"
-                width={150}
-                height={150}
-                className="h-12 w-auto brightness-0"
-              />
-            </Link>
-          </div>
-
+        {/* Main row: Links, Social */}
+        <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
           <nav
             className="flex flex-wrap justify-center gap-x-6 gap-y-1 md:justify-end"
             aria-label="Footer"
