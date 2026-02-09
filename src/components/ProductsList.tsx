@@ -595,6 +595,11 @@ export default function ProductsList({
         href: "/new-arrivals",
         image: "/images/newarrivals.webp",
       },
+      {
+        name: "Fast Shipping",
+        href: "/fast-shipping",
+        image: "/images/fast.jpg",
+      },
 
       {
         name: "Living Room",
@@ -628,11 +633,11 @@ export default function ProductsList({
         image: "/images/entryway.webp",
       },
       { name: "Clothing", href: "/clothing", image: "/images/clothing.webp" },
-      {
-        name: "Sale",
-        href: "/sale",
-        image: "/images/sale.jpg",
-      },
+      // {
+      //   name: "Sale",
+      //   href: "/sale",
+      //   image: "/images/sale.jpg",
+      // },
     ],
     [],
   );

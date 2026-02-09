@@ -16,9 +16,13 @@ import { useState, useEffect } from "react";
 import { useCart } from "@/hooks/useCart";
 interface HeaderProps {
   hasSale?: boolean;
+  hasFastShipping?: boolean;
 }
 
-export default function Header({ hasSale = true }: HeaderProps) {
+export default function Header({
+  hasSale = true,
+  hasFastShipping = false,
+}: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMenuClosing, setIsMenuClosing] = useState(false);
   const [isMenuSlideIn, setIsMenuSlideIn] = useState(false);
@@ -163,10 +167,7 @@ export default function Header({ hasSale = true }: HeaderProps) {
             >
               <span className="text-xs font-semibold tracking-tight whitespace-nowrap">
                 <span className="text-[#E1F244]">EVIMERÍA</span>
-                <span className="text-[#020B20]">
-                  {" "}
-                  home
-                </span>
+                <span className="text-[#020B20]"> home</span>
               </span>
             </Link>
 
@@ -268,6 +269,14 @@ export default function Header({ hasSale = true }: HeaderProps) {
             >
               Clothing
             </Link>
+            {hasFastShipping && (
+              <Link
+                href="/fast-shipping"
+                className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+              >
+                Fast Shipping
+              </Link>
+            )}
             {hasSale && (
               <Link
                 href="/sale"
@@ -413,6 +422,15 @@ export default function Header({ hasSale = true }: HeaderProps) {
               >
                 <span>Clothing</span>
               </Link>
+              {hasFastShipping && (
+                <Link
+                  href="/fast-shipping"
+                  className="flex items-center justify-between px-4 py-3 text-base font-medium text-foreground hover:bg-secondary/50 transition-colors"
+                  onClick={closeMobileMenu}
+                >
+                  <span>Fast Shipping</span>
+                </Link>
+              )}
               {hasSale && (
                 <Link
                   href="/sale"

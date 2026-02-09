@@ -82,43 +82,43 @@ export default function BundleSection({ bundles }: BundleSectionProps) {
 
   return (
     <section
-      className="py-12 md:py-16 px-4"
+      className="py-12 md:py-20 px-4 md:px-6 lg:px-8"
       aria-labelledby="complete-the-space-heading"
     >
-      <div className="container mx-auto max-w-6xl">
+      <div className="container mx-auto max-w-7xl">
         <h2
           id="complete-the-space-heading"
-          className="text-xl md:text-2xl font-medium text-foreground tracking-tight mb-8 md:mb-10"
+          className="text-xl md:text-3xl font-medium text-foreground tracking-tight mb-10 md:mb-14"
         >
           Complete the space
         </h2>
-        <div className="space-y-14 md:space-y-20">
+        <div className="space-y-16 md:space-y-24">
           {bundles.map((group) => (
             <div
               key={group.title}
-              className="flex flex-col md:flex-row md:items-start gap-8 md:gap-10"
+              className="flex flex-col lg:flex-row lg:items-start gap-10 md:gap-12 lg:gap-16"
             >
-              <div className="w-full md:w-[45%] lg:w-[40%] shrink-0">
-                <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-secondary/50">
+              <div className="w-full lg:w-[50%] xl:w-[55%] shrink-0">
+                <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-secondary/50">
                   <Image
                     src={group.media}
                     alt=""
                     fill
                     className="object-contain"
-                    sizes="(max-width: 768px) 100vw, 40vw"
+                    sizes="(max-width: 1024px) 100vw, 55vw"
                   />
                 </div>
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 lg:pt-2">
                 {group.subtitle && (
-                  <p className="text-sm text-muted-foreground mb-2">
+                  <p className="text-sm md:text-base text-muted-foreground mb-3">
                     {group.subtitle}
                   </p>
                 )}
-                <h3 className="text-lg font-medium text-foreground mb-6">
+                <h3 className="text-lg md:text-xl font-medium text-foreground mb-8">
                   {group.title}
                 </h3>
-                <ul className="space-y-4 mb-6">
+                <ul className="space-y-5 md:space-y-6 mb-8">
                   {group.items.map((item) => {
                     const isOnSale =
                       item.compareAtPrice != null &&
@@ -126,39 +126,39 @@ export default function BundleSection({ bundles }: BundleSectionProps) {
                     return (
                       <li
                         key={item.variantId}
-                        className="flex items-center gap-4"
+                        className="flex items-center gap-4 md:gap-6"
                       >
                         <Link
                           href={`/products/${item.handle}`}
-                          className="relative w-14 h-14 shrink-0 rounded-lg overflow-hidden bg-secondary/50"
+                          className="relative w-16 h-16 md:w-20 md:h-20 shrink-0 rounded-lg overflow-hidden bg-secondary/50"
                         >
                           <Image
                             src={item.image}
                             alt=""
                             fill
                             className="object-cover"
-                            sizes="56px"
+                            sizes="(max-width: 768px) 64px, 80px"
                           />
                         </Link>
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <Link
                             href={`/products/${item.handle}`}
-                            className="text-sm font-medium text-foreground hover:underline block truncate"
+                            className="text-sm md:text-base font-medium text-foreground hover:underline block truncate"
                           >
                             {item.title}
                           </Link>
-                          <div className="mt-0.5 flex flex-wrap items-baseline gap-x-1">
+                          <div className="mt-1 flex flex-wrap items-baseline gap-x-2">
                             {isOnSale ? (
                               <>
-                                <span className="text-xs text-gray-400 line-through font-normal">
+                                <span className="text-sm text-gray-400 line-through font-normal">
                                   {formatPrice(item.compareAtPrice!)}
                                 </span>
-                                <span className="text-sm font-semibold text-red-600">
+                                <span className="text-base md:text-lg font-semibold text-red-600">
                                   {formatPrice(item.price)}
                                 </span>
                               </>
                             ) : (
-                              <span className="text-sm text-muted-foreground">
+                              <span className="text-base md:text-lg text-muted-foreground font-medium">
                                 {formatPrice(item.price)}
                               </span>
                             )}
@@ -169,13 +169,14 @@ export default function BundleSection({ bundles }: BundleSectionProps) {
                   })}
                 </ul>
                 {group.savings && (
-                  <p className="text-sm text-foreground font-medium mb-4">
+                  <p className="text-sm md:text-base text-foreground font-medium mb-5">
                     Bundle savings: {group.savings}
                   </p>
                 )}
                 <Button
                   variant="outline"
-                  className="w-full sm:w-auto border-foreground/20 hover:bg-foreground/5"
+                  size="lg"
+                  className="w-full sm:w-auto h-11 md:h-12 px-6 md:px-8 text-sm md:text-base border-foreground/20 hover:bg-foreground/5"
                   onClick={() => handleAddSet(group)}
                   disabled={addingGroupId === group.title}
                 >

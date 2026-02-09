@@ -302,6 +302,70 @@ export async function getAllProducts(first: number = 50): Promise<Product[]> {
   return cached(first);
 }
 
+/** 1-3日で届く商品を取得（delivery_max_days <= 3 のメタフィールド、または fast-shipping タグ） */
+export async function getFastShippingProducts(
+  first: number = 100
+): Promise<Product[]> {
+  const cached = unstable_cache(
+    async (f: number) => {
+      // 1. タグで fast-shipping を検索
+      try {
+        const byTag = await getProductsByTag("fast-shipping", f);
+        if (byTag.length > 0) return byTag;
+      } catch {
+        // タグがなければメタフィールドで絞り込む
+      }
+
+      // 2. 全商品取得し、deliveryMax <= 3 でフィルター
+      const products = await getAllProducts(f);
+      return products.filter((p) => {
+        const maxDays = p.deliveryMax?.value
+          ? Number(p.deliveryMax.value)
+          : null;
+        return maxDays != null && !Number.isNaN(maxDays) && maxDays <= 3;
+      });
+    },
+    ["shopify", "fastShippingProducts", String(first)],
+    { revalidate: REVALIDATE_LIST }
+  );
+  return cached(first);
+}
+
+/** 1-3日で届く商品が存在するかどうか */
+export async function hasFastShippingProducts(
+  first: number = 100
+): Promise<boolean> {
+  const cached = unstable_cache(
+    async (f: number) => {
+      const products = await getFastShippingProducts(f);
+      return products.length > 0;
+    },
+    ["shopify", "hasFastShippingProducts", String(first)],
+    { revalidate: REVALIDATE_LIST }
+  );
+  return cached(first);
+}
+
+// セール商品が存在するかどうか（compare_at_price > price の商品が少なくとも1件あるか）
+export async function hasSaleProducts(first: number = 100): Promise<boolean> {
+  const cached = unstable_cache(
+    async (f: number) => {
+      const products = await getAllProducts(f);
+      return products.some((p) => {
+        const price = parseFloat(p.priceRange.minVariantPrice.amount);
+        const compareAt = p.compareAtPriceRange?.minVariantPrice
+          ? parseFloat(p.compareAtPriceRange.minVariantPrice.amount)
+          : null;
+        return compareAt != null && compareAt > 0 && compareAt > price;
+      });
+    },
+    ["shopify", "hasSaleProducts", String(first)],
+    { revalidate: REVALIDATE_LIST },
+  );
+
+  return cached(first);
+}
+
 // sitemap 専用：250件・900s キャッシュ（sitemap が毎回 Shopify を叩かないようにする）
 export async function getAllProductsForSitemap(): Promise<Product[]> {
   const cached = unstable_cache(
@@ -334,6 +398,49 @@ export async function getAllProductsForSitemap(): Promise<Product[]> {
   return cached();
 }
 
+// Product Recommendations API を利用して関連商品を取得。unstable_cache で 300s キャッシュ
+export async function getRecommendedProducts(
+  productId: string,
+  limit: number = 8,
+): Promise<Product[]> {
+  const cacheKey = [
+    "shopify",
+    "recommendedProducts",
+    productId,
+    String(limit),
+  ];
+
+  const cached = unstable_cache(
+    async (id: string, lim: number) => {
+      const query = /* GraphQL */ `
+        ${PRODUCT_FRAGMENT}
+        query getRecommendedProducts($productId: ID!) {
+          productRecommendations(productId: $productId) {
+            ...ProductFields
+          }
+        }
+      `;
+      try {
+        const data = await shopifyFetch<{
+          productRecommendations: Product[];
+        }>(query, { productId: id });
+        const recommended =
+          data.productRecommendations
+            ?.filter((p) => p.id !== id)
+            .slice(0, lim) ?? [];
+        return recommended;
+      } catch (error) {
+        console.error("Error fetching recommended products:", error);
+        return [];
+      }
+    },
+    cacheKey,
+    { revalidate: REVALIDATE_LIST },
+  );
+
+  return cached(productId, limit);
+}
+
 // 類似商品を取得（同じタグを持つ商品、現在の商品を除く）。unstable_cache で 300s キャッシュ
 export async function getRelatedProducts(
   currentProductId: string,
@@ -344,18 +451,19 @@ export async function getRelatedProducts(
     return [];
   }
 
-  const tag = tags[0];
+  // 最大5タグまでを候補に使用
+  const searchTags = tags.slice(0, 5);
   const cacheKey = [
     "shopify",
     "relatedProducts",
     currentProductId,
-    tag,
+    // キャッシュキーにタグ一覧と limit を含める
+    ...searchTags,
     String(limit),
   ];
 
   const cached = unstable_cache(
     async (productId: string, tagList: string[], lim: number) => {
-      const t = tagList[0];
       const query = /* GraphQL */ `
         ${PRODUCT_FRAGMENT}
         query getRelatedProducts($query: String!, $first: Int!) {
@@ -369,15 +477,37 @@ export async function getRelatedProducts(
         }
       `;
       try {
+        // タグを OR で検索し、候補数を多めに取得
+        const tagQuery = tagList
+          .map((t) => `tag:${t}`)
+          .join(" OR ");
+        const first = lim * 3 + 1;
+
         const data = await shopifyFetch<{
           products: { edges: { node: Product }[] };
-        }>(query, { query: `tag:${t}`, first: lim + 1 });
-        const relatedProducts =
-          data.products?.edges
-            .map((e) => e.node)
-            .filter((p) => p.id !== productId)
-            .slice(0, lim) ?? [];
-        return relatedProducts;
+        }>(query, { query: tagQuery, first });
+
+        const candidates = data.products?.edges.map((e) => e.node) ?? [];
+
+        // 自分自身を除外し、共通タグ数でスコアリング
+        const scored = candidates
+          .filter((p) => p.id !== productId)
+          .map((p) => {
+            const pTags = new Set(p.tags.map((t) => t.toLowerCase().trim()));
+            const commonCount = tagList.reduce((acc, t) => {
+              const key = t.toLowerCase().trim();
+              return acc + (pTags.has(key) ? 1 : 0);
+            }, 0);
+            return { product: p, score: commonCount };
+          })
+          // 共通タグが0のものは除外
+          .filter((entry) => entry.score > 0)
+          // スコア降順で並べ替え
+          .sort((a, b) => b.score - a.score)
+          .slice(0, lim)
+          .map((entry) => entry.product);
+
+        return scored;
       } catch (error) {
         console.error("Error fetching related products:", error);
         return [];

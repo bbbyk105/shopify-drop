@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { getAllProducts } from "@/lib/shopify/queries/products";
 import type { Product as ShopifyProduct } from "@/lib/shopify/types";
 import { products } from "@/lib/products";
@@ -42,6 +43,11 @@ export default async function SalePage() {
 
   const allProducts = shopifyProducts.length > 0 ? shopifyProducts : products;
   const saleProducts = allProducts.filter(isProductOnSale);
+
+  // セール対象商品が1件もなければ /sale 自体を表示しない
+  if (saleProducts.length === 0) {
+    notFound();
+  }
 
   return <SaleClient products={saleProducts} />;
 }

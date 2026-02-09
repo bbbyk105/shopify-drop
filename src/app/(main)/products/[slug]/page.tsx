@@ -3,6 +3,7 @@ import {
   getProductHandlesForStaticParams,
   getRelatedProducts,
   getComplementaryProducts,
+  getRecommendedProducts,
 } from "@/lib/shopify/queries/products";
 import { getProductInventory } from "@/lib/shopify/queries/inventory";
 import { notFound } from "next/navigation";
@@ -14,8 +15,6 @@ import type { BundleGroup } from "@/components/pdp/types";
 import { buildProductMeta } from "@/lib/seo/meta";
 import { buildProductSchema, buildBreadcrumbSchema } from "@/lib/seo/schema";
 import { getSiteUrl } from "@/lib/seo/site-url";
-import { getFakeDiscountPercent } from "@/lib/utils";
-
 /** ISR: 600秒で再検証。商品詳細。 */
 export const revalidate = 600;
 
@@ -80,6 +79,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
+  // この商品が実際にセール対象かどうか（compare_at_price > price）
+  const basePrice = parseFloat(product.priceRange.minVariantPrice.amount);
+  const compareAtBase = product.compareAtPriceRange?.minVariantPrice
+    ? parseFloat(product.compareAtPriceRange.minVariantPrice.amount)
+    : null;
+  const isOnSale =
+    compareAtBase != null && compareAtBase > 0 && compareAtBase > basePrice;
+
   // 在庫数を取得
   let inventory: Record<string, number> = {};
   try {
@@ -135,8 +142,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
         path: "/new-arrivals",
         label: "New Arrivals",
       },
-      { tags: ["sale"], path: "/sale", label: "Sale" },
     ];
+
+    // 実際にセール対象の商品だけ、カテゴリーとして "Sale" を付与する
+    if (isOnSale) {
+      categoryMappings.push({
+        tags: ["sale"],
+        path: "/sale",
+        label: "Sale",
+      });
+    }
 
     // 優先順位に従って検索（最初に見つかったものを返す）
     for (const mapping of categoryMappings) {
@@ -155,7 +170,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
   // 類似商品を取得（More in this style 用に最大8件）
   let relatedProducts: ShopifyProduct[] = [];
   try {
-    relatedProducts = await getRelatedProducts(product.id, product.tags, 8);
+    // 1. Shopify の Product Recommendations を優先
+    relatedProducts = await getRecommendedProducts(product.id, 8);
+
+    // 2. Product Recommendations が空の場合、タグベースのフォールバックを使用
+    if (!relatedProducts || relatedProducts.length === 0) {
+      relatedProducts = await getRelatedProducts(product.id, product.tags, 8);
+    }
   } catch (error) {
     console.error("Failed to fetch related products:", error);
   }
@@ -223,16 +244,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
         realCompareAtPrice != null &&
         realCompareAtPrice > 0 &&
         realCompareAtPrice > price;
-      const fakePercent = getFakeDiscountPercent(p.id);
-      const compareAtPriceCandidate = realIsOnSale
-        ? realCompareAtPrice
-        : fakePercent != null
-          ? Math.round((price / (1 - fakePercent / 100)) * 100) / 100
-          : null;
-      const compareAtPrice =
-        compareAtPriceCandidate != null && compareAtPriceCandidate > price
-          ? compareAtPriceCandidate
-          : null;
+      // Complete the space ではダミー割引を使わず、Shopifyの実価格のみを使用
+      const compareAtPrice = realIsOnSale ? realCompareAtPrice : null;
 
       return {
         handle: p.handle,
