@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Heart,
   ShoppingCart,
@@ -23,6 +24,7 @@ export default function Header({
   hasSale = true,
   hasFastShipping = false,
 }: HeaderProps) {
+  const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMenuClosing, setIsMenuClosing] = useState(false);
   const [isMenuSlideIn, setIsMenuSlideIn] = useState(false);
@@ -31,6 +33,22 @@ export default function Header({
   const cart = useCart((state) => state.cart);
   const [cartCount, setCartCount] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+
+  // 下部にカテゴリタブ（`ProductsList` のタブ）が出るページでは
+  // Header のセカンダリーナビを非表示にする
+  const isTabbedProductsPage = [
+    "/products",
+    "/new-arrivals",
+    "/fast-shipping",
+    "/rooms/living-room",
+    "/rooms/bedroom",
+    "/lighting",
+    "/rooms/dining-room-kitchen",
+    "/rooms/outdoor",
+    "/rooms/home-office",
+    "/rooms/entryway",
+    "/clothing",
+  ].includes(pathname);
 
   // カート数量の監視とアニメーション
   useEffect(() => {
@@ -202,90 +220,93 @@ export default function Header({
           </div>
 
           {/* Secondary Navigation Bar: ProductsListのcategoryFilters順に合わせる */}
-          <nav className="hidden md:flex items-center h-12 border-t border-border/40 space-x-6 overflow-x-auto">
-            <Link
-              href="/"
-              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
-            >
-              Home
-            </Link>
-            <Link
-              href="/products"
-              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
-            >
-              All Products
-            </Link>
-            <Link
-              href="/new-arrivals"
-              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
-            >
-              New Arrivals
-            </Link>
-            <Link
-              href="/rooms/living-room"
-              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
-            >
-              Living Room
-            </Link>
-            <Link
-              href="/rooms/bedroom"
-              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
-            >
-              Bedroom
-            </Link>
-            <Link
-              href="/lighting"
-              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
-            >
-              Lighting
-            </Link>
-            <Link
-              href="/rooms/dining-room-kitchen"
-              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
-            >
-              Dining Room & Kitchen
-            </Link>
-            <Link
-              href="/rooms/outdoor"
-              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
-            >
-              Outdoor
-            </Link>
-            <Link
-              href="/rooms/home-office"
-              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
-            >
-              Home Office
-            </Link>
-            <Link
-              href="/rooms/entryway"
-              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
-            >
-              Entryway
-            </Link>
-            <Link
-              href="/clothing"
-              className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
-            >
-              Clothing
-            </Link>
-            {hasFastShipping && (
+          {!isTabbedProductsPage && (
+            <nav className="hidden md:flex items-center h-12 border-t border-border/40 space-x-6 overflow-x-auto">
               <Link
-                href="/fast-shipping"
+                href="/"
                 className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
               >
-                Fast Shipping
+                Home
               </Link>
-            )}
-            {hasSale && (
               <Link
-                href="/sale"
+                href="/products"
                 className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
               >
-                Sale
+                All Products
               </Link>
-            )}
-          </nav>
+              <Link
+                href="/new-arrivals"
+                className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+              >
+                New Arrivals
+              </Link>
+              {hasFastShipping && (
+                <Link
+                  href="/fast-shipping"
+                  className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+                >
+                  Fast Shipping
+                </Link>
+              )}
+              <Link
+                href="/rooms/living-room"
+                className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+              >
+                Living Room
+              </Link>
+              <Link
+                href="/rooms/bedroom"
+                className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+              >
+                Bedroom
+              </Link>
+              <Link
+                href="/lighting"
+                className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+              >
+                Lighting
+              </Link>
+              <Link
+                href="/rooms/dining-room-kitchen"
+                className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+              >
+                Dining Room & Kitchen
+              </Link>
+              <Link
+                href="/rooms/outdoor"
+                className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+              >
+                Outdoor
+              </Link>
+              <Link
+                href="/rooms/home-office"
+                className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+              >
+                Home Office
+              </Link>
+              <Link
+                href="/rooms/entryway"
+                className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+              >
+                Entryway
+              </Link>
+              <Link
+                href="/clothing"
+                className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+              >
+                Clothing
+              </Link>
+
+              {hasSale && (
+                <Link
+                  href="/sale"
+                  className="text-sm font-medium transition-colors hover:text-primary py-2 whitespace-nowrap"
+                >
+                  Sale
+                </Link>
+              )}
+            </nav>
+          )}
         </div>
         <PromoBar />
       </header>

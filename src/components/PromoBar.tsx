@@ -26,14 +26,21 @@ export default function PromoBar() {
     <div className="w-full bg-primary text-primary-foreground py-2.5 relative">
       <div className="container mx-auto px-4">
         <Link
-          href="/products"
-          className="flex items-center justify-center gap-2 sm:gap-3 text-sm font-medium hover:opacity-90 transition-opacity text-white outline-none ring-0 focus:outline-none focus:ring-0"
+          href="/fast-shipping"
+          className="flex items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium hover:opacity-90 transition-opacity text-white outline-none ring-0 focus:outline-none focus:ring-0"
         >
-          <span>Opening Best Sellers</span>
-          <span className="bg-white/20 text-white px-2 py-0.5 rounded font-bold text-xs sm:text-sm border-0 ring-0 outline-none">
-            50% OFF
+          <span className="uppercase tracking-[0.18em] text-[0.68rem] font-semibold bg-white/10 px-2 py-0.5 rounded-full border border-white/25">
+            Fast Shipping
           </span>
-          <span className="text-white font-semibold">→ Shop Now</span>
+          <span className="hidden sm:inline text-white/95">
+            Selected items ship within <span className="font-semibold">24 hours</span> with <span className="font-semibold">no extra fee</span>.
+          </span>
+          <span className="sm:hidden text-white/95">
+            Selected items ship in <span className="font-semibold">24 hours</span>, <span className="font-semibold">no extra fee</span>.
+          </span>
+          <span className="text-white font-semibold">
+            View eligible items →
+          </span>
         </Link>
       </div>
       <Button
