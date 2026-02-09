@@ -11,6 +11,7 @@ import {
   Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import PromoBar from "@/components/PromoBar";
 import { useState, useEffect } from "react";
 import { useCart } from "@/hooks/useCart";
 interface HeaderProps {
@@ -277,6 +278,7 @@ export default function Header({ hasSale = true }: HeaderProps) {
             )}
           </nav>
         </div>
+        <PromoBar />
       </header>
 
       {/* Mobile Sidebar Menu */}
