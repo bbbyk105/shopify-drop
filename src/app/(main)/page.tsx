@@ -1,6 +1,7 @@
 import Hero from "@/components/Hero";
 import FeaturedCollections from "@/components/home/FeaturedCollections";
 import ProductSlider from "@/components/home/ProductSlider";
+import { featuredCollections } from "@/config/featuredCollections";
 import ShopByRoom from "@/components/home/ShopByRoom";
 import PromotionalTwoColumn from "@/components/home/PromotionalTwoColumn";
 import Section from "@/components/home/Section";
@@ -82,13 +83,15 @@ export default async function HomePage() {
       )}
 
       {/* (4) Featured Collections - 回遊の次の一手 */}
-      <Section
-        title="Featured Collection"
-        subtitle="Discover our special curated collections"
-        showDivider
-      >
-        <FeaturedCollections />
-      </Section>
+      {featuredCollections.length > 0 && (
+        <Section
+          title="Featured Collection"
+          subtitle="Discover our special curated collections"
+          showDivider
+        >
+          <FeaturedCollections />
+        </Section>
+      )}
 
       {/* (4.5) 縦動画（9:16） - Ad2.webm */}
       <VerticalVideoSection

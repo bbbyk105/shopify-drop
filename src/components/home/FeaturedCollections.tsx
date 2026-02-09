@@ -6,15 +6,13 @@ import { Button } from "@/components/ui/button";
 import { featuredCollections } from "@/config/featuredCollections";
 
 export default function FeaturedCollections() {
-  const minelight = featuredCollections.find((c) => c.id === "minelight");
-
-  if (!minelight) {
-    return null;
-  }
+  if (featuredCollections.length === 0) return null;
 
   return (
     <>
-      <FeaturedCollectionCard collection={minelight} />
+      {featuredCollections.map((collection) => (
+        <FeaturedCollectionCard key={collection.id} collection={collection} />
+      ))}
     </>
   );
 }
@@ -32,7 +30,6 @@ function FeaturedCollectionCard({ collection }: FeaturedCollectionCardProps) {
       className="group cursor-pointer block"
     >
       <div className="flex flex-col md:flex-row gap-6 border border-border rounded-lg bg-card shadow-sm overflow-hidden">
-        {/* Left: Image - 小さめで横長 */}
         <div className="relative w-full md:w-64 lg:w-80 h-48 md:h-auto md:min-h-[200px] shrink-0 overflow-hidden bg-secondary rounded-l-lg">
           <Image
             src={collection.image}
@@ -41,7 +38,6 @@ function FeaturedCollectionCard({ collection }: FeaturedCollectionCardProps) {
             className="object-cover"
             priority={false}
           />
-          {/* Badge */}
           {collection.badge && (
             <div className="absolute top-3 left-3">
               <span className="inline-flex items-center rounded-full bg-background px-2.5 py-1 text-xs font-semibold text-foreground shadow-sm">
@@ -51,7 +47,6 @@ function FeaturedCollectionCard({ collection }: FeaturedCollectionCardProps) {
           )}
         </div>
 
-        {/* Right: Content */}
         <div className="flex-1 p-6 md:p-8 flex flex-col justify-between">
           <div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
@@ -65,10 +60,9 @@ function FeaturedCollectionCard({ collection }: FeaturedCollectionCardProps) {
             </p>
           </div>
 
-          {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-3">
             <Button className="w-full sm:w-auto" size="default" type="button">
-              Explore MineLight
+              Explore Collection
             </Button>
           </div>
         </div>
