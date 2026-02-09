@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Product as LocalProduct } from "@/types";
 import { Product as ShopifyProduct } from "@/lib/shopify/types";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getFakeDiscountPercent } from "@/lib/utils";
 import { useState } from "react";
 import AddToFavoritesButton from "@/components/shared/AddToFavoritesButton";
 
@@ -161,6 +161,37 @@ export default function ProductCard({
     ? parseFloat(product.priceRange.minVariantPrice.amount)
     : product.price;
 
+  const productId = isShopifyProduct ? product.id : `local-${product.slug}`;
+
+  // セール判定（Shopifyのみ。compareAtPrice > price のときセール）
+  const realCompareAtPrice = isShopifyProduct
+    ? (product as ShopifyProduct).compareAtPriceRange?.minVariantPrice
+      ? parseFloat(
+          (product as ShopifyProduct).compareAtPriceRange!.minVariantPrice
+            .amount
+        )
+      : null
+    : null;
+  const realIsOnSale =
+    realCompareAtPrice != null &&
+    realCompareAtPrice > 0 &&
+    realCompareAtPrice > price;
+  const fakePercent = getFakeDiscountPercent(productId);
+  const compareAtPrice =
+    realIsOnSale
+      ? realCompareAtPrice
+      : fakePercent != null
+        ? Math.round((price / (1 - fakePercent / 100)) * 100) / 100
+        : null;
+  const isOnSale =
+    (compareAtPrice != null && compareAtPrice > price) || realIsOnSale;
+  const discountPercent =
+    isOnSale && compareAtPrice
+      ? realIsOnSale
+        ? Math.round((1 - price / compareAtPrice) * 100)
+        : (fakePercent ?? 0)
+      : 0;
+
   const isTitleOnly = variant === "titleOnly";
 
   // 売り切れ判定（Shopify商品のみ。product.availableForSale=false または全バリアントが売り切れ）
@@ -173,8 +204,6 @@ export default function ProductCard({
         p.variants.edges.every(({ node }) => !node.availableForSale)
       );
     })();
-
-  const productId = isShopifyProduct ? product.id : `local-${product.slug}`;
 
   // 色名から実際の色の値を取得（簡易版）
   const getColorValue = (colorName: string): string => {
@@ -368,9 +397,30 @@ export default function ProductCard({
                 </div>
               </div>
             )}
-            <p className="text-base md:text-lg font-bold mt-auto shrink-0">
-              {formatPrice(price)}
-            </p>
+            <div className="flex flex-wrap items-baseline gap-x-1 mt-auto shrink-0">
+              {isOnSale ? (
+                <>
+                  <span className="text-base text-gray-400 line-through font-normal">
+                    {formatPrice(compareAtPrice!)}
+                  </span>
+                  <span className="text-lg font-semibold text-red-600">
+                    {formatPrice(price)}
+                  </span>
+                  {discountPercent > 0 && (
+                    <span className="text-red-500 text-xs ml-1">
+                      ({discountPercent}% OFF)
+                    </span>
+                  )}
+                  <span className="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full ml-2">
+                    Opening Sale
+                  </span>
+                </>
+              ) : (
+                <p className="text-base md:text-lg font-bold">
+                  {formatPrice(price)}
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </Link>

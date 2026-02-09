@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useFavorites } from "@/hooks/useFavorites";
 import type { Product as ShopifyProduct } from "@/lib/shopify/types";
 import { products } from "@/lib/products";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getFakeDiscountPercent } from "@/lib/utils";
 import { Trash2 } from "lucide-react";
 import {
   AlertDialog,
@@ -144,6 +144,32 @@ export default function FavoriteClient() {
           const price = isShopifyProduct
             ? parseFloat(product.priceRange.minVariantPrice.amount)
             : product.price;
+          const realCompareAtPrice = isShopifyProduct
+            ? (product as ShopifyProduct).compareAtPriceRange?.minVariantPrice
+              ? parseFloat(
+                  (product as ShopifyProduct).compareAtPriceRange!
+                    .minVariantPrice.amount
+                )
+              : null
+            : null;
+          const realIsOnSale =
+            realCompareAtPrice != null &&
+            realCompareAtPrice > 0 &&
+            realCompareAtPrice > price;
+          const fakePercent = getFakeDiscountPercent(productId);
+          const compareAtPrice = realIsOnSale
+            ? realCompareAtPrice
+            : fakePercent != null
+              ? Math.round((price / (1 - fakePercent / 100)) * 100) / 100
+              : null;
+          const isOnSale =
+            (compareAtPrice != null && compareAtPrice > price) || realIsOnSale;
+          const discountPercent =
+            isOnSale && compareAtPrice
+              ? realIsOnSale
+                ? Math.round((1 - price / compareAtPrice) * 100)
+                : (fakePercent ?? 0)
+              : 0;
 
           return (
             <div
@@ -166,7 +192,30 @@ export default function FavoriteClient() {
                   <h3 className="font-semibold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
                     {title}
                   </h3>
-                  <p className="text-lg font-bold">{formatPrice(price)}</p>
+                  <div className="flex flex-wrap items-baseline gap-x-1">
+                    {isOnSale ? (
+                      <>
+                        <span className="text-base text-gray-400 line-through font-normal">
+                          {formatPrice(compareAtPrice!)}
+                        </span>
+                        <span className="text-lg font-semibold text-red-600">
+                          {formatPrice(price)}
+                        </span>
+                        {discountPercent > 0 && (
+                          <span className="text-red-500 text-xs ml-1">
+                            ({discountPercent}% OFF)
+                          </span>
+                        )}
+                        <span className="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full ml-2">
+                          Opening Sale
+                        </span>
+                      </>
+                    ) : (
+                      <p className="text-lg font-bold">
+                        {formatPrice(price)}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </Link>
               <AlertDialog

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import AddToCartButton from "@/components/shared/AddToCartButton";
 import type { RelatedProductItem } from "@/hooks/useCartAddedDrawer";
 import AddToFavoritesButton from "@/components/shared/AddToFavoritesButton";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getFakeDiscountPercent } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { Product, Variant } from "@/lib/shopify/types";
 import { ChevronLeft, ChevronRight, X, Plus, Minus } from "lucide-react";
@@ -272,6 +272,29 @@ export default function ProductClient({
       compareAtPriceValue > price
     );
   }, [compareAtPriceValue, price]);
+
+  // 表示用：実セールがなければ商品ごとの割引率（up to 50%）で表示を変える
+  const fakePercent = useMemo(
+    () => getFakeDiscountPercent(product.id),
+    [product.id]
+  );
+  const displayCompareAtPriceValue = useMemo(() => {
+    if (hasDiscount && compareAtPriceValue != null) return compareAtPriceValue;
+    if (fakePercent != null) {
+      return Math.round((price / (1 - fakePercent / 100)) * 100) / 100;
+    }
+    return null;
+  }, [hasDiscount, compareAtPriceValue, fakePercent, price]);
+  const displayHasDiscount =
+    displayCompareAtPriceValue != null &&
+    displayCompareAtPriceValue > 0 &&
+    displayCompareAtPriceValue > price;
+  const displayDiscountPercent =
+    displayHasDiscount && displayCompareAtPriceValue
+      ? hasDiscount
+        ? Math.round((1 - price / displayCompareAtPriceValue) * 100)
+        : (fakePercent ?? 0)
+      : 0;
 
   // 在庫数の取得（inventoryがundefinedの場合はnullを返す）
   const maxQuantity = useMemo(() => {
@@ -832,11 +855,27 @@ export default function ProductClient({
 
           {/* 価格 */}
           <div className="space-y-1">
-            <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-bold">{formatPrice(price)}</span>
-              {hasDiscount && compareAtPriceValue && (
-                <span className="text-xl text-muted-foreground line-through">
-                  {formatPrice(compareAtPriceValue)}
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              {displayHasDiscount && displayCompareAtPriceValue ? (
+                <>
+                  <span className="text-2xl text-gray-400 line-through font-normal">
+                    {formatPrice(displayCompareAtPriceValue)}
+                  </span>
+                  <span className="text-3xl font-semibold text-red-600">
+                    {formatPrice(price)}
+                  </span>
+                  {displayDiscountPercent > 0 ? (
+                    <span className="text-red-500 text-xs ml-1">
+                      ({displayDiscountPercent}% OFF)
+                    </span>
+                  ) : null}
+                  <span className="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full ml-2">
+                    Opening Sale
+                  </span>
+                </>
+              ) : (
+                <span className="text-3xl font-bold">
+                  {formatPrice(price)}
                 </span>
               )}
             </div>

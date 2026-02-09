@@ -31,7 +31,7 @@ export default function PromoBar() {
         >
           <span>Opening Best Sellers</span>
           <span className="bg-white/20 text-white px-2 py-0.5 rounded font-bold text-xs sm:text-sm border-0 ring-0 outline-none">
-            10% OFF
+            20% OFF
           </span>
           <span className="text-white font-semibold">→ Shop Now</span>
         </Link>

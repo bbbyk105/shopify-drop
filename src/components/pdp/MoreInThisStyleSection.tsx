@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getFakeDiscountPercent } from "@/lib/utils";
 import type { Product } from "@/lib/shopify/types";
 
 const MAX_ITEMS = 8;
@@ -60,6 +60,31 @@ export default function MoreInThisStyleSection({
             const price = parseFloat(
               product.priceRange.minVariantPrice.amount
             );
+            const realCompareAtPrice =
+              product.compareAtPriceRange?.minVariantPrice
+                ? parseFloat(
+                    product.compareAtPriceRange.minVariantPrice.amount
+                  )
+                : null;
+            const realIsOnSale =
+              realCompareAtPrice != null &&
+              realCompareAtPrice > 0 &&
+              realCompareAtPrice > price;
+            const fakePercent = getFakeDiscountPercent(product.id);
+            const compareAtPrice = realIsOnSale
+              ? realCompareAtPrice
+              : fakePercent != null
+                ? Math.round((price / (1 - fakePercent / 100)) * 100) / 100
+                : null;
+            const isOnSale =
+              (compareAtPrice != null && compareAtPrice > price) ||
+              realIsOnSale;
+            const discountPercent =
+              isOnSale && compareAtPrice
+                ? realIsOnSale
+                  ? Math.round((1 - price / compareAtPrice) * 100)
+                  : (fakePercent ?? 0)
+                : 0;
             const imageUrl =
               product.featuredImage?.url ||
               product.images.edges[0]?.node.url ||
@@ -83,9 +108,30 @@ export default function MoreInThisStyleSection({
                   <p className="text-sm font-medium text-foreground group-hover:underline">
                     {product.title}
                   </p>
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    {formatPrice(price)}
-                  </p>
+                  <div className="text-sm mt-0.5 flex flex-wrap items-baseline gap-x-1">
+                    {isOnSale ? (
+                      <>
+                        <span className="text-gray-400 line-through font-normal">
+                          {formatPrice(compareAtPrice!)}
+                        </span>
+                        <span className="font-semibold text-red-600">
+                          {formatPrice(price)}
+                        </span>
+                        {discountPercent > 0 && (
+                          <span className="text-red-500 text-xs ml-1">
+                            ({discountPercent}% OFF)
+                          </span>
+                        )}
+                        <span className="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full ml-2">
+                          Opening Sale
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">
+                        {formatPrice(price)}
+                      </span>
+                    )}
+                  </div>
                 </Link>
               </li>
             );
