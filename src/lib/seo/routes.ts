@@ -10,7 +10,6 @@ export const STATIC_PATHS = [
   "products",
   "lighting",
   "clothing",
-  "sale",
   "new-arrivals",
 ] as const;
 
