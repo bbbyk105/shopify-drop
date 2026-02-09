@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import {
-  Search,
   Heart,
   ShoppingCart,
   Menu,
@@ -11,7 +10,6 @@ import {
   Phone,
   Info,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useCart } from "@/hooks/useCart";
@@ -20,7 +18,6 @@ interface HeaderProps {
 }
 
 export default function Header({ hasSale = true }: HeaderProps) {
-  const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMenuClosing, setIsMenuClosing] = useState(false);
   const [isMenuSlideIn, setIsMenuSlideIn] = useState(false);
@@ -29,10 +26,6 @@ export default function Header({ hasSale = true }: HeaderProps) {
   const cart = useCart((state) => state.cart);
   const [cartCount, setCartCount] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Searching for:", searchQuery);
-  };
 
   // カート数量の監視とアニメーション
   useEffect(() => {
@@ -127,23 +120,6 @@ export default function Header({ hasSale = true }: HeaderProps) {
               </span>
             </Link>
 
-            {/* Search Bar - Center (Desktop) */}
-            <form
-              onSubmit={handleSearch}
-              className="flex flex-1 max-w-2xl mx-4"
-            >
-              <div className="relative w-full">
-                <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search products & help..."
-                  className="w-full pr-9 bg-secondary/50"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </form>
-
             {/* Utility Icons - Right */}
             <div className="flex items-center space-x-2 shrink-0">
               <Link href={"/favorite"}>
@@ -221,22 +197,6 @@ export default function Header({ hasSale = true }: HeaderProps) {
                 </Button>
               </Link>
             </div>
-          </div>
-
-          {/* Mobile: Search Bar */}
-          <div className="md:hidden pb-3">
-            <form onSubmit={handleSearch}>
-              <div className="relative">
-                <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search products & help ..."
-                  className="w-full pr-9 bg-secondary/50 border-border"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </form>
           </div>
 
           {/* Secondary Navigation Bar: ProductsListのcategoryFilters順に合わせる */}
