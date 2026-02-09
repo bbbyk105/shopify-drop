@@ -2,7 +2,6 @@ import { Metadata } from "next";
 import { getAllProducts } from "@/lib/shopify/queries/products";
 import type { Product as ShopifyProduct } from "@/lib/shopify/types";
 import { products } from "@/lib/products";
-import { getFakeDiscountPercent } from "@/lib/utils";
 import SaleClient from "./SaleClient";
 import { buildPageMeta } from "@/lib/seo/meta";
 
@@ -19,7 +18,6 @@ function isProductOnSale(
   product: ShopifyProduct | (typeof products)[0],
 ): boolean {
   const isShopify = "handle" in product;
-  const productId = isShopify ? product.id : `local-${product.slug}`;
 
   if (isShopify) {
     const p = product as ShopifyProduct;
@@ -27,12 +25,11 @@ function isProductOnSale(
     const compareAt = p.compareAtPriceRange?.minVariantPrice
       ? parseFloat(p.compareAtPriceRange.minVariantPrice.amount)
       : null;
-    const realSale = compareAt != null && compareAt > 0 && compareAt > price;
-    const fakeSale = getFakeDiscountPercent(productId) !== null;
-    return realSale || fakeSale;
+    return compareAt != null && compareAt > 0 && compareAt > price;
   }
 
-  return getFakeDiscountPercent(productId) !== null;
+  // ローカルのダミー商品はセール扱いにしない
+  return false;
 }
 
 export default async function SalePage() {

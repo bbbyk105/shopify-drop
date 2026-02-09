@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { formatPrice, getFakeDiscountPercent } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import type { Product } from "@/lib/shopify/types";
 
 const MAX_ITEMS = 8;
@@ -66,24 +66,14 @@ export default function MoreInThisStyleSection({
                     product.compareAtPriceRange.minVariantPrice.amount
                   )
                 : null;
-            const realIsOnSale =
+            const isOnSale =
               realCompareAtPrice != null &&
               realCompareAtPrice > 0 &&
               realCompareAtPrice > price;
-            const fakePercent = getFakeDiscountPercent(product.id);
-            const compareAtPrice = realIsOnSale
-              ? realCompareAtPrice
-              : fakePercent != null
-                ? Math.round((price / (1 - fakePercent / 100)) * 100) / 100
-                : null;
-            const isOnSale =
-              (compareAtPrice != null && compareAtPrice > price) ||
-              realIsOnSale;
+            const compareAtPrice = isOnSale ? realCompareAtPrice : null;
             const discountPercent =
               isOnSale && compareAtPrice
-                ? realIsOnSale
-                  ? Math.round((1 - price / compareAtPrice) * 100)
-                  : (fakePercent ?? 0)
+                ? Math.round((1 - price / compareAtPrice) * 100)
                 : 0;
             const imageUrl =
               product.featuredImage?.url ||

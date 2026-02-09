@@ -71,6 +71,12 @@ export default function CartAddedDrawer() {
 
   if (!isOpen || !product) return null;
 
+  const savings =
+    product.compareAtPrice &&
+    product.compareAtPrice > product.price
+      ? product.compareAtPrice - product.price
+      : null;
+
   const panelAnimation = isMobile
     ? isClosing
       ? "animate-[slide-out-to-bottom_0.3s_ease-in]"
@@ -152,9 +158,26 @@ export default function CartAddedDrawer() {
               <p className="mt-1 text-sm text-slate-500">
                 {product.productName} has been added to your cart.
               </p>
-              <p className="mt-1 text-base font-semibold text-slate-900">
-                {formatPrice(product.price)}
-              </p>
+              <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                {savings && product.compareAtPrice != null && (
+                  <span className="text-base text-gray-400 line-through font-normal">
+                    {formatPrice(product.compareAtPrice)}
+                  </span>
+                )}
+                <span
+                  className={cn(
+                    "text-base font-semibold",
+                    savings ? "text-red-600" : "text-slate-900",
+                  )}
+                >
+                  {formatPrice(product.price)}
+                </span>
+                {savings && (
+                  <span className="text-xs font-medium text-emerald-600">
+                    You save {formatPrice(savings)}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -194,9 +217,32 @@ export default function CartAddedDrawer() {
                           {item.variantTitle}
                         </p>
                       )}
-                      <p className="mt-0.5 font-semibold text-slate-900">
-                        {formatPrice(item.price)}
-                      </p>
+                      <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                        {item.compareAtPrice != null &&
+                          item.compareAtPrice > item.price && (
+                            <span className="text-sm text-gray-400 line-through font-normal">
+                              {formatPrice(item.compareAtPrice)}
+                            </span>
+                          )}
+                        <span
+                          className={cn(
+                            "text-sm font-semibold",
+                            item.compareAtPrice != null &&
+                              item.compareAtPrice > item.price
+                              ? "text-red-600"
+                              : "text-slate-900",
+                          )}
+                        >
+                          {formatPrice(item.price)}
+                        </span>
+                        {item.compareAtPrice != null &&
+                          item.compareAtPrice > item.price && (
+                            <span className="text-xs font-medium text-emerald-600">
+                              You save{" "}
+                              {formatPrice(item.compareAtPrice - item.price)}
+                            </span>
+                          )}
+                      </div>
                     </div>
                     <div className="shrink-0">
                       <AddToCartButton
@@ -206,6 +252,12 @@ export default function CartAddedDrawer() {
                         productImage={item.imageUrl}
                         variantTitle={item.variantTitle}
                         price={item.price}
+                        compareAtPrice={
+                          item.compareAtPrice != null &&
+                          item.compareAtPrice > item.price
+                            ? item.compareAtPrice
+                            : null
+                        }
                         relatedProducts={[]}
                         iconOnly
                         openDrawerOnAdd={false}

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import AddToCartButton from "@/components/shared/AddToCartButton";
 import type { RelatedProductItem } from "@/hooks/useCartAddedDrawer";
 import AddToFavoritesButton from "@/components/shared/AddToFavoritesButton";
-import { formatPrice, getFakeDiscountPercent } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { Product, Variant } from "@/lib/shopify/types";
 import { ChevronLeft, ChevronRight, X, Plus, Minus } from "lucide-react";
@@ -273,27 +273,17 @@ export default function ProductClient({
     );
   }, [compareAtPriceValue, price]);
 
-  // 表示用：実セールがなければ商品ごとの割引率（up to 50%）で表示を変える
-  const fakePercent = useMemo(
-    () => getFakeDiscountPercent(product.id),
-    [product.id],
-  );
   const displayCompareAtPriceValue = useMemo(() => {
     if (hasDiscount && compareAtPriceValue != null) return compareAtPriceValue;
-    if (fakePercent != null) {
-      return Math.round((price / (1 - fakePercent / 100)) * 100) / 100;
-    }
     return null;
-  }, [hasDiscount, compareAtPriceValue, fakePercent, price]);
+  }, [hasDiscount, compareAtPriceValue]);
   const displayHasDiscount =
     displayCompareAtPriceValue != null &&
     displayCompareAtPriceValue > 0 &&
     displayCompareAtPriceValue > price;
   const displayDiscountPercent =
     displayHasDiscount && displayCompareAtPriceValue
-      ? hasDiscount
-        ? Math.round((1 - price / displayCompareAtPriceValue) * 100)
-        : (fakePercent ?? 0)
+      ? Math.round((1 - price / displayCompareAtPriceValue) * 100)
       : 0;
 
   // 在庫数の取得（inventoryがundefinedの場合はnullを返す）
@@ -308,7 +298,7 @@ export default function ProductClient({
     return product.variants.edges.every(({ node }) => !node.availableForSale);
   }, [product.variants.edges]);
 
-  // Map related products for cart added drawer
+  // Map related products for cart added drawer (セール時は compareAtPrice を付与)
   const drawerRelatedProducts = useMemo((): RelatedProductItem[] => {
     return relatedProducts
       .slice(0, 4)
@@ -322,12 +312,20 @@ export default function ProductClient({
           p.images.edges[0]?.node.url ||
           "/placeholder.png";
         const price = parseFloat(p.priceRange.minVariantPrice.amount);
+        const realCompareAt = p.compareAtPriceRange?.minVariantPrice
+          ? parseFloat(p.compareAtPriceRange.minVariantPrice.amount)
+          : null;
+        const compareAtPrice =
+          realCompareAt != null && realCompareAt > 0 && realCompareAt > price
+            ? realCompareAt
+            : null;
         return {
           id: p.id,
           title: p.title,
           handle: p.handle,
           imageUrl,
           price,
+          compareAtPrice,
           variantId: firstVariant?.id ?? "",
           variantTitle,
         };
@@ -672,6 +670,7 @@ export default function ProductClient({
               ?.map((o) => o.value)
               .join(", ")}
             price={price}
+            compareAtPrice={displayHasDiscount ? displayCompareAtPriceValue : null}
             relatedProducts={drawerRelatedProducts}
             availableForSale={isPurchasable(selectedVariant, inventory)}
           >

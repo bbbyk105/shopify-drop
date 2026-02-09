@@ -119,33 +119,54 @@ export default function BundleSection({ bundles }: BundleSectionProps) {
                   {group.title}
                 </h3>
                 <ul className="space-y-4 mb-6">
-                  {group.items.map((item) => (
-                    <li key={item.variantId} className="flex items-center gap-4">
-                      <Link
-                        href={`/products/${item.handle}`}
-                        className="relative w-14 h-14 shrink-0 rounded-lg overflow-hidden bg-secondary/50"
+                  {group.items.map((item) => {
+                    const isOnSale =
+                      item.compareAtPrice != null &&
+                      item.compareAtPrice > item.price;
+                    return (
+                      <li
+                        key={item.variantId}
+                        className="flex items-center gap-4"
                       >
-                        <Image
-                          src={item.image}
-                          alt=""
-                          fill
-                          className="object-cover"
-                          sizes="56px"
-                        />
-                      </Link>
-                      <div className="min-w-0">
                         <Link
                           href={`/products/${item.handle}`}
-                          className="text-sm font-medium text-foreground hover:underline block truncate"
+                          className="relative w-14 h-14 shrink-0 rounded-lg overflow-hidden bg-secondary/50"
                         >
-                          {item.title}
+                          <Image
+                            src={item.image}
+                            alt=""
+                            fill
+                            className="object-cover"
+                            sizes="56px"
+                          />
                         </Link>
-                        <p className="text-sm text-muted-foreground">
-                          {formatPrice(item.price)}
-                        </p>
-                      </div>
-                    </li>
-                  ))}
+                        <div className="min-w-0">
+                          <Link
+                            href={`/products/${item.handle}`}
+                            className="text-sm font-medium text-foreground hover:underline block truncate"
+                          >
+                            {item.title}
+                          </Link>
+                          <div className="mt-0.5 flex flex-wrap items-baseline gap-x-1">
+                            {isOnSale ? (
+                              <>
+                                <span className="text-xs text-gray-400 line-through font-normal">
+                                  {formatPrice(item.compareAtPrice!)}
+                                </span>
+                                <span className="text-sm font-semibold text-red-600">
+                                  {formatPrice(item.price)}
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-sm text-muted-foreground">
+                                {formatPrice(item.price)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
                 {group.savings && (
                   <p className="text-sm text-foreground font-medium mb-4">

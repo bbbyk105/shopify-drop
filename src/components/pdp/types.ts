@@ -4,6 +4,8 @@ export interface BundleItem {
   variantId: string;
   title: string;
   price: number;
+  /** セール前の元価格（ある場合のみ） */
+  compareAtPrice?: number | null;
   image: string;
 }
 

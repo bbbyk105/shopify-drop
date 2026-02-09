@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useFavorites } from "@/hooks/useFavorites";
 import type { Product as ShopifyProduct } from "@/lib/shopify/types";
 import { products } from "@/lib/products";
-import { formatPrice, getFakeDiscountPercent } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import { Trash2 } from "lucide-react";
 import {
   AlertDialog,
@@ -156,19 +156,12 @@ export default function FavoriteClient() {
             realCompareAtPrice != null &&
             realCompareAtPrice > 0 &&
             realCompareAtPrice > price;
-          const fakePercent = getFakeDiscountPercent(productId);
-          const compareAtPrice = realIsOnSale
-            ? realCompareAtPrice
-            : fakePercent != null
-              ? Math.round((price / (1 - fakePercent / 100)) * 100) / 100
-              : null;
+          const compareAtPrice = realIsOnSale ? realCompareAtPrice : null;
           const isOnSale =
-            (compareAtPrice != null && compareAtPrice > price) || realIsOnSale;
+            compareAtPrice != null && compareAtPrice > price && realIsOnSale;
           const discountPercent =
             isOnSale && compareAtPrice
-              ? realIsOnSale
-                ? Math.round((1 - price / compareAtPrice) * 100)
-                : (fakePercent ?? 0)
+              ? Math.round((1 - price / compareAtPrice) * 100)
               : 0;
 
           return (

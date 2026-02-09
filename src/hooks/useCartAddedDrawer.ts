@@ -8,6 +8,8 @@ export type RelatedProductItem = {
   handle: string;
   imageUrl: string;
   price: number;
+  /** 元価格（セール時の表示用） */
+  compareAtPrice?: number | null;
   variantId: string;
   /** Display detail e.g. "Basket, 27x42x23 cm" */
   variantTitle?: string;
@@ -18,6 +20,8 @@ export type CartAddedDrawerProduct = {
   productImage: string;
   variantTitle?: string;
   price: number;
+  /** 元価格（セール時の割引額表示用） */
+  compareAtPrice?: number | null;
 };
 
 type CartAddedDrawerState = {

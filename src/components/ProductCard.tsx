@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Product as LocalProduct } from "@/types";
 import { Product as ShopifyProduct } from "@/lib/shopify/types";
-import { formatPrice, getFakeDiscountPercent } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import { useState } from "react";
 import AddToFavoritesButton from "@/components/shared/AddToFavoritesButton";
 
@@ -161,6 +161,7 @@ export default function ProductCard({
     ? parseFloat(product.priceRange.minVariantPrice.amount)
     : product.price;
 
+  // お気に入り用の一意な productId（Shopify商品は GraphQL ID、ローカル商品は slug ベース）
   const productId = isShopifyProduct ? product.id : `local-${product.slug}`;
 
   // セール判定（Shopifyのみ。compareAtPrice > price のときセール）
@@ -176,20 +177,12 @@ export default function ProductCard({
     realCompareAtPrice != null &&
     realCompareAtPrice > 0 &&
     realCompareAtPrice > price;
-  const fakePercent = getFakeDiscountPercent(productId);
-  const compareAtPrice =
-    realIsOnSale
-      ? realCompareAtPrice
-      : fakePercent != null
-        ? Math.round((price / (1 - fakePercent / 100)) * 100) / 100
-        : null;
+  const compareAtPrice = realIsOnSale ? realCompareAtPrice : null;
   const isOnSale =
-    (compareAtPrice != null && compareAtPrice > price) || realIsOnSale;
+    compareAtPrice != null && compareAtPrice > price && realIsOnSale;
   const discountPercent =
     isOnSale && compareAtPrice
-      ? realIsOnSale
-        ? Math.round((1 - price / compareAtPrice) * 100)
-        : (fakePercent ?? 0)
+      ? Math.round((1 - price / compareAtPrice) * 100)
       : 0;
 
   const isTitleOnly = variant === "titleOnly";

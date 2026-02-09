@@ -14,6 +14,7 @@ import type { BundleGroup } from "@/components/pdp/types";
 import { buildProductMeta } from "@/lib/seo/meta";
 import { buildProductSchema, buildBreadcrumbSchema } from "@/lib/seo/schema";
 import { getSiteUrl } from "@/lib/seo/site-url";
+import { getFakeDiscountPercent } from "@/lib/utils";
 
 /** ISR: 600秒で再検証。商品詳細。 */
 export const revalidate = 600;
@@ -213,11 +214,32 @@ export default async function ProductPage({ params }: ProductPageProps) {
       const v = p.variants.edges[0]?.node;
       const variantId = v?.id ?? "";
       if (!variantId) return null;
+
+      const price = parseFloat(p.priceRange.minVariantPrice.amount);
+      const realCompareAtPrice = p.compareAtPriceRange?.minVariantPrice
+        ? parseFloat(p.compareAtPriceRange.minVariantPrice.amount)
+        : null;
+      const realIsOnSale =
+        realCompareAtPrice != null &&
+        realCompareAtPrice > 0 &&
+        realCompareAtPrice > price;
+      const fakePercent = getFakeDiscountPercent(p.id);
+      const compareAtPriceCandidate = realIsOnSale
+        ? realCompareAtPrice
+        : fakePercent != null
+          ? Math.round((price / (1 - fakePercent / 100)) * 100) / 100
+          : null;
+      const compareAtPrice =
+        compareAtPriceCandidate != null && compareAtPriceCandidate > price
+          ? compareAtPriceCandidate
+          : null;
+
       return {
         handle: p.handle,
         variantId,
         title: p.title,
-        price: parseFloat(p.priceRange.minVariantPrice.amount),
+        price,
+        compareAtPrice,
         image:
           p.featuredImage?.url ??
           p.images.edges[0]?.node.url ??

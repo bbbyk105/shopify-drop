@@ -18,6 +18,8 @@ interface AddToCartButtonProps {
   variantTitle?: string;
   /** Unit price; required to show the cart added drawer */
   price?: number;
+   /** Compare at price (original price) for showing savings in cart drawer */
+  compareAtPrice?: number | null;
   /** Related products to show in the drawer (e.g. from product page) */
   relatedProducts?: RelatedProductItem[];
   /** When false, button is disabled and add to cart is skipped */
@@ -37,6 +39,7 @@ export default function AddToCartButton({
   productImage,
   variantTitle,
   price,
+  compareAtPrice = null,
   relatedProducts = [],
   availableForSale = true,
   iconOnly = false,
@@ -80,6 +83,7 @@ export default function AddToCartButton({
           productImage,
           variantTitle,
           price,
+          compareAtPrice,
         },
         relatedProducts,
       });
