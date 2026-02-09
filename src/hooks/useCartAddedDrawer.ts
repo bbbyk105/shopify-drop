@@ -41,6 +41,5 @@ export const useCartAddedDrawer = create<CartAddedDrawerState>((set) => ({
       product: payload.product,
       relatedProducts: payload.relatedProducts ?? [],
     }),
-  close: () =>
-    set({ isOpen: false, product: null, relatedProducts: [] }),
+  close: () => set({ isOpen: false, product: null, relatedProducts: [] }),
 }));

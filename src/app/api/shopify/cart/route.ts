@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createCart, addLines, updateLineQty, removeLines } from "@/lib/shopify/mutations/cart";
 import { getCart } from "@/lib/shopify/queries/cart";
 import { getVariantsInventory } from "@/lib/shopify/queries/inventory";
+import { isShopifyServiceUnavailable } from "@/lib/shopify/client";
 
 // カート操作（作成、追加、更新、削除）
 export async function POST(request: NextRequest) {
@@ -85,6 +86,12 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     console.error("Cart API error:", error);
+    if (isShopifyServiceUnavailable(error)) {
+      return NextResponse.json(
+        { error: "Cart is temporarily unavailable. Please try again in a moment." },
+        { status: 503 }
+      );
+    }
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -109,6 +116,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     console.error("Cart fetch error:", error);
+    if (isShopifyServiceUnavailable(error)) {
+      return NextResponse.json(
+        { error: "Cart is temporarily unavailable. Please try again in a moment." },
+        { status: 503 }
+      );
+    }
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

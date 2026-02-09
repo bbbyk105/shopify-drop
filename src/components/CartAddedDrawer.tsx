@@ -22,7 +22,7 @@ export default function CartAddedDrawer() {
   useEffect(() => {
     const check = () =>
       setIsMobile(
-        typeof window !== "undefined" && window.innerWidth < MOBILE_BREAKPOINT
+        typeof window !== "undefined" && window.innerWidth < MOBILE_BREAKPOINT,
       );
     check();
     window.addEventListener("resize", check);
@@ -83,7 +83,7 @@ export default function CartAddedDrawer() {
     <div
       className={cn(
         "fixed inset-0 z-50 flex",
-        isMobile ? "items-end justify-center" : "justify-end"
+        isMobile ? "items-end justify-center" : "justify-end",
       )}
       aria-modal="true"
       role="dialog"
@@ -93,7 +93,7 @@ export default function CartAddedDrawer() {
       <div
         className={cn(
           "absolute inset-0 transition-opacity",
-          isMobile ? "bg-black/50" : "bg-black/40"
+          isMobile ? "bg-black/50" : "bg-black/40",
         )}
         onClick={handleBackdropClick}
       />
@@ -105,7 +105,7 @@ export default function CartAddedDrawer() {
           isMobile
             ? "h-[80vh] rounded-t-xl"
             : "h-full sm:max-w-md sm:min-w-[380px]",
-          panelAnimation
+          panelAnimation,
         )}
       >
         {/* Close button */}
@@ -232,7 +232,10 @@ export default function CartAddedDrawer() {
             >
               Continue Shopping
             </Button>
-            <Button asChild className="flex-1 bg-slate-900 hover:bg-slate-800 text-white">
+            <Button
+              asChild
+              className="flex-1 bg-slate-900 hover:bg-slate-800 text-white"
+            >
               <Link href="/cart" onClick={handleClose}>
                 View Cart
               </Link>

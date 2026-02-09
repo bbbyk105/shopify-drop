@@ -49,14 +49,14 @@ const SIZE_NAME_CANDIDATES = ["Size", "サイズ"];
 // 共通ユーティリティ関数
 const getOptionValue = (
   variant: Variant,
-  optionName: string
+  optionName: string,
 ): string | undefined => {
   return variant.selectedOptions?.find((opt) => opt.name === optionName)?.value;
 };
 
 const isPurchasable = (
   variant: Variant,
-  inventory: Record<string, number>
+  inventory: Record<string, number>,
 ): boolean => {
   if (!variant.availableForSale) return false;
   // inventoryが取得できた場合は、在庫数もチェック（undefinedは0扱いしない）
@@ -106,7 +106,7 @@ export default function ProductClient({
       ([entry]) => {
         setShowStickyCta(!entry.isIntersecting);
       },
-      { threshold: 0, rootMargin: "0px" }
+      { threshold: 0, rootMargin: "0px" },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -118,8 +118,8 @@ export default function ProductClient({
     for (const variant of product.variants.edges.map((e) => e.node)) {
       const colorOption = variant.selectedOptions?.find((opt) =>
         COLOR_NAME_CANDIDATES.some(
-          (candidate) => opt.name.toLowerCase() === candidate.toLowerCase()
-        )
+          (candidate) => opt.name.toLowerCase() === candidate.toLowerCase(),
+        ),
       );
       if (colorOption) return colorOption.name; // 実名を返す
     }
@@ -130,8 +130,8 @@ export default function ProductClient({
     for (const variant of product.variants.edges.map((e) => e.node)) {
       const sizeOption = variant.selectedOptions?.find((opt) =>
         SIZE_NAME_CANDIDATES.some(
-          (candidate) => opt.name.toLowerCase() === candidate.toLowerCase()
-        )
+          (candidate) => opt.name.toLowerCase() === candidate.toLowerCase(),
+        ),
       );
       if (sizeOption) return sizeOption.name;
     }
@@ -276,7 +276,7 @@ export default function ProductClient({
   // 表示用：実セールがなければ商品ごとの割引率（up to 50%）で表示を変える
   const fakePercent = useMemo(
     () => getFakeDiscountPercent(product.id),
-    [product.id]
+    [product.id],
   );
   const displayCompareAtPriceValue = useMemo(() => {
     if (hasDiscount && compareAtPriceValue != null) return compareAtPriceValue;
@@ -399,7 +399,7 @@ export default function ProductClient({
   const variantForImage = useMemo(() => {
     if (selectedVariant) return selectedVariant;
     const hasAnySelected = Object.values(selectedOptions).some(
-      (v) => v !== null
+      (v) => v !== null,
     );
     if (!hasAnySelected) return null;
     return (
@@ -408,10 +408,10 @@ export default function ProductClient({
           ([optionName, optionValue]) => {
             if (optionValue === null) return true;
             const variantOption = variant.selectedOptions?.find(
-              (opt) => opt.name === optionName
+              (opt) => opt.name === optionName,
             );
             return variantOption?.value === optionValue;
-          }
+          },
         );
       }) ?? null
     );
@@ -573,7 +573,7 @@ export default function ProductClient({
     const todayUTC = Date.UTC(
       today.getUTCFullYear(),
       today.getUTCMonth(),
-      today.getUTCDate()
+      today.getUTCDate(),
     );
 
     const minDate = new Date(todayUTC + finalMin * 24 * 60 * 60 * 1000);
@@ -696,10 +696,10 @@ export default function ProductClient({
             {ctaState.type === "select_options"
               ? "SELECT OPTIONS"
               : ctaState.type === "unavailable"
-              ? "UNAVAILABLE"
-              : ctaState.type === "sold_out"
-              ? "SOLD OUT"
-              : "SELECT OPTIONS"}
+                ? "UNAVAILABLE"
+                : ctaState.type === "sold_out"
+                  ? "SOLD OUT"
+                  : "SELECT OPTIONS"}
           </Button>
           <AddToFavoritesButton
             productId={product.id}
@@ -772,7 +772,7 @@ export default function ProductClient({
                   onClick={() => {
                     setVariantImageOverride(null);
                     setSelectedImage(
-                      (prev) => (prev - 1 + images.length) % images.length
+                      (prev) => (prev - 1 + images.length) % images.length,
                     );
                   }}
                   className="hidden xl:flex absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all z-10"
@@ -874,9 +874,7 @@ export default function ProductClient({
                   </span>
                 </>
               ) : (
-                <span className="text-3xl font-bold">
-                  {formatPrice(price)}
-                </span>
+                <span className="text-3xl font-bold">{formatPrice(price)}</span>
               )}
             </div>
           </div>
@@ -917,7 +915,7 @@ export default function ProductClient({
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {sortOptionValues(
-                        Array.from(optionTypesMap.get(optionType) || [])
+                        Array.from(optionTypesMap.get(optionType) || []),
                       ).map((value) => {
                         const isValueSelected =
                           selectedOptions[optionType] === value;
@@ -925,7 +923,7 @@ export default function ProductClient({
                           allVariants,
                           selectedOptions,
                           optionType,
-                          value
+                          value,
                         );
 
                         return (
@@ -940,7 +938,7 @@ export default function ProductClient({
                               isValueSelected
                                 ? "bg-zinc-800 text-white border-zinc-800"
                                 : "bg-zinc-100 border-zinc-200 text-zinc-800 hover:bg-zinc-200 hover:border-zinc-300",
-                              !isSelectable && "opacity-50 cursor-not-allowed"
+                              !isSelectable && "opacity-50 cursor-not-allowed",
                             )}
                           >
                             {value}
@@ -1150,7 +1148,6 @@ export default function ProductClient({
               </div>
             )}
           </div>
-
         </div>
       </div>
 
@@ -1173,7 +1170,9 @@ export default function ProductClient({
       <div
         className={cn(
           "fixed bottom-0 left-0 right-0 z-40 border-t bg-background px-3 pt-3 md:hidden transition-transform duration-300 ease-out",
-          showStickyCta ? "translate-y-0" : "translate-y-full pointer-events-none"
+          showStickyCta
+            ? "translate-y-0"
+            : "translate-y-full pointer-events-none",
         )}
         style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
       >

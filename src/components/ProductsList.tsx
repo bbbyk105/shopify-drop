@@ -595,6 +595,7 @@ export default function ProductsList({
         href: "/new-arrivals",
         image: "/images/newarrivals.webp",
       },
+
       {
         name: "Living Room",
         href: "/rooms/living-room",
@@ -627,6 +628,11 @@ export default function ProductsList({
         image: "/images/entryway.webp",
       },
       { name: "Clothing", href: "/clothing", image: "/images/clothing.webp" },
+      {
+        name: "Sale",
+        href: "/sale",
+        image: "/images/sale.jpg",
+      },
     ],
     [],
   );
@@ -701,9 +707,7 @@ export default function ProductsList({
                       </div>
                       <span
                         className={`text-sm font-semibold pr-4 ${
-                          isActive
-                            ? "text-zinc-900"
-                            : "text-zinc-700"
+                          isActive ? "text-zinc-900" : "text-zinc-700"
                         }`}
                       >
                         {category.name}

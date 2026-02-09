@@ -22,6 +22,17 @@ export const shopify = new GraphQLClient(endpoint, {
   },
 });
 
+/** Shopify API が 503 / サービス一時停止 かどうか */
+export function isShopifyServiceUnavailable(error: unknown): boolean {
+  const err = error as { response?: { status?: number }; message?: string };
+  if (err?.response?.status === 503) return true;
+  const msg = typeof err?.message === "string" ? err.message : "";
+  return (
+    msg.includes("SERVICE_UNAVAILABLE") ||
+    msg.includes("problem loading this website")
+  );
+}
+
 export async function shopifyFetch<T>(
   query: string,
   variables?: Record<string, unknown>,
