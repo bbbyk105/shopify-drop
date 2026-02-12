@@ -23,11 +23,11 @@ export default function PromoBar() {
   if (isDismissed) return null;
 
   return (
-    <div className="w-full bg-primary text-primary-foreground py-2.5 relative">
-      <div className="container mx-auto px-4">
+    <div className="w-full bg-primary text-primary-foreground py-2.5 relative overflow-x-hidden">
+      <div className="container mx-auto px-4 pr-12 sm:pr-4">
         <Link
           href="/fast-shipping"
-          className="flex items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium hover:opacity-90 transition-opacity text-white outline-none ring-0 focus:outline-none focus:ring-0"
+          className="flex min-w-0 max-w-full flex-col items-center justify-center gap-1 text-center text-xs font-medium text-white outline-none ring-0 transition-opacity hover:opacity-90 focus:outline-none focus:ring-0 sm:flex-row sm:gap-3 sm:text-sm"
         >
           <span className="uppercase tracking-[0.18em] text-[0.68rem] font-semibold bg-white/10 px-2 py-0.5 rounded-full border border-white/25">
             Fast Shipping
