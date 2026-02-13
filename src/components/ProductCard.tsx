@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Product as LocalProduct } from "@/types";
 import { Product as ShopifyProduct } from "@/lib/shopify/types";
 import { formatPrice } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import AddToFavoritesButton from "@/components/shared/AddToFavoritesButton";
 
 interface ProductCardProps {
@@ -25,9 +25,18 @@ export default function ProductCard({
   variant = "default",
 }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [showSecondImageOnHover, setShowSecondImageOnHover] = useState(false);
+  const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [hoveredOption, setHoveredOption] = useState<string | null>(null);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isSwatchAreaHovered, setIsSwatchAreaHovered] = useState(false);
+
+  // ホバー3秒経過で2枚目表示、マウスが離れたらタイマー解除
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    };
+  }, []);
 
   // ローカル商品とShopify商品の両方に対応
   const isShopifyProduct = "handle" in product;
@@ -51,7 +60,7 @@ export default function ProductCard({
           opt.name.toLowerCase() === "color" ||
           opt.name.toLowerCase() === "colour" ||
           opt.name.toLowerCase() === "カラー" ||
-          opt.name.toLowerCase() === "色"
+          opt.name.toLowerCase() === "色",
       );
       if (colorOption) {
         targetOptionName = colorOption.name;
@@ -76,7 +85,7 @@ export default function ProductCard({
 
       product.variants.edges.forEach(({ node }) => {
         const option = node.selectedOptions?.find(
-          (opt) => opt.name === targetOptionName
+          (opt) => opt.name === targetOptionName,
         );
 
         if (option) {
@@ -119,8 +128,8 @@ export default function ProductCard({
       product.images.edges[0]?.node.url ||
       "/placeholder.png"
     : product.images && product.images.length > 1
-    ? product.images[1]
-    : product.image;
+      ? product.images[1]
+      : product.image;
 
   // 表示する画像を決定
   let displayImage = firstImage;
@@ -132,7 +141,7 @@ export default function ProductCard({
   // ホバーされたオプションの画像を優先表示
   if (hoveredOption && variantOptions.length > 0) {
     const hoveredVariant = variantOptions.find(
-      (vo) => vo.optionValue === hoveredOption
+      (vo) => vo.optionValue === hoveredOption,
     );
     if (hoveredVariant) {
       displayImage = hoveredVariant.imageUrl;
@@ -141,16 +150,16 @@ export default function ProductCard({
   // 選択されたオプションの画像を表示
   else if (selectedOption && variantOptions.length > 0) {
     const selectedVariant = variantOptions.find(
-      (vo) => vo.optionValue === selectedOption
+      (vo) => vo.optionValue === selectedOption,
     );
     if (selectedVariant) {
       displayImage = selectedVariant.imageUrl;
     }
   }
-  // 通常のホバー時は2枚目の画像
+  // ホバーして3秒経過したら2枚目の画像
   else if (
     !suppressSecondImage &&
-    isHovered &&
+    showSecondImageOnHover &&
     secondImage &&
     secondImage !== firstImage
   ) {
@@ -169,7 +178,7 @@ export default function ProductCard({
     ? (product as ShopifyProduct).compareAtPriceRange?.minVariantPrice
       ? parseFloat(
           (product as ShopifyProduct).compareAtPriceRange!.minVariantPrice
-            .amount
+            .amount,
         )
       : null
     : null;
@@ -269,8 +278,22 @@ export default function ProductCard({
       <Link href={`/products/${slug}`} className="flex flex-col h-full">
         <div
           className="cursor-pointer flex flex-col h-full transition-all"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
+          onMouseEnter={() => {
+            setIsHovered(true);
+            if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+            hoverTimerRef.current = setTimeout(() => {
+              setShowSecondImageOnHover(true);
+              hoverTimerRef.current = null;
+            }, 5000);
+          }}
+          onMouseLeave={() => {
+            setIsHovered(false);
+            setShowSecondImageOnHover(false);
+            if (hoverTimerRef.current) {
+              clearTimeout(hoverTimerRef.current);
+              hoverTimerRef.current = null;
+            }
+          }}
         >
           <div
             className="relative aspect-square overflow-hidden rounded-lg bg-secondary/30 mb-3 shadow-sm group-hover:shadow-md transition-all shrink-0"
@@ -350,8 +373,8 @@ export default function ProductCard({
                           isSelected
                             ? "border-red-500 scale-110 ring-2 ring-red-500 ring-offset-1"
                             : isHovered
-                            ? "border-foreground scale-110"
-                            : "border-border hover:border-foreground/50"
+                              ? "border-foreground scale-110"
+                              : "border-border hover:border-foreground/50"
                         }`}
                         onMouseEnter={() =>
                           setHoveredOption(variantOption.optionValue)
@@ -372,7 +395,7 @@ export default function ProductCard({
                             className="absolute inset-0"
                             style={{
                               backgroundColor: getColorValue(
-                                variantOption.optionValue
+                                variantOption.optionValue,
                               ),
                             }}
                           />
