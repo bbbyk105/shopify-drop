@@ -196,6 +196,16 @@ export default function ProductCard({
 
   const isTitleOnly = variant === "titleOnly";
 
+  // バリアント選択時は slug ページをそのバリアントで開くためのURL
+  const selectedVariantId =
+    selectedOption && variantOptions.length > 0
+      ? variantOptions.find((vo) => vo.optionValue === selectedOption)
+          ?.variantId
+      : undefined;
+  const productHref = selectedVariantId
+    ? `/products/${slug}?variant=${encodeURIComponent(selectedVariantId)}`
+    : `/products/${slug}`;
+
   // 売り切れ判定（Shopify商品のみ。product.availableForSale=false または全バリアントが売り切れ）
   const isSoldOut =
     isShopifyProduct &&
@@ -275,7 +285,7 @@ export default function ProductCard({
 
   return (
     <div className="group flex flex-col">
-      <Link href={`/products/${slug}`} className="flex flex-col h-full">
+      <Link href={productHref} className="flex flex-col h-full">
         <div
           className="cursor-pointer flex flex-col h-full transition-all"
           onMouseEnter={() => {

@@ -32,6 +32,7 @@ interface ProductPageProps {
   params: Promise<{
     slug: string;
   }>;
+  searchParams?: Promise<{ variant?: string }>;
 }
 
 export async function generateMetadata({
@@ -65,9 +66,14 @@ export async function generateMetadata({
   };
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
+export default async function ProductPage({
+  params,
+  searchParams,
+}: ProductPageProps) {
   const resolvedParams = await params;
   const slug = resolvedParams.slug;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const initialVariantId = resolvedSearchParams.variant ?? undefined;
 
   if (!slug) {
     notFound();
@@ -335,6 +341,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         inventory={inventory}
         relatedProducts={relatedProducts}
         bundles={bundles}
+        initialVariantId={initialVariantId}
       />
     </div>
   );

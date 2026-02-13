@@ -40,6 +40,8 @@ interface ProductClientProps {
   inventory: Record<string, number>;
   relatedProducts?: Product[];
   bundles?: BundleGroup[];
+  /** カード等から ?variant= で開いた場合の初期バリアントID */
+  initialVariantId?: string;
 }
 
 // Option名の揺れ対応: 実際のproduct.optionsから検出
@@ -75,6 +77,7 @@ export default function ProductClient({
   inventory,
   relatedProducts = [],
   bundles = [],
+  initialVariantId,
 }: ProductClientProps) {
   const [mounted, setMounted] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -217,10 +220,24 @@ export default function ProductClient({
   const primaryOptionName = optionTypes[0] || null;
   const secondaryOptionName = optionTypes[1] || null;
 
-  // State管理: selectedOptions（すべてnullで初期化）
+  // State管理: selectedOptions（URLの ?variant= があればそのバリアントで初期化）
   const [selectedOptions, setSelectedOptions] = useState<
     Record<string, string | null>
-  >(() => normalizeSelectedOptions(productOptions));
+  >(() => {
+    const normalized = normalizeSelectedOptions(productOptions);
+    if (!initialVariantId) return normalized;
+    const variant = product.variants.edges.find(
+      (e) => e.node.id === initialVariantId,
+    )?.node;
+    if (!variant?.selectedOptions) return normalized;
+    const next = { ...normalized };
+    variant.selectedOptions.forEach((opt) => {
+      if (Object.prototype.hasOwnProperty.call(next, opt.name)) {
+        next[opt.name] = opt.value;
+      }
+    });
+    return next;
+  });
 
   // secondaryリセット通知の表示フラグ
   const [secondaryResetNotice, setSecondaryResetNotice] = useState(false);
