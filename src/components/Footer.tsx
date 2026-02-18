@@ -59,7 +59,7 @@ export default function Footer() {
 
           <div className="flex justify-center gap-6 md:justify-end">
             <Link
-              href="https://instagram.com/evimeriahome2026"
+              href="https://instagram.com/evimeriahome_official"
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors"
@@ -68,7 +68,7 @@ export default function Footer() {
               <FontAwesomeIcon icon={faInstagram} className="h-5 w-5" />
             </Link>
             <Link
-              href="https://facebook.com"
+              href="https://www.facebook.com/profile.php?id=61587239397776&locale=ja_JP"
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors"
@@ -135,7 +135,10 @@ export default function Footer() {
                     unoptimized
                   />
                 </span>
-                <span className="inline-flex items-center h-6" title="Mastercard">
+                <span
+                  className="inline-flex items-center h-6"
+                  title="Mastercard"
+                >
                   <Image
                     src="/logos/cards/mc_symbol.svg"
                     alt="Mastercard"
@@ -155,7 +158,10 @@ export default function Footer() {
                   className="h-6 w-auto object-contain"
                 />
               </span>
-              <span className="inline-flex items-center h-6" title="American Express">
+              <span
+                className="inline-flex items-center h-6"
+                title="American Express"
+              >
                 <Image
                   src="/logos/cards/amex.png"
                   alt="American Express"
@@ -164,7 +170,10 @@ export default function Footer() {
                   className="h-6 w-auto object-contain"
                 />
               </span>
-              <span className="inline-flex items-center h-6" title="Diners Club">
+              <span
+                className="inline-flex items-center h-6"
+                title="Diners Club"
+              >
                 <Image
                   src="/logos/cards/diners.png"
                   alt="Diners Club"
