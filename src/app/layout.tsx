@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import CartAddedDrawer from "@/components/CartAddedDrawer";
 
 import ChatWidget from "@/components/ChatWidget";
+import MetaPixel from "@/app/components/MetaPixel";
 
 import { getSiteUrl } from "@/lib/seo/site-url";
 import { buildOrganizationAndWebSite } from "@/lib/seo/schema";
@@ -65,6 +66,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
+  const metaPixelId =
+    process.env.NEXT_PUBLIC_META_PIXEL_ID ?? "2367420133735996";
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -93,7 +96,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           )
         ) : null}
 
-        {/* Meta Pixel (Facebook) */}
+        {/* Meta Pixel: fbevents.js + init + 初回 PageView（SPA 遷移時は MetaPixel が送信） */}
         <Script id="meta-pixel" strategy="afterInteractive">
           {`!function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -103,19 +106,20 @@ n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '2367420133735996');
+fbq('init', '${metaPixelId}');
 fbq('track', 'PageView');`}
         </Script>
         <noscript>
-          {/* eslint-disable-next-line @next/next/no-img-element -- Meta Pixel 1x1 トラッキング用 */}
+          {/* eslint-disable-next-line @next/next/no-img-element -- Meta Pixel 1x1 トラッキング用（JS無効時フォールバック） */}
           <img
             height="1"
             width="1"
             style={{ display: "none" }}
-            src="https://www.facebook.com/tr?id=2367420133735996&ev=PageView&noscript=1"
+            src={`https://www.facebook.com/tr?id=${metaPixelId}&ev=PageView&noscript=1`}
             alt=""
           />
         </noscript>
+        <MetaPixel />
 
         {children}
         <Toaster />
